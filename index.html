@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Markdown转Word转换器</title>
+  <link rel="stylesheet" href="css/style.css">
+  <meta name="description" content="">
+
+  <meta property="og:title" content="">
+  <meta property="og:type" content="">
+  <meta property="og:url" content="">
+  <meta property="og:image" content="">
+  <meta property="og:image:alt" content="">
+
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" href="/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icon.png">
+
+  <link rel="manifest" href="site.webmanifest">
+  <meta name="theme-color" content="#fafafa">
+</head>
+
+<body>
+  <div class="container">
+    <header>
+      <h1>Markdown转Word转换器</h1>
+    </header>
+
+    <main>
+      <!-- 主工作区：输入和预览 -->
+      <div class="workspace">
+        <!-- 左侧：Markdown输入区 -->
+        <div class="markdown-input-section">
+          <div class="section-header">
+            <h2>Markdown内容</h2>
+            <div class="file-actions">
+              <input type="file" id="file-input" accept=".md, .txt">
+              <button id="clear-btn" class="btn btn-secondary">清空</button>
+            </div>
+          </div>
+          <div class="input-container">
+            <textarea id="markdown-input" placeholder="在此处粘贴或输入Markdown文本..."></textarea>
+            <div class="drag-area">
+              <div class="drag-message">
+                <div class="icon">📄</div>
+                <div>拖放Markdown文件到此处</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 右侧：预览区 -->
+        <div class="preview-section">
+          <div class="section-header">
+            <h2>预览</h2>
+            <div class="preview-actions">
+              <button id="convert-btn" class="btn btn-primary">转换为Word</button>
+            </div>
+          </div>
+          <div id="preview-container">
+            <div class="preview-placeholder">转换后的预览将显示在这里</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 底部：样式设置区 -->
+      <div class="styles-panel">
+        <div class="section-header">
+          <h2>文档样式设置</h2>
+          <div class="style-actions">
+            <button id="reset-styles-btn" class="btn btn-secondary">重置样式</button>
+            <button id="save-styles-btn" class="btn btn-secondary">保存设置</button>
+          </div>
+        </div>
+        <div id="style-settings">
+          <!-- 样式设置内容将由JS动态生成 -->
+        </div>
+      </div>
+    </main>
+
+    <footer>
+      <p>© 2024 Markdown转Word工具 - 基于docx.js & marked.js</p>
+    </footer>
+  </div>
+
+  <script src="js/app.js" type="module"></script>
+</body>
+
+</html>
