@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>样式编辑器</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="editor-container">
+        <!-- 左侧导航栏 -->
+        <div class="nav-sidebar">
+            <div class="nav-header">
+                <h2>样式设置</h2>
+            </div>
+            <div class="nav-content">
+                <ul class="nav-list">
+                    <li class="nav-item" data-category="document">
+                        <span class="nav-icon">📄</span>
+                        <span class="nav-text">文档设置</span>
+                    </li>
+                    <li class="nav-item" data-category="heading">
+                        <span class="nav-icon">📑</span>
+                        <span class="nav-text">标题样式</span>
+                    </li>
+                    <li class="nav-item" data-category="paragraph">
+                        <span class="nav-icon">¶</span>
+                        <span class="nav-text">段落样式</span>
+                    </li>
+                    <li class="nav-item" data-category="list">
+                        <span class="nav-icon">📋</span>
+                        <span class="nav-text">列表样式</span>
+                    </li>
+                    <li class="nav-item" data-category="table">
+                        <span class="nav-icon">⊞</span>
+                        <span class="nav-text">表格样式</span>
+                    </li>
+                    <li class="nav-item" data-category="code">
+                        <span class="nav-icon">{ }</span>
+                        <span class="nav-text">代码样式</span>
+                    </li>
+                    <li class="nav-item" data-category="blockquote">
+                        <span class="nav-icon">❝</span>
+                        <span class="nav-text">引用样式</span>
+                    </li>
+                    <li class="nav-item" data-category="link">
+                        <span class="nav-icon">🔗</span>
+                        <span class="nav-text">链接样式</span>
+                    </li>
+                    <li class="nav-item" data-category="image">
+                        <span class="nav-icon">🖼️</span>
+                        <span class="nav-text">图片样式</span>
+                    </li>
+                    <li class="nav-item" data-category="footnote">
+                        <span class="nav-icon">*</span>
+                        <span class="nav-text">脚注样式</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 右侧内容区 -->
+        <div class="content-area">
+            <!-- 顶部工具栏 -->
+            <div class="toolbar">
+                <div class="toolbar-left">
+                    <button id="saveBtn" class="toolbar-btn">
+                        <span class="btn-icon">💾</span>
+                        <span class="btn-text">保存</span>
+                    </button>
+                    <button id="resetBtn" class="toolbar-btn">
+                        <span class="btn-icon">↺</span>
+                        <span class="btn-text">重置</span>
+                    </button>
+                </div>
+                <div class="toolbar-right">
+                    <button id="importBtn" class="toolbar-btn">
+                        <span class="btn-icon">📥</span>
+                        <span class="btn-text">导入</span>
+                    </button>
+                    <button id="exportBtn" class="toolbar-btn">
+                        <span class="btn-icon">📤</span>
+                        <span class="btn-text">导出</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 设置内容区 -->
+            <div class="settings-container">
+                <div id="documentSettings" class="settings-panel">
+                    <!-- 文档设置面板 -->
+                </div>
+                <div id="headingSettings" class="settings-panel">
+                    <!-- 标题设置面板 -->
+                </div>
+                <div id="paragraphSettings" class="settings-panel">
+                    <!-- 段落设置面板 -->
+                </div>
+                <div id="listSettings" class="settings-panel">
+                    <!-- 列表设置面板 -->
+                </div>
+                <div id="tableSettings" class="settings-panel">
+                    <!-- 表格设置面板 -->
+                </div>
+                <div id="codeSettings" class="settings-panel">
+                    <!-- 代码设置面板 -->
+                </div>
+                <div id="blockquoteSettings" class="settings-panel">
+                    <!-- 引用设置面板 -->
+                </div>
+                <div id="linkSettings" class="settings-panel">
+                    <!-- 链接设置面板 -->
+                </div>
+                <div id="imageSettings" class="settings-panel">
+                    <!-- 图片设置面板 -->
+                </div>
+                <div id="footnoteSettings" class="settings-panel">
+                    <!-- 脚注设置面板 -->
+                </div>
+            </div>
+
+            <!-- 预览区域 -->
+            <div class="preview-container">
+                <div class="preview-header">
+                    <h3>预览</h3>
+                </div>
+                <div id="previewContent" class="preview-content">
+                    <!-- 预览内容 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="editor.js"></script>
+</body>
+</html>

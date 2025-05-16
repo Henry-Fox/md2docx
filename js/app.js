@@ -115,36 +115,36 @@ class App {
 
   /**
    * @method initEventListeners
-   * @description 初始化事件监听器
+   * @description 初始化事件监听器（全部加判空）
    */
   initEventListeners() {
     // 文件选择
-    this.fileInput.addEventListener('change', (e) => this.handleFileSelect(e));
+    if (this.fileInput) {
+      this.fileInput.addEventListener('change', (e) => this.handleFileSelect(e));
+    }
 
     // 拖放功能
-    this.markdownInput.addEventListener('dragenter', () => this.dragArea.classList.add('active'));
-    this.markdownInput.addEventListener('dragleave', () => this.dragArea.classList.remove('active'));
-    this.markdownInput.addEventListener('dragover', (e) => {
-      e.preventDefault();
-      this.dragArea.classList.add('active');
-    });
-    this.markdownInput.addEventListener('drop', (e) => {
-      e.preventDefault();
-      this.dragArea.classList.remove('active');
-      this.handleFileDrop(e);
-    });
+    if (this.markdownInput && this.dragArea) {
+      this.markdownInput.addEventListener('dragenter', () => this.dragArea.classList.add('active'));
+      this.markdownInput.addEventListener('dragleave', () => this.dragArea.classList.remove('active'));
+      this.markdownInput.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        this.dragArea.classList.add('active');
+      });
+      this.markdownInput.addEventListener('drop', (e) => {
+        e.preventDefault();
+        this.dragArea.classList.remove('active');
+        this.handleFileDrop(e);
+      });
+      this.markdownInput.addEventListener('input', this.debounce(() => this.updatePreview(), 300));
+    }
 
     // 按钮操作
-    this.clearBtn.addEventListener('click', () => this.clearMarkdown());
-    this.convertBtn.addEventListener('click', () => this.convertToDocx());
-    this.resetStylesBtn.addEventListener('click', () => this.resetStyles());
-    this.saveStylesBtn.addEventListener('click', () => this.saveStyles());
-
-    // 项目路径设置
-    this.setProjectPathBtn.addEventListener('click', () => this.saveProjectPath());
-
-    // Markdown输入变化时更新预览
-    this.markdownInput.addEventListener('input', this.debounce(() => this.updatePreview(), 300));
+    if (this.clearBtn) this.clearBtn.addEventListener('click', () => this.clearMarkdown());
+    if (this.convertBtn) this.convertBtn.addEventListener('click', () => this.convertToDocx());
+    if (this.resetStylesBtn) this.resetStylesBtn.addEventListener('click', () => this.resetStyles());
+    if (this.saveStylesBtn) this.saveStylesBtn.addEventListener('click', () => this.saveStyles());
+    if (this.setProjectPathBtn) this.setProjectPathBtn.addEventListener('click', () => this.saveProjectPath());
   }
 
   /**
@@ -1520,48 +1520,66 @@ E = mc^2
 
   /**
    * @method updatePreview
-   * @description 更新预览内容
+   * @description 更新预览内容（仅用marked渲染）
    */
   updatePreview() {
+    if (!this.previewContainer) return;
+
+    const markdown = this.markdownInput.value;
+    if (!markdown) {
+      this.previewContainer.innerHTML = '<div class="preview-placeholder">转换后的预览将显示在这里</div>';
+      return;
+    }
+
     try {
-      const markdownContent = this.markdownInput.value;
-
-      // 检查marked库是否可用
-      if (typeof marked === 'undefined') {
-        console.error('marked库未加载，无法生成预览');
-        this.previewContainer.innerHTML = '<div class="error">预览无法生成：Markdown解析库未加载</div>';
-        return;
-      }
-
-      // 配置marked选项
-      const options = {
-        breaks: true,      // 将换行符转换为<br>
-        gfm: true          // 启用GitHub风格Markdown
-      };
-
-      // 设置marked选项
-      if (marked.setOptions) {
-        marked.setOptions(options);
-      }
-
-      // 使用marked解析Markdown为HTML
-      const htmlContent = marked.parse(markdownContent);
-
-      // 更新预览容器
-      this.previewContainer.innerHTML = htmlContent;
-
-      // 延迟执行图片加载检查
-      setTimeout(() => {
-        // 检查预览中的图片是否已加载
-        const images = this.previewContainer.querySelectorAll('img');
-        if (images.length > 0) {
-          console.log(`预览中包含 ${images.length} 张图片`);
-        }
-      }, 100);
+      // 使用marked转换Markdown为HTML
+      const html = marked.parse(markdown);
+      this.previewContainer.innerHTML = html;
     } catch (error) {
       console.error('更新预览时出错:', error);
-      this.previewContainer.innerHTML = `<div class="error">预览生成失败: ${error.message}</div>`;
+      this.previewContainer.innerHTML = '<div class="preview-error">预览生成失败</div>';
     }
+  }
+
+  /**
+   * @method applyStylesToPreview
+   * @param {string} html - 原始HTML内容
+   * @returns {string} - 应用样式后的HTML
+   */
+  applyStylesToPreview(html) {
+    // 创建临时容器
+    const container = document.createElement('div');
+    container.innerHTML = html;
+
+    // 应用标题样式
+    for (let i = 1; i <= 6; i++) {
+      const headings = container.querySelectorAll(`h${i}`);
+      const style = this.currentStyles.heading.styles[`h${i}`];
+
+      headings.forEach(heading => {
+        // 应用字体样式
+        heading.style.fontFamily = `${style.font.name}, ${style.font.fallback.join(', ')}`;
+        heading.style.fontSize = `${style.font.size}pt`;
+        heading.style.fontWeight = style.font.bold ? 'bold' : 'normal';
+
+        // 应用段落样式
+        heading.style.textAlign = style.paragraph.alignment;
+        heading.style.marginTop = `${style.paragraph.spacing.before / 20}pt`;
+        heading.style.marginBottom = `${style.paragraph.spacing.after / 20}pt`;
+        heading.style.paddingLeft = `${style.paragraph.indent.left / 20}pt`;
+        heading.style.textIndent = `${style.paragraph.indent.firstLine / 20}pt`;
+
+        // 应用编号样式
+        if (style.numbering.usePrefix) {
+          const prefix = document.createElement('span');
+          prefix.className = 'heading-prefix';
+          prefix.textContent = style.numbering.prefix;
+          heading.insertBefore(prefix, heading.firstChild);
+        }
+      });
+    }
+
+    return container.innerHTML;
   }
 
   /**

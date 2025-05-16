@@ -25,8 +25,25 @@
 <body>
   <div class="container">
     <header>
-      <h1>Markdown转Word转换器</h1>
+      <!-- header已移除主标题，主标题放到top-bar -->
     </header>
+
+    <!-- 顶部操作区：主标题+项目路径+样式设置按钮 -->
+    <div class="top-bar">
+      <div class="topbar-title">
+        <h1>Markdown转Word转换器</h1>
+      </div>
+      <div class="project-path-container">
+        <label for="project-path-input">项目路径：</label>
+        <input type="text" id="project-path-input" class="project-path-input" placeholder="请输入项目路径...">
+      </div>
+      <div class="topbar-actions">
+        <a href="styles/editor/index.html" class="btn" target="_blank">
+          <span class="btn-icon">⚙️</span>
+          <span class="btn-text">样式设置</span>
+        </a>
+      </div>
+    </div>
 
     <main>
       <!-- 主工作区：输入和预览 -->
@@ -62,20 +79,6 @@
           <div id="preview-container">
             <div class="preview-placeholder">转换后的预览将显示在这里</div>
           </div>
-        </div>
-      </div>
-
-      <!-- 底部：样式设置区 -->
-      <div class="styles-panel">
-        <div class="section-header">
-          <h2>文档样式设置</h2>
-          <div class="style-actions">
-            <button id="reset-styles-btn" class="btn btn-secondary">重置样式</button>
-            <button id="save-styles-btn" class="btn btn-secondary">保存设置</button>
-          </div>
-        </div>
-        <div id="style-settings">
-          <!-- 样式设置内容将由JS动态生成 -->
         </div>
       </div>
     </main>
