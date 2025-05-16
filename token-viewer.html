@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Markdown to DOCX Token Viewer</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    .container {
+      display: flex;
+      flex-direction: column;
+      max-width: 1200px;
+      margin: 0 auto;
+      background-color: white;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    header {
+      background-color: #2c3e50;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+    .content {
+      display: flex;
+      min-height: 500px;
+    }
+    .editor, .preview {
+      flex: 1;
+      padding: 20px;
+      overflow: auto;
+    }
+    .editor {
+      border-right: 1px solid #eee;
+    }
+    #markdown-input {
+      width: 100%;
+      height: 400px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 10px;
+      font-family: monospace;
+      resize: vertical;
+    }
+    .controls {
+      padding: 10px 20px;
+      background-color: #f9f9f9;
+      border-top: 1px solid #eee;
+      display: flex;
+      justify-content: space-between;
+    }
+    button {
+      background-color: #3498db;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background-color 0.2s;
+    }
+    button:hover {
+      background-color: #2980b9;
+    }
+    #json-output {
+      width: 100%;
+      height: 400px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 10px;
+      font-family: monospace;
+      resize: vertical;
+      white-space: pre-wrap;
+      overflow: auto;
+    }
+    .json-container {
+      position: relative;
+    }
+    .copy-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background-color: rgba(255, 255, 255, 0.8);
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 4px 8px;
+      font-size: 12px;
+    }
+    .token-stats {
+      margin-top: 10px;
+      font-size: 14px;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Markdown to DOCX Token Viewer</h1>
+      <p>查看 Markdown 转换为 DOCX Token 的 JSON 格式</p>
+    </header>
+
+    <div class="content">
+      <div class="editor">
+        <h2>Markdown 输入</h2>
+        <textarea id="markdown-input" placeholder="输入或粘贴 Markdown 文本..."></textarea>
+        <div class="controls">
+          <button id="load-sample-btn">加载示例</button>
+          <button id="clear-btn">清空</button>
+        </div>
+      </div>
+
+      <div class="preview">
+        <h2>Token JSON 输出</h2>
+        <div class="json-container">
+          <pre id="json-output">等待转换...</pre>
+          <button class="copy-btn" id="copy-btn">复制</button>
+        </div>
+        <div class="token-stats" id="token-stats"></div>
+        <div class="controls">
+          <button id="convert-btn">转换为 Token</button>
+          <button id="format-btn">格式化 JSON</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { Md2Json } from './js/md2json.js';
+
+    // u521du59cbu5316u8f6cu6362u5668
+    const md2json = new Md2Json();
+
+    // u83b7u53d6DOMu5143u7d20
+    const markdownInput = document.getElementById('markdown-input');
+    const jsonOutput = document.getElementById('json-output');
+    const convertBtn = document.getElementById('convert-btn');
+    const formatBtn = document.getElementById('format-btn');
+    const loadSampleBtn = document.getElementById('load-sample-btn');
+    const clearBtn = document.getElementById('clear-btn');
+    const copyBtn = document.getElementById('copy-btn');
+    const tokenStats = document.getElementById('token-stats');
+
+    // u8f6cu6362u4e3aTokenu51fdu6570
+    function convertToTokens() {
+      const markdown = markdownInput.value;
+      if (!markdown.trim()) {
+        jsonOutput.textContent = '请输入 Markdown 文本';
+        return;
+      }
+
+      try {
+        const tokens = md2json.convert(markdown);
+        const json = JSON.stringify(tokens, null, 2);
+        jsonOutput.textContent = json;
+
+        // 显示统计信息
+        const tokenCount = countTokens(tokens);
+        tokenStats.textContent = `文档共包含 ${tokenCount} 个标记元素`;
+      } catch (error) {
+        jsonOutput.textContent = `错误: ${error.message}`;
+        console.error(error);
+      }
+    }
+
+    // 计算Token数量
+    function countTokens(tokens) {
+      if (!tokens || !tokens.children) return 0;
+      return tokens.children.length;
+    }
+
+    // 格式化JSON
+    function formatJson() {
+      try {
+        const currentJson = jsonOutput.textContent;
+        if (currentJson && currentJson !== '请输入 Markdown 文本' && currentJson !== '等待转换...') {
+          const parsedJson = JSON.parse(currentJson);
+          jsonOutput.textContent = JSON.stringify(parsedJson, null, 2);
+        }
+      } catch (error) {
+        console.error('格式化JSON出错:', error);
+      }
+    }
+
+    // 加载示例
+    async function loadSample() {
+      try {
+        const response = await fetch('test.md');
+        if (!response.ok) {
+          throw new Error('无法加载示例文件');
+        }
+        const text = await response.text();
+        markdownInput.value = text;
+      } catch (error) {
+        console.error('加载示例失败:', error);
+        markdownInput.value = `# Markdown示例
+
+## 标题
+
+这是一个段落。
+
+* 列表项目1
+* 列表项目2
+
+\`\`\`javascript
+function hello() {
+  console.log("Hello world");
+}
+\`\`\`
+`;
+      }
+    }
+
+    // 清空输入
+    function clearInput() {
+      markdownInput.value = '';
+      jsonOutput.textContent = '等待转换...';
+      tokenStats.textContent = '';
+    }
+
+    // 复制JSON
+    function copyJson() {
+      const jsonText = jsonOutput.textContent;
+      if (jsonText && jsonText !== '请输入 Markdown 文本' && jsonText !== '等待转换...') {
+        navigator.clipboard.writeText(jsonText)
+          .then(() => {
+            copyBtn.textContent = '已复制';
+            setTimeout(() => {
+              copyBtn.textContent = '复制';
+            }, 2000);
+          })
+          .catch(err => {
+            console.error('复制失败:', err);
+            copyBtn.textContent = '复制失败';
+            setTimeout(() => {
+              copyBtn.textContent = '复制';
+            }, 2000);
+          });
+      }
+    }
+
+    // 注册事件监听器
+    convertBtn.addEventListener('click', convertToTokens);
+    formatBtn.addEventListener('click', formatJson);
+    loadSampleBtn.addEventListener('click', loadSample);
+    clearBtn.addEventListener('click', clearInput);
+    copyBtn.addEventListener('click', copyJson);
+
+    // 页面加载后自动加载示例
+    window.addEventListener('load', loadSample);
+  </script>
+</body>
+</html>

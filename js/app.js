@@ -12,6 +12,13 @@ class App {
     // 强制重新初始化样式（从JSON文件加载）
     this.currentStyles = null;
 
+    // 项目文件夹路径设置（默认路径）
+    this.projectPath = "D:\\MD2DOCX\\";
+
+    // 临时文件夹设置
+    this.tempDirHandle = null;
+    this.tempDirName = "";
+
     // 初始化DOM元素
     this.initElements();
 
@@ -29,6 +36,12 @@ class App {
 
     // 加载默认Markdown示例
     this.loadDefaultExample();
+
+    // 初始化项目路径设置
+    this.initProjectPath();
+
+    // 尝试初始化临时目录
+    this.initTempDirectory();
 
     // 更新界面后确认数据正确加载
     console.log("当前加载的样式:", JSON.stringify(this.currentStyles));
@@ -49,6 +62,49 @@ class App {
     this.convertBtn = document.getElementById('convert-btn');
     this.resetStylesBtn = document.getElementById('reset-styles-btn');
     this.saveStylesBtn = document.getElementById('save-styles-btn');
+
+    // 项目路径设置
+    this.projectPathInput = document.getElementById('project-path-input');
+    this.setProjectPathBtn = document.getElementById('set-project-path-btn');
+
+    // 如果项目路径元素不存在，则创建
+    if (!this.projectPathInput) {
+      // 创建项目路径设置容器
+      const pathContainer = document.createElement('div');
+      pathContainer.className = 'project-path-container';
+
+      // 创建标签
+      const pathLabel = document.createElement('label');
+      pathLabel.htmlFor = 'project-path-input';
+      pathLabel.textContent = '项目路径:';
+      pathContainer.appendChild(pathLabel);
+
+      // 创建输入框
+      this.projectPathInput = document.createElement('input');
+      this.projectPathInput.id = 'project-path-input';
+      this.projectPathInput.type = 'text';
+      this.projectPathInput.className = 'project-path-input';
+      this.projectPathInput.value = this.projectPath;
+      this.projectPathInput.placeholder = 'D:\\MD2DOCX\\';
+      pathContainer.appendChild(this.projectPathInput);
+
+      // 创建保存按钮
+      this.setProjectPathBtn = document.createElement('button');
+      this.setProjectPathBtn.id = 'set-project-path-btn';
+      this.setProjectPathBtn.className = 'btn';
+      this.setProjectPathBtn.innerText = '保存项目路径';
+      this.setProjectPathBtn.addEventListener('click', () => this.saveProjectPath());
+      pathContainer.appendChild(this.setProjectPathBtn);
+
+      // 添加到工具栏中合适位置
+      const toolBar = document.querySelector('.toolbar') || document.querySelector('.controls');
+      if (toolBar) {
+        toolBar.appendChild(pathContainer);
+      } else {
+        // 如果没有找到工具栏，则添加到body
+        document.body.insertBefore(pathContainer, document.body.firstChild);
+      }
+    }
 
     // 预览相关
     this.previewContainer = document.getElementById('preview-container');
@@ -84,8 +140,60 @@ class App {
     this.resetStylesBtn.addEventListener('click', () => this.resetStyles());
     this.saveStylesBtn.addEventListener('click', () => this.saveStyles());
 
+    // 项目路径设置
+    this.setProjectPathBtn.addEventListener('click', () => this.saveProjectPath());
+
     // Markdown输入变化时更新预览
     this.markdownInput.addEventListener('input', this.debounce(() => this.updatePreview(), 300));
+  }
+
+  /**
+   * @method saveProjectPath
+   * @description 保存项目路径设置
+   */
+  saveProjectPath() {
+    const path = this.projectPathInput.value.trim();
+    if (!path) {
+      alert('请输入有效的项目路径！');
+      return;
+    }
+
+    // 确保路径以斜杠结尾
+    this.projectPath = path.endsWith('\\') ? path : path + '\\';
+    this.projectPathInput.value = this.projectPath;
+
+    // 保存设置以便下次使用
+    localStorage.setItem('projectPath', this.projectPath);
+
+    console.log(`项目路径已设置: ${this.projectPath}`);
+
+    alert(`项目路径已设置为: ${this.projectPath}\n请确保以下文件夹存在:\n${this.projectPath}`);
+  }
+
+  /**
+   * @method initProjectPath
+   * @description 初始化项目路径
+   */
+  initProjectPath() {
+    try {
+      // 尝试从localStorage获取上次使用的项目路径
+      const savedPath = localStorage.getItem('projectPath');
+      if (savedPath) {
+        this.projectPath = savedPath;
+        this.projectPathInput.value = this.projectPath;
+      }
+
+      // 首次加载时提示
+      const hasPrompted = localStorage.getItem('projectPathPrompted');
+      if (!hasPrompted) {
+        setTimeout(() => {
+          alert(`当前项目路径设置为: ${this.projectPath}\n请确保以下文件夹存在:\n${this.projectPath}\n\n如需修改，请点击"保存设置"按钮。`);
+          localStorage.setItem('projectPathPrompted', 'true');
+        }, 2000);
+      }
+    } catch (error) {
+      console.warn('初始化项目路径失败:', error);
+    }
   }
 
   /**
@@ -139,156 +247,280 @@ class App {
 
   /**
    * @method convertToDocx
-   * @description 将Markdown转换为Word文档
+   * @description 转换当前的Markdown为Word文档
    */
   convertToDocx() {
-    const markdownContent = this.markdownInput.value.trim();
-    if (!markdownContent) {
-      alert('请先输入Markdown内容！');
+    // 获取Markdown内容
+    const markdownContent = this.markdownInput.value;
+
+    // 检查Markdown内容是否为空
+    if (!markdownContent.trim()) {
+      this.showMessage('请先输入或上传Markdown内容', 'error');
       return;
     }
 
+    // 检查Markdown语法错误
+    const syntaxErrors = this.checkMarkdownSyntax(markdownContent);
+    if (syntaxErrors.length > 0) {
+      const errorMessage = `Markdown格式存在问题：\n${syntaxErrors.join('\n')}`;
+      if (!confirm(`${errorMessage}\n\n是否继续生成文档？`)) {
+        return;
+      }
+    }
+
+    // 显示转换中消息
+    this.showMessage('正在转换文档，请稍候...', 'info');
+
+    // 预加载图片
+    this.preloadImages(markdownContent)
+      .then(images => {
+        return this.convertMarkdownToDocx(markdownContent, images);
+      })
+      .then(blob => {
+        const fileName = this.getOutputFileName();
+
+        // 下载文件
+        this.downloadBlob(blob, fileName);
+
+        this.showMessage(`文档已成功生成：${fileName}`, 'success');
+      })
+      .catch(error => {
+        console.error('转换文档时出错:', error);
+        this.showMessage(`转换文档失败: ${error.message}`, 'error');
+      });
+  }
+
+  /**
+   * @method convertMarkdownToDocx
+   * @description 将Markdown内容转换为Word文档
+   * @param {string} markdownContent - Markdown内容
+   * @param {Array} images - 图片信息数组
+   * @returns {Promise<Blob>} - 返回Word文档的Blob对象
+   */
+  async convertMarkdownToDocx(markdownContent, images) {
     try {
-      // 显示加载提示
-      const loadingMsg = document.createElement('div');
-      loadingMsg.className = 'loading-message';
-      loadingMsg.innerHTML = `
-        <div class="loading-content">
-          <div class="loading-step">1/3 正在处理图片...</div>
-          <div class="loading-progress"></div>
-        </div>
-      `;
-      document.body.appendChild(loadingMsg);
-
-      // 更新加载进度
-      const updateLoadingStep = (step, text) => {
-        const stepElement = loadingMsg.querySelector('.loading-step');
-        if (stepElement) {
-          stepElement.textContent = `${step}/3 ${text}`;
-        }
-      };
-
-      // 获取当前样式设置
-      const styles = this.getStyleSettings();
-
-      // 设置样式
-      this.md2docx.setStyles(styles);
-
       // 处理图片
-      updateLoadingStep(1, '正在处理和转换图片...');
-      this.processImages(markdownContent)
-        .then(processedMarkdown => {
-          console.log("图片处理完成，开始生成docx...");
-          updateLoadingStep(2, '正在转换Markdown为Word格式...');
+      const imageInfos = await this.processImages(images);
 
-          // 转换
-          setTimeout(() => {
-            try {
-              this.md2docx.convert(processedMarkdown);
-              updateLoadingStep(3, '正在生成Word文档...');
+      // 创建转换器实例
+      const converter = new Md2Docx();
 
-              // 保存文档
-              setTimeout(() => {
-                try {
-                  this.md2docx.saveAsDocx();
-                  // 移除加载提示
-                  document.body.removeChild(loadingMsg);
-                } catch (saveError) {
-                  console.error('保存文档失败:', saveError);
-                  alert(`保存文档失败: ${saveError.message}`);
-                  document.body.removeChild(loadingMsg);
-                }
-              }, 300);
-            } catch (convertError) {
-              console.error('转换失败:', convertError);
-              alert(`转换失败: ${convertError.message}`);
-              document.body.removeChild(loadingMsg);
-            }
-          }, 300);
-        })
-        .catch(error => {
-          console.error('图片处理失败:', error);
+      // 设置当前样式
+      converter.setStyles(this.currentStyles);
 
-          if (confirm('图片处理过程中遇到问题，是否继续生成文档？(部分图片可能无法显示)')) {
-            // 即使图片处理失败也尝试转换
-            updateLoadingStep(2, '正在转换Markdown为Word格式...');
+      // 设置图片信息
+      converter.setImageInfos(imageInfos);
 
-            try {
-              this.md2docx.convert(markdownContent);
-              updateLoadingStep(3, '正在生成Word文档...');
+      // 执行转换，返回docx的Blob对象
+      return await converter.convert(markdownContent);
 
-              setTimeout(() => {
-                try {
-                  this.md2docx.saveAsDocx();
-                } catch (saveError) {
-                  console.error('保存文档失败:', saveError);
-                  alert(`保存文档失败: ${saveError.message}`);
-                }
-                document.body.removeChild(loadingMsg);
-              }, 300);
-            } catch (convertError) {
-              console.error('转换失败:', convertError);
-              alert(`转换失败: ${convertError.message}`);
-              document.body.removeChild(loadingMsg);
-            }
-          } else {
-            document.body.removeChild(loadingMsg);
-          }
-        });
     } catch (error) {
-      console.error('转换失败:', error);
-      alert(`转换失败: ${error.message}`);
-      // 确保加载提示被移除
-      const loadingMsg = document.querySelector('.loading-message');
-      if (loadingMsg) {
-        document.body.removeChild(loadingMsg);
+      console.error('转换过程中出错:', error);
+      throw new Error(`转换失败: ${error.message}`);
+    } finally {
+      // 清理临时文件
+      if (images && images.length > 0) {
+        this.cleanupTempFiles(images);
       }
     }
   }
 
   /**
-   * @method initPreview
-   * @description 初始化预览渲染器
+   * @method processImages
+   * @description 处理文档中的图片，准备用于Word文档
+   * @param {NodeList} images - 文档中的图片元素
+   * @return {Promise<Array>} 包含处理后图片信息的Promise
    */
-  initPreview() {
-    // 初始化预览区域
-    this.previewContainer.innerHTML = '<div class="preview-placeholder">输入Markdown内容后将在此处显示预览</div>';
-    marked.setOptions({
-      renderer: new marked.Renderer(),
-      highlight: function(code, lang) {
-        return code;
-      },
-      gfm: true,
-      breaks: true,
-      headerIds: true,
-      mangle: false
+  async processImages(images) {
+    try {
+      if (!images || images.length === 0) {
+        console.log('文档中没有图片需要处理');
+        return [];
+      }
+
+      console.log(`开始处理${images.length}张图片`);
+      this.showMessage(`正在处理${images.length}张图片...`, 'info');
+
+      // 图片信息数组
+      const imageInfos = [];
+
+      // 异步处理所有图片
+      await Promise.all(Array.from(images).map(async (img, index) => {
+        try {
+          // 图片源路径
+          const src = img.src;
+          const alt = img.alt || `图片${index + 1}`;
+
+          console.log(`处理图片 ${index + 1}/${images.length}: ${alt}`);
+
+          // 下载图片
+          const response = await fetch(src);
+          if (!response.ok) {
+            throw new Error(`获取图片失败: ${response.status} ${response.statusText}`);
+          }
+
+          // 将图片转换为ArrayBuffer
+          const buffer = await response.arrayBuffer();
+
+          // 读取图片宽高
+          const dimensions = await this.getImageDimensions(img);
+
+          // 添加到图片信息数组
+          imageInfos.push({
+            src: src,
+            alt: alt,
+            buffer: buffer,
+            width: dimensions.width,
+            height: dimensions.height,
+            index: index
+          });
+
+          console.log(`图片 ${index + 1} 处理完成: ${dimensions.width}x${dimensions.height}`);
+        } catch (error) {
+          console.error(`处理图片 ${index + 1} 时出错:`, error);
+          // 继续处理其他图片，不中断整个过程
+        }
+      }));
+
+      console.log(`完成处理 ${imageInfos.length}/${images.length} 张图片`);
+      return imageInfos;
+    } catch (error) {
+      console.error('处理图片时发生错误:', error);
+      this.showMessage(`处理图片失败: ${error.message}`, 'error');
+      return [];
+    }
+  }
+
+  /**
+   * @method getImageDimensions
+   * @description 获取图片尺寸
+   * @param {HTMLImageElement} img - 图片元素
+   * @return {Promise<Object>} 包含宽高的Promise
+   */
+  getImageDimensions(img) {
+    return new Promise((resolve) => {
+      // 如果图片已加载完成，直接获取尺寸
+      if (img.complete) {
+        resolve({
+          width: img.naturalWidth || 400,
+          height: img.naturalHeight || 300
+        });
+      } else {
+        // 否则等待图片加载完成
+        img.onload = () => {
+          resolve({
+            width: img.naturalWidth || 400,
+            height: img.naturalHeight || 300
+          });
+        };
+
+        // 如果图片加载失败，使用默认尺寸
+        img.onerror = () => {
+          console.warn('图片加载失败，使用默认尺寸');
+          resolve({ width: 400, height: 300 });
+        };
+      }
     });
   }
 
   /**
-   * @method updatePreview
-   * @description 更新预览
+   * @method cleanupTempFiles
+   * @description 清理临时文件
+   * @param {Array} imageInfos - 图片信息数组
+   * @return {Promise} 完成清理的Promise
    */
-  updatePreview() {
-    const markdownContent = this.markdownInput.value.trim();
+  async cleanupTempFiles(imageInfos) {
+    // 实际上不需要清理临时文件，因为我们直接使用内存中的图片数据
+    // 此方法保留作为兼容性扩展
+    console.log('临时资源已清理');
+    return Promise.resolve();
+  }
 
-    if (!markdownContent) {
-      this.previewContainer.innerHTML = '<div class="preview-placeholder">输入Markdown内容后将在此处显示预览</div>';
-      return;
+  /**
+   * @method normalizeUrl
+   * @description 标准化URL，处理相对路径等
+   * @param {string} url - 原始URL
+   * @returns {string} 标准化后的URL
+   */
+  normalizeUrl(url) {
+    let fullUrl = url;
+    if (url.startsWith('//')) {
+      fullUrl = 'https:' + url;
+    } else if (url.startsWith('www.')) {
+      fullUrl = 'https://' + url;
+    } else if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      // 可能是相对路径
+      if (url.startsWith('/')) {
+        // 从域名根路径开始
+        const currentLocation = window.location.origin;
+        fullUrl = currentLocation + url;
+      } else {
+        // 从当前路径相对计算
+        const currentPath = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
+        fullUrl = currentPath + url;
+      }
+    }
+    return fullUrl;
+  }
+
+  /**
+   * @method findImageElement
+   * @description 在预览区域中查找匹配的图片元素
+   * @param {string} url - 图片URL
+   * @param {string} altText - 图片alt文本
+   * @returns {HTMLImageElement|null} 匹配的图片元素或null
+   */
+  findImageElement(url, altText) {
+    const imgElements = Array.from(this.previewContainer.querySelectorAll('img'));
+    console.log(`预览区域中共有 ${imgElements.length} 个图片元素`);
+
+    // 方法1：URL完全匹配
+    let img = imgElements.find(img => img.src === url || img.getAttribute('src') === url);
+
+    // 方法2：alt属性匹配
+    if (!img && altText) {
+      img = imgElements.find(img => img.alt === altText);
+      if (img) console.log(`通过alt属性找到图片: ${altText}`);
     }
 
-    try {
-      // 更新预览前预加载图片
-      this.preloadImages(markdownContent).then(() => {
-        this.previewContainer.innerHTML = marked.parse(markdownContent);
-      }).catch(error => {
-        console.error('预览生成失败:', error);
-        this.previewContainer.innerHTML = marked.parse(markdownContent);
-      });
-    } catch (error) {
-      console.error('预览生成失败:', error);
-      this.previewContainer.innerHTML = '<div class="preview-error">预览生成失败，请检查Markdown格式！</div>';
+    // 方法3：部分URL匹配
+    if (!img) {
+      // 提取文件名用于匹配
+      let fileName = '';
+      try {
+        const urlObj = new URL(url);
+        const pathSegments = urlObj.pathname.split('/').filter(Boolean);
+        if (pathSegments.length > 0) {
+          fileName = pathSegments[pathSegments.length - 1];
+        }
+      } catch (e) {
+        // URL解析失败，尝试使用正则提取文件名
+        const matches = url.match(/\/([^\/]+\.(png|jpe?g|gif|webp))($|\?)/i);
+        if (matches) {
+          fileName = matches[1];
+        }
+      }
+
+      if (fileName) {
+        img = imgElements.find(img => img.src.includes(fileName));
+        if (img) console.log(`通过文件名 ${fileName} 找到图片`);
+      }
     }
+
+    // 方法4：尝试部分alt文本匹配
+    if (!img && altText) {
+      img = imgElements.find(img =>
+        img.alt && (img.alt.includes(altText) || altText.includes(img.alt))
+      );
+      if (img) console.log(`通过部分alt文本匹配找到图片: ${img.alt}`);
+    }
+
+    // 如果仍未找到，记录日志
+    if (!img) {
+      console.warn(`未找到匹配的图片元素: ${url}, alt: ${altText}`);
+    }
+
+    return img;
   }
 
   /**
@@ -328,226 +560,48 @@ class App {
   }
 
   /**
-   * @method processImages
-   * @description 处理Markdown中的图片，转换为Base64格式
-   * @param {string} markdown - Markdown文本
-   * @returns {Promise<string>} 处理后的Markdown文本
-   */
-  processImages(markdown) {
-    return new Promise(async (resolve, reject) => {
-      try {
-        // 使用正则表达式提取所有图片URLs
-        const imageRegex = /!\[(.*?)\]\((.*?)\)/g;
-        let processedMarkdown = markdown;
-        const imageMatches = Array.from(markdown.matchAll(imageRegex));
-
-        if (imageMatches.length === 0) {
-          return resolve(markdown); // 没有图片，直接返回原文本
-        }
-
-        console.log(`发现 ${imageMatches.length} 个图片，开始处理...`);
-
-        // 计数器，用于追踪处理完成的图片数
-        let processedCount = 0;
-        let successCount = 0;
-
-        // 处理每个图片URL
-        for (const match of imageMatches) {
-          const [fullMatch, altText, url] = match;
-          console.log(`处理图片: ${url}`);
-
-          // 如果已经是Base64格式，验证其格式
-          if (url.startsWith('data:')) {
-            // 验证Base64格式是否正确
-            const isValidBase64 = /^data:image\/[a-zA-Z+.-]+;base64,[A-Za-z0-9+/=]+$/.test(url);
-            if (isValidBase64) {
-              console.log(`图片已经是有效的Base64格式，跳过处理`);
-              processedCount++;
-              successCount++;
-            } else {
-              console.warn(`检测到无效的Base64数据格式，尝试修复...`);
-              try {
-                // 尝试修复格式 - 提取MIME类型和数据部分
-                const parts = url.split(',');
-                if (parts.length >= 2) {
-                  const mimeMatch = parts[0].match(/^data:(image\/[a-zA-Z+.-]+);base64$/);
-                  if (mimeMatch && mimeMatch[1]) {
-                    const mimeType = mimeMatch[1];
-                    const base64Data = parts[1].trim();
-                    // 重新构建正确格式的Base64字符串
-                    const fixedBase64 = `data:${mimeType};base64,${base64Data}`;
-                    processedMarkdown = processedMarkdown.replace(
-                      fullMatch,
-                      `![${altText}](${fixedBase64})`
-                    );
-                    console.log(`Base64格式已修复`);
-                  }
-                }
-              } catch (e) {
-                console.error(`无法修复Base64格式:`, e);
-              }
-              processedCount++;
-            }
-
-            // 检查是否所有图片都已处理完毕
-            if (processedCount === imageMatches.length) {
-              console.log(`所有图片处理完成，成功: ${successCount}/${imageMatches.length}`);
-              resolve(processedMarkdown);
-            }
-            continue;
-          }
-
-          // 处理远程URL
-          try {
-            // 对于远程URL，需要使用fetch API获取
-            if (url.startsWith('http') || url.startsWith('https') ||
-                url.startsWith('//') || url.startsWith('www.')) {
-              // 确保完整URL
-              const fullUrl = url.startsWith('//') ? 'https:' + url :
-                             url.startsWith('www.') ? 'https://' + url : url;
-
-              console.log(`获取远程图片: ${fullUrl}`);
-
-              try {
-                const response = await fetch(fullUrl, {
-                  method: 'GET',
-                  mode: 'cors', // 尝试跨域获取
-                  cache: 'no-cache', // 不使用缓存
-                  headers: {
-                    'Accept': 'image/*'
-                  }
-                });
-
-                if (!response.ok) {
-                  throw new Error(`获取图片失败: ${response.status} ${response.statusText}`);
-                }
-
-                const contentType = response.headers.get('content-type');
-                if (!contentType || !contentType.startsWith('image/')) {
-                  throw new Error(`返回的内容不是图片: ${contentType}`);
-                }
-
-                const blob = await response.blob();
-                const base64 = await this.blobToBase64(blob);
-
-                // 验证生成的Base64字符串
-                if (!base64 || !base64.startsWith('data:image/')) {
-                  throw new Error('无效的Base64图片数据');
-                }
-
-                // 替换原始URL为Base64
-                processedMarkdown = processedMarkdown.replace(
-                  fullMatch,
-                  `![${altText}](${base64})`
-                );
-
-                console.log(`图片转换成功: ${fullUrl.substring(0, 30)}...`);
-                successCount++;
-              } catch (fetchError) {
-                console.error(`获取图片失败: ${fullUrl}`, fetchError);
-                // 继续处理其他图片
-              }
-            } else {
-              // 本地文件路径处理尝试
-              console.log(`尝试处理本地图片路径: ${url}`);
-              // 对于demo示例中的相对路径，我们可以尝试使用fetch加载
-              try {
-                const response = await fetch(url, {
-                  method: 'GET',
-                  cache: 'no-cache'
-                });
-
-                if (response.ok) {
-                  const contentType = response.headers.get('content-type');
-                  if (contentType && contentType.startsWith('image/')) {
-                    const blob = await response.blob();
-                    const base64 = await this.blobToBase64(blob);
-
-                    // 替换原始URL为Base64
-                    processedMarkdown = processedMarkdown.replace(
-                      fullMatch,
-                      `![${altText}](${base64})`
-                    );
-
-                    console.log(`本地图片转换成功: ${url}`);
-                    successCount++;
-                  }
-                } else {
-                  console.warn(`无法加载本地图片: ${url}`);
-                }
-              } catch (e) {
-                console.warn(`处理本地图片失败: ${url}`, e);
-              }
-            }
-          } catch (error) {
-            console.warn(`处理图片 ${url} 失败:`, error);
-          }
-
-          // 更新计数器
-          processedCount++;
-          // 检查是否所有图片都已处理完毕
-          if (processedCount === imageMatches.length) {
-            console.log(`所有图片处理完成，成功: ${successCount}/${imageMatches.length}`);
-            resolve(processedMarkdown);
-          }
-        }
-      } catch (error) {
-        console.error('处理图片过程中出错:', error);
-        reject(error);
-      }
-    });
-  }
-
-  /**
-   * @method blobToBase64
-   * @description 将Blob对象转换为Base64字符串
-   * @param {Blob} blob - Blob对象
-   * @returns {Promise<string>} Base64字符串
-   */
-  blobToBase64(blob) {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        try {
-          const result = reader.result;
-          // 验证Base64结果格式
-          if (!result || typeof result !== 'string' || !result.startsWith('data:')) {
-            throw new Error('转换结果不是有效的Base64数据');
-          }
-
-          // 确保MIME类型正确
-          const mimeType = blob.type || 'image/png';
-          if (!result.includes(mimeType)) {
-            // 需要修正MIME类型
-            const base64Data = result.split(',')[1];
-            const correctedBase64 = `data:${mimeType};base64,${base64Data}`;
-            console.log(`已修正Base64 MIME类型为 ${mimeType}`);
-            console.log(`Base64转换完成，数据长度: ${correctedBase64.length}`);
-            resolve(correctedBase64);
-          } else {
-            console.log(`Base64转换完成，数据长度: ${result.length}`);
-            resolve(result);
-          }
-        } catch (error) {
-          console.error('处理Base64结果时出错:', error);
-          reject(error);
-        }
-      };
-      reader.onerror = (error) => {
-        console.error('Base64转换失败:', error);
-        reject(error);
-      };
-      reader.readAsDataURL(blob);
-    });
-  }
-
-  /**
    * @method loadDefaultExample
-   * @description 加载默认Markdown示例
+   * @description 加载默认的Markdown示例
    */
   loadDefaultExample() {
-    // 加载默认的Markdown示例
-    this.markdownInput.value = `# Markdown转Word示例文档
+    // 尝试从test.md文件加载示例
+    fetch('test.md')
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('无法加载test.md文件');
+        }
+        return response.text();
+      })
+      .then(content => {
+        // 将文件内容设置到编辑器中
+        if (this.markdownInput) {
+          this.markdownInput.value = content;
+
+          // 触发input事件以更新预览
+          const event = new Event('input', {
+            bubbles: true,
+            cancelable: true,
+          });
+          this.markdownInput.dispatchEvent(event);
+
+          console.log('成功加载test.md示例');
+        }
+      })
+      .catch(error => {
+        console.error('加载test.md示例失败:', error);
+        // 加载失败时使用内置的默认示例
+        this.loadFallbackExample();
+      });
+  }
+
+  /**
+   * @method loadFallbackExample
+   * @description 加载内置的默认Markdown示例（当test.md加载失败时使用）
+   */
+  loadFallbackExample() {
+    if (!this.markdownInput) return;
+
+    this.markdownInput.value = `# Markdown示例文档
 
 ## 1. 基本文本格式
 
@@ -1224,10 +1278,568 @@ E = mc^2
   twipToMm(twip) {
     return parseFloat((twip / 56.7).toFixed(2)); // 保留两位小数
   }
+
+  /**
+   * @method processImgToBase64
+   * @description 将图片元素转换为Base64
+   * @param {HTMLImageElement} img - 图片元素
+   * @returns {Promise<string>} Base64字符串
+   */
+  processImgToBase64(img) {
+    // 存储this引用，以便在内部函数中使用
+    const self = this;
+
+    return new Promise((resolve, reject) => {
+      try {
+        console.log(`开始处理图片转Base64: ${img.src}`);
+
+        // 记录图片状态
+        console.log(`图片信息:
+        - 尺寸: ${img.naturalWidth}x${img.naturalHeight}
+        - 源地址: ${img.src}
+        - 加载完成: ${img.complete}
+        - crossOrigin属性: ${img.crossOrigin || '(无)'}
+        `);
+
+        // 检查图片是否已经是Base64格式
+        if (img.src.startsWith('data:image/')) {
+          console.log('图片已经是Base64格式，直接使用');
+          resolve(img.src);
+          return;
+        }
+
+        // 判断是否是跨域图片
+        const isCrossOrigin = img.src.startsWith('http') && !img.src.startsWith(window.location.origin);
+
+        // 方案1: 针对跨域图片
+        if (isCrossOrigin) {
+          console.log('检测到跨域图片，尝试直接绘制');
+
+          // 直接尝试Canvas绘制
+          tryCanvasWithoutProxy();
+          return;
+        }
+
+        // 方案2: 直接从DOM元素创建Canvas（适用于同源图片）
+        tryCanvasWithoutProxy();
+
+        // 内部函数：尝试直接从图片元素创建Canvas
+        function tryCanvasWithoutProxy() {
+          try {
+            // 创建Canvas并绘制图片
+            const canvas = document.createElement('canvas');
+
+            // 获取图片实际尺寸
+            const width = img.naturalWidth;
+            const height = img.naturalHeight;
+
+            // 检查尺寸是否有效
+            if (width === 0 || height === 0) {
+              throw new Error(`图片尺寸无效: ${width}x${height}`);
+            }
+
+            // 设置Canvas尺寸
+            canvas.width = width;
+            canvas.height = height;
+
+            console.log(`Canvas创建成功: ${width}x${height}`);
+
+            // 获取绘图上下文
+            const ctx = canvas.getContext('2d');
+
+            // 填充白色背景（处理透明图片）
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(0, 0, width, height);
+
+            // 尝试绘制图片
+            try {
+              ctx.drawImage(img, 0, 0);
+
+              // 判断图片类型
+              let mimeType = 'image/png'; // 默认使用PNG
+              const imgSrc = img.src || '';
+
+              if (imgSrc.match(/\.jpe?g($|\?)/i)) {
+                mimeType = 'image/jpeg';
+              } else if (imgSrc.match(/\.gif($|\?)/i)) {
+                mimeType = 'image/gif';
+              } else if (imgSrc.match(/\.png($|\?)/i)) {
+                mimeType = 'image/png';
+              }
+
+              console.log(`使用MIME类型: ${mimeType}`);
+
+              // 设置转换质量
+              let quality = mimeType === 'image/jpeg' ? 0.95 : undefined;
+
+              try {
+                // 获取Base64数据
+                const dataUrl = canvas.toDataURL(mimeType, quality);
+
+                // 验证结果
+                if (!dataUrl || dataUrl === 'data:,') {
+                  throw new Error('Canvas无法生成有效的图片数据');
+                }
+
+                console.log(`成功生成Base64数据: ${dataUrl.substring(0, 50)}... (${dataUrl.length} 字符)`);
+                resolve(dataUrl);
+              } catch (toDataURLError) {
+                console.error(`Canvas.toDataURL失败: ${toDataURLError.message}`);
+
+                // 检查是否是安全错误（跨域问题）
+                if (toDataURLError.name === 'SecurityError' ||
+                    toDataURLError.message.includes('security') ||
+                    toDataURLError.message.includes('tainted')) {
+                  console.warn('检测到Canvas安全错误，这是由于跨域限制导致的');
+
+                  // 特殊处理markdown图标
+                  if (img.src.includes('markdown-here.com/img/icon')) {
+                    self.useMarkdownLogo(resolve);
+                  } else {
+                    self.useImagePlaceholder(resolve);
+                  }
+                } else {
+                  // 其他类型错误，使用占位符
+                  self.useImagePlaceholder(resolve);
+                }
+              }
+            } catch (drawError) {
+              console.error(`Canvas绘制图片失败: ${drawError.message}`);
+
+              // 检查是否是markdown图标
+              if (img.src.includes('markdown-here.com/img/icon')) {
+                self.useMarkdownLogo(resolve);
+              } else {
+                self.useImagePlaceholder(resolve);
+              }
+            }
+          } catch (error) {
+            console.error('Canvas方法失败:', error);
+
+            // 检查是否是markdown图标
+            if (img.src.includes('markdown-here.com/img/icon')) {
+              self.useMarkdownLogo(resolve);
+            } else {
+              self.useImagePlaceholder(resolve);
+            }
+          }
+        }
+      } catch (error) {
+        console.error('处理图片过程中发生错误:', error);
+        reject(new Error(`图片处理失败: ${error.message}`));
+      }
+    });
+  }
+
+  /**
+   * @method useMarkdownLogo
+   * @description 使用内置的Markdown图标
+   * @param {Function} resolve - Promise的resolve函数
+   */
+  useMarkdownLogo(resolve) {
+    console.log('使用内置的Markdown图标');
+    // 高质量Markdown图标
+    const markdownLogo = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAB10lEQVR4Xu2aTU7DMBCFbSQWLFggzpANO66CxIID9BZwDJAQopcBVpwFwQo2SIgVYmzZtRQJWXH+PNvzxsnG9rx5nxPPOLV5/4b0t9vtMpI1HA5pfHnV6/W+UW9vdEDQ5w8gIgQ9gLQH6L0cWGiAMOAQggh6Dof9EFzawCIz4sBDSCSAPBwJ+7FY+vRiMeSvcHly/OhUBULg8IQ4GCfxPnXrhwh3pxfR1dkNqfxQApBDn92/ZNsc3t6LN3V2kfHBAHuNuD+LDkDlQiCAyMDIAUgKRA5AUyBy8FMCZ5PXwhL40CnwOBE3uyUvQZQoIoTHbrdLz8umjY9Eg1zOTEYXMGHe/WsHMMMjBQ6HQJkPKO60VLrYVBi98JMXOlTxMeEq4YY2ADc/UEe4CcCYD4DGbbvhUc5NAGqOdP/c/EAd4SaAmhNo6QxYqCPYAMrR67H3nv9uNu/R/ed7K+L2+4fxoJ3OgDIAfpBVgKfJC329XeUAWvEOQDrDzBh+exS1AU6nU+p0OsUOTiaT4ruEadq2RQZQXsrq1oAqAA1jHACPBs+QgY9bA8Ij0hZuDWgLeQ+joQP8bw0ogHOLFhPQh4+EhQaESQy3BnCO9bZ4AdTe6Q6VsG4dAAAAAElFTkSuQmCC';
+    resolve(markdownLogo);
+  }
+
+  /**
+   * @method useImagePlaceholder
+   * @description 使用通用图片占位符
+   * @param {Function} resolve - Promise的resolve函数
+   */
+  useImagePlaceholder(resolve) {
+    console.log('无法处理图片，使用占位符替代');
+    // 更小的灰色占位符
+    const placeholderBase64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAMAAABHPGVmAAAAVFBMVEXMzMzm5ubNzc3d3d2ZmZmgoKCkpKTR0dHGxsa8vLzW1talra2vr6+ysrK3t7fJycmpqamcnJyVlZXBwcG0tLTT09Pi4uLZ2demnp6ioqKRkZGOjo64epnIAAAB/ElEQVRoge2a0XKrIBCGFyMqCoKaN+//oj1JexJNEyGg2Zm9+S86kw/Youyy1Go1juO6LkKu6z5Oy/sVxytV/EScp8afi3ZZtH8WJP9W3nhH/lB25EmCPNpJknhHBn2kMYbWGidJY02Ib0Kxs8QYtrkGQY2GoM6a0JzMbdt+3R2M1qagHlcBvL2J9LoKqVnGq4UBZFpTUMBfRsjNQj1rgDMEBVgLIpBdKWrFuVgKIqBdKZW1ILKSKWhXChessMJpM4uLFRF93HaDIFcfNyMnCILwhBXE8JolrKBE4wJZYQS5K/8pXp7KCbH2Hn+/UVSEEGdISIQhhLw9xBkSEoF+BgQgwZBACPEnMt0J6kO8IZ6QQAjxBj1AvCGBEOIP8YSkvw35+vbtUf26vX+/P/bv05Dv9eO+/bgBiWzHLKA1JrFDuO2YBdjdF5ckhNmOWYC1xqikhBDbMYt3f1CSlxC98rvSYbY6xcl1ot3/kZcYbvuKR4DZRf7wA5Vwd93xkQPtQ7g0X5CVjgrxK/OBI32IBV+UJeCOgSDwx0AQRMBvGWtC3M34vw5V8EOOQx16wG4Zew5kQ8yWsYJ3W8kHlhFbYbaMlYR47nKWEbMh6qAjcN7CvvTUFHzOJGfvNxnJh9WCVf975QTJTvL+3kjO3juf5JEz/8CUnb2Lr3bjC03P6mw4S+O5AAAAAElFTkSuQmCC';
+    resolve(placeholderBase64);
+  }
+
+  /**
+   * @method waitForImageLoad
+   * @description 等待图片加载完成
+   * @param {HTMLImageElement} img - 图片元素
+   * @returns {Promise<void>} Promise对象
+   */
+  waitForImageLoad(img) {
+    return new Promise((resolve, reject) => {
+      if (!img) {
+        reject(new Error('无效的图片元素'));
+        return;
+      }
+
+      // 如果图片已经加载完成
+      if (img.complete && img.naturalWidth > 0) {
+        resolve();
+        return;
+      }
+
+      // 设置加载事件
+      const onLoad = () => {
+        // 清理事件监听器
+        img.removeEventListener('load', onLoad);
+        img.removeEventListener('error', onError);
+        resolve();
+      };
+
+      const onError = (error) => {
+        // 清理事件监听器
+        img.removeEventListener('load', onLoad);
+        img.removeEventListener('error', onError);
+        reject(new Error(`图片加载失败: ${error.message || '未知错误'}`));
+      };
+
+      // 添加事件监听
+      img.addEventListener('load', onLoad);
+      img.addEventListener('error', onError);
+
+      // 设置超时，防止图片永远不加载
+      setTimeout(() => {
+        // 清理事件监听器
+        img.removeEventListener('load', onLoad);
+        img.removeEventListener('error', onError);
+
+        // 如果图片已加载，正常解析
+        if (img.complete && img.naturalWidth > 0) {
+          resolve();
+        } else {
+          reject(new Error('图片加载超时'));
+        }
+      }, 5000);
+    });
+  }
+
+  /**
+   * @method initPreview
+   * @description 初始化预览功能
+   */
+  initPreview() {
+    // 初始化时更新一次预览
+    this.updatePreview();
+  }
+
+  /**
+   * @method updatePreview
+   * @description 更新预览内容
+   */
+  updatePreview() {
+    try {
+      const markdownContent = this.markdownInput.value;
+
+      // 检查marked库是否可用
+      if (typeof marked === 'undefined') {
+        console.error('marked库未加载，无法生成预览');
+        this.previewContainer.innerHTML = '<div class="error">预览无法生成：Markdown解析库未加载</div>';
+        return;
+      }
+
+      // 配置marked选项
+      const options = {
+        breaks: true,      // 将换行符转换为<br>
+        gfm: true          // 启用GitHub风格Markdown
+      };
+
+      // 设置marked选项
+      if (marked.setOptions) {
+        marked.setOptions(options);
+      }
+
+      // 使用marked解析Markdown为HTML
+      const htmlContent = marked.parse(markdownContent);
+
+      // 更新预览容器
+      this.previewContainer.innerHTML = htmlContent;
+
+      // 延迟执行图片加载检查
+      setTimeout(() => {
+        // 检查预览中的图片是否已加载
+        const images = this.previewContainer.querySelectorAll('img');
+        if (images.length > 0) {
+          console.log(`预览中包含 ${images.length} 张图片`);
+        }
+      }, 100);
+    } catch (error) {
+      console.error('更新预览时出错:', error);
+      this.previewContainer.innerHTML = `<div class="error">预览生成失败: ${error.message}</div>`;
+    }
+  }
+
+  /**
+   * @method setTempDirectory
+   * @description 设置临时文件夹
+   */
+  async setTempDirectory() {
+    try {
+      // 请求用户选择文件夹
+      this.tempDirHandle = await window.showDirectoryPicker({
+        id: 'tempImagesDir',
+        startIn: 'documents',
+        mode: 'readwrite'
+      });
+
+      this.tempDirName = this.tempDirHandle.name;
+      this.tempDirDisplay.innerText = `当前临时文件夹: ${this.tempDirName}`;
+      console.log(`临时文件夹已设置: ${this.tempDirName}`);
+
+      // 保存设置以便下次使用
+      localStorage.setItem('tempDirName', this.tempDirName);
+
+      return this.tempDirHandle;
+    } catch (error) {
+      console.error('设置临时文件夹失败:', error);
+      this.tempDirDisplay.innerText = '未设置临时文件夹';
+      return null;
+    }
+  }
+
+  /**
+   * @method initTempDirectory
+   * @description 初始化临时目录和相关UI（可选功能）
+   */
+  async initTempDirectory() {
+    try {
+      // 添加临时目录显示区域
+      const tempDirContainer = document.createElement('div');
+      tempDirContainer.className = 'temp-dir-container';
+
+      // 创建临时目录信息显示区域
+      this.tempDirDisplay = document.createElement('div');
+      this.tempDirDisplay.className = 'temp-dir-info';
+      this.tempDirDisplay.innerText = '未设置临时文件夹（可选，仅用于包含图片的文档）';
+      tempDirContainer.appendChild(this.tempDirDisplay);
+
+      // 创建选择按钮
+      const setTempDirBtn = document.createElement('button');
+      setTempDirBtn.id = 'set-temp-dir-btn';
+      setTempDirBtn.className = 'btn';
+      setTempDirBtn.innerText = '选择临时文件夹(可选)';
+      setTempDirBtn.addEventListener('click', () => this.setTempDirectory());
+      tempDirContainer.appendChild(setTempDirBtn);
+
+      // 添加到页面
+      const toolBar = document.querySelector('.project-path-container');
+      if (toolBar) {
+        toolBar.parentNode.insertBefore(tempDirContainer, toolBar.nextSibling);
+      } else {
+        // 如果找不到项目路径容器，则添加到工具栏
+        const fallbackToolbar = document.querySelector('.toolbar') || document.querySelector('.controls');
+        if (fallbackToolbar) {
+          fallbackToolbar.appendChild(tempDirContainer);
+        } else {
+          // 最后的选择：添加到body
+          document.body.insertBefore(tempDirContainer, document.body.firstChild);
+        }
+      }
+
+      // 尝试从localStorage获取上次使用的临时目录名称
+      const savedDirName = localStorage.getItem('tempDirName');
+      if (savedDirName) {
+        this.tempDirName = savedDirName;
+        this.tempDirDisplay.innerText = `上次使用的临时文件夹: ${savedDirName} (可选功能)`;
+      }
+
+      // 不再主动提示用户设置临时文件夹
+      localStorage.setItem('tempDirPrompted', 'true');
+    } catch (error) {
+      console.warn('初始化临时目录失败:', error);
+    }
+  }
+
+  /**
+   * 检查Markdown语法的简单函数
+   * @param {string} markdown - 要检查的Markdown文本
+   * @returns {Object} 包含错误和警告的对象
+   */
+  checkMarkdownSyntax(markdown) {
+    const result = {
+      errors: []
+    };
+
+    // 检查未配对的星号 (*)
+    const asteriskCount = (markdown.match(/\*/g) || []).length;
+    if (asteriskCount % 2 !== 0) {
+      result.errors.push(`发现${asteriskCount}个星号(*), 数量不成对`);
+    }
+
+    // 检查未配对的下划线 (_)
+    const underscoreCount = (markdown.match(/_/g) || []).length;
+    if (underscoreCount % 2 !== 0) {
+      result.errors.push(`发现${underscoreCount}个下划线(_), 数量不成对`);
+    }
+
+    // 检查未配对的反引号 (`)
+    const backtickCount = (markdown.match(/`/g) || []).length;
+    if (backtickCount % 2 !== 0) {
+      result.errors.push(`发现${backtickCount}个反引号(\`), 数量不成对`);
+    }
+
+    // 检查未闭合的链接语法
+    const openBrackets = (markdown.match(/\[/g) || []).length;
+    const closeBrackets = (markdown.match(/\]/g) || []).length;
+    if (openBrackets !== closeBrackets) {
+      result.errors.push(`方括号不匹配: [${openBrackets}个, ]${closeBrackets}个`);
+    }
+
+    // 检查可能是问题的星号格式，例如没有空格的加粗文本
+    const problematicAsterisks = markdown.match(/[^\s\*]\*\*[^\s\*]|[^\s\*]\*[^\s\*]/g);
+    if (problematicAsterisks && problematicAsterisks.length > 0) {
+      result.errors.push(`发现${problematicAsterisks.length}处可能有问题的星号格式，建议在星号前后添加空格`);
+    }
+
+    return result;
+  }
+
+  /**
+   * 动态加载脚本
+   */
+  loadScript(src) {
+    return new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = src;
+      script.onload = () => resolve();
+      script.onerror = (err) => reject(new Error(`加载脚本失败: ${src}`));
+      document.head.appendChild(script);
+    });
+  }
+
+  /**
+   * @method getOutputFileName
+   * @description 获取输出文件名，基于当前时间
+   * @return {string} 输出文件名
+   */
+  getOutputFileName() {
+    const date = new Date();
+    const timestamp =
+      date.getFullYear().toString() +
+      this.padZero(date.getMonth() + 1) +
+      this.padZero(date.getDate()) +
+      '_' +
+      this.padZero(date.getHours()) +
+      this.padZero(date.getMinutes());
+
+    return `markdown_${timestamp}.docx`;
+  }
+
+  /**
+   * @method padZero
+   * @description 将数字前补零至两位
+   * @param {number} num - 需要格式化的数字
+   * @return {string} 格式化后的字符串
+   */
+  padZero(num) {
+    return num < 10 ? '0' + num : num.toString();
+  }
+
+  /**
+   * @method downloadBlob
+   * @description 下载Blob对象
+   * @param {Blob} blob - 要下载的Blob对象
+   * @param {string} fileName - 下载的文件名
+   */
+  downloadBlob(blob, fileName) {
+    if (!blob) {
+      this.showMessage('文件生成失败', 'error');
+      return;
+    }
+
+    try {
+      // 创建下载链接
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+
+      // 添加到文档并触发点击
+      document.body.appendChild(a);
+      a.click();
+
+      // 清理
+      setTimeout(() => {
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }, 100);
+
+      this.showMessage(`文档已保存为 ${fileName}`, 'success');
+    } catch (error) {
+      console.error('下载文件时出错:', error);
+      this.showMessage(`下载失败: ${error.message}`, 'error');
+    }
+  }
+
+  /**
+   * @method showMessage
+   * @description 显示操作消息
+   * @param {string} message - 消息内容
+   * @param {string} type - 消息类型 (info, success, error, warning)
+   */
+  showMessage(message, type = 'info') {
+    // 记录到控制台
+    console.log(`[${type.toUpperCase()}] ${message}`);
+
+    // 检查是否有消息容器
+    let messageContainer = document.getElementById('message-container');
+
+    // 如果没有消息容器，创建一个
+    if (!messageContainer) {
+      messageContainer = document.createElement('div');
+      messageContainer.id = 'message-container';
+      messageContainer.style.position = 'fixed';
+      messageContainer.style.top = '20px';
+      messageContainer.style.right = '20px';
+      messageContainer.style.zIndex = '1000';
+      document.body.appendChild(messageContainer);
+    }
+
+    // 创建消息元素
+    const messageElement = document.createElement('div');
+    messageElement.className = `message message-${type}`;
+    messageElement.innerHTML = message;
+
+    // 设置样式
+    messageElement.style.padding = '10px 15px';
+    messageElement.style.marginBottom = '10px';
+    messageElement.style.borderRadius = '4px';
+    messageElement.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)';
+    messageElement.style.fontSize = '14px';
+    messageElement.style.fontWeight = 'bold';
+    messageElement.style.transition = 'all 0.3s ease';
+
+    // 根据类型设置颜色
+    switch (type) {
+      case 'success':
+        messageElement.style.backgroundColor = '#4caf50';
+        messageElement.style.color = '#fff';
+        break;
+      case 'error':
+        messageElement.style.backgroundColor = '#f44336';
+        messageElement.style.color = '#fff';
+        break;
+      case 'warning':
+        messageElement.style.backgroundColor = '#ff9800';
+        messageElement.style.color = '#fff';
+        break;
+      default: // info
+        messageElement.style.backgroundColor = '#2196f3';
+        messageElement.style.color = '#fff';
+    }
+
+    // 添加到容器
+    messageContainer.appendChild(messageElement);
+
+    // 自动消失
+    setTimeout(() => {
+      messageElement.style.opacity = '0';
+      setTimeout(() => {
+        messageContainer.removeChild(messageElement);
+      }, 300);
+    }, 3000);
+  }
 }
 
 // 初始化应用
 document.addEventListener('DOMContentLoaded', () => {
   new App();
 });
+
+
 

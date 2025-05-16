@@ -70,6 +70,81 @@ footer {
   height: 500px;
 }
 
+/* 项目路径设置 */
+.project-path-container {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  background-color: #f8f9fa;
+  padding: 8px 15px;
+  border-radius: 6px;
+  margin-bottom: 15px;
+  border: 1px solid #e9ecef;
+}
+
+.project-path-container label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #495057;
+  white-space: nowrap;
+}
+
+.project-path-input {
+  flex: 1;
+  font-size: 14px;
+  color: #495057;
+  padding: 5px 10px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  width: 100%;
+  min-width: 200px;
+}
+
+#set-project-path-btn {
+  background-color: #f0f0f0;
+  border-color: #d8d8d8;
+  color: #555;
+  white-space: nowrap;
+}
+
+#set-project-path-btn:hover {
+  background-color: #e7e7e7;
+  border-color: #c8c8c8;
+}
+
+/* 临时文件夹设置 */
+.temp-dir-container {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  background-color: #f8f9fa;
+  padding: 8px 15px;
+  border-radius: 6px;
+  margin-bottom: 15px;
+  border: 1px solid #e9ecef;
+}
+
+.temp-dir-info {
+  flex: 1;
+  font-size: 14px;
+  color: #6c757d;
+  padding: 5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#set-temp-dir-btn {
+  background-color: #f0f0f0;
+  border-color: #d8d8d8;
+  color: #555;
+}
+
+#set-temp-dir-btn:hover {
+  background-color: #e7e7e7;
+  border-color: #c8c8c8;
+}
+
 /* Markdown输入区 */
 .markdown-input-section {
   flex: 1;
@@ -970,5 +1045,13 @@ textarea:disabled {
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+#conversion-details {
+  font-size: 14px;
+  color: #e0e0e0;
+  margin-top: 8px;
+  margin-bottom: 12px;
+  font-style: italic;
 }
 

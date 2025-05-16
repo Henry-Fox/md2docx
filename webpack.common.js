@@ -9,4 +9,15 @@ module.exports = {
     clean: true,
     filename: './js/app.js',
   },
+  module: {
+    rules: [
+      {
+        test: /\.json$/,
+        type: 'json',
+      }
+    ]
+  },
+  resolve: {
+    extensions: ['.js', '.json']
+  }
 };
