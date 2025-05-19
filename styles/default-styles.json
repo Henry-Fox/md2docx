@@ -15,16 +15,13 @@
   },
   "heading": {
     "font": {
-      "name": "方正小标宋简体",
-      "fallback": ["SimSun", "宋体"],
-      "hint": "eastAsia"
+      "name": "方正小标宋简体"
     },
     "color": "000000",
     "styles": {
       "h1": {
         "font": {
           "name": "方正小标宋简体",
-          "fallback": ["SimSun", "宋体"],
           "size": 22,
           "bold": false
         },
@@ -49,7 +46,6 @@
       "h2": {
         "font": {
           "name": "黑体",
-          "fallback": ["SimHei", "黑体"],
           "size": 16,
           "bold": true
         },
@@ -76,7 +72,6 @@
       "h3": {
         "font": {
           "name": "楷体",
-          "fallback": ["KaiTi", "楷体"],
           "size": 16,
           "bold": false
         },
@@ -103,7 +98,6 @@
       "h4": {
         "font": {
           "name": "仿宋_GB2312",
-          "fallback": ["FangSong", "仿宋"],
           "size": 16,
           "bold": false
         },
@@ -130,7 +124,6 @@
       "h5": {
         "font": {
           "name": "仿宋_GB2312",
-          "fallback": ["FangSong", "仿宋"],
           "size": 16,
           "bold": false
         },
@@ -157,7 +150,6 @@
       "h6": {
         "font": {
           "name": "仿宋_GB2312",
-          "fallback": ["FangSong", "仿宋"],
           "size": 14,
           "bold": false
         },

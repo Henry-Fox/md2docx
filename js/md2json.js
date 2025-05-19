@@ -40,6 +40,7 @@ class Md2Json {
     else if ((text.startsWith('**') && text.endsWith('**')) ||
         (text.startsWith('__') && text.endsWith('__'))) {
       style.bold = true;
+      style.italic = false; // 确保加粗文本不是斜体
       style.content = text.slice(2, -2);
     }
     // 检查是否是斜体文本 (* 或 _)
@@ -79,23 +80,164 @@ class Md2Json {
 
   /**
    * @method parseInlineStyles
-   * @description 解析段落中的内联样式
-   * @param {string} text - 段落文本
-   * @returns {Object} 包含纯文本内容和样式数组的对象
+   * @description 解析行内样式
+   * @param {string} text - 要解析的文本
+   * @returns {Array} 解析后的样式数组
    */
   parseInlineStyles(text) {
-    // 使用正则表达式匹配各种标记，确保先匹配更长的模式
-    const regex = /(\*\*\*.*?\*\*\*|\*\*.*?\*\*|\*.*?\*|___.*?___|__.*?__|_.*?_|~~.*?~~|`.*?`|<ins>.*?<\/ins>|<sup>.*?<\/sup>|<sub>.*?<\/sub>)|([^*_~`<]+)/g;
+    const styles = [];
+    let currentText = text;
 
-    const matches = text.match(regex) || [text];
-    const styleSegments = matches.map(part => this.parseTextStyle(part));
+    // 首先处理HTML标签
+    const htmlTagRegex = /<(\/?)([a-z]+)([^>]*)>/g;
+    let match;
+    let lastIndex = 0;
 
-    // 提取纯文本内容，不添加额外空格
-    const fullContent = styleSegments.map(segment => segment.content).join('');
+    while ((match = htmlTagRegex.exec(currentText)) !== null) {
+      // 添加标签前的文本
+      if (match.index > lastIndex) {
+        const beforeText = currentText.slice(lastIndex, match.index);
+        if (beforeText) {
+          styles.push({
+            bold: false,
+            italic: false,
+            strike: false,
+            code: false,
+            underline: false,
+            superscript: false,
+            subscript: false,
+            content: beforeText
+          });
+        }
+      }
 
+      // 处理标签
+      const [fullTag, isClosing, tagName, attributes] = match;
+      if (!isClosing) {
+        switch (tagName.toLowerCase()) {
+          case 'ins':
+            // 找到对应的结束标签
+            const endTagIndex = currentText.indexOf(`</${tagName}>`, match.index + fullTag.length);
+            if (endTagIndex !== -1) {
+              const content = currentText.slice(match.index + fullTag.length, endTagIndex);
+              styles.push({
+                bold: false,
+                italic: false,
+                strike: false,
+                code: false,
+                underline: true,
+                superscript: false,
+                subscript: false,
+                content: content
+              });
+              // 更新lastIndex到结束标签之后
+              lastIndex = endTagIndex + fullTag.length + 3; // +3 for </
+              // 更新currentText，移除已处理的部分
+              currentText = currentText.slice(0, match.index) + content + currentText.slice(lastIndex);
+              // 重置正则表达式的lastIndex
+              htmlTagRegex.lastIndex = match.index;
+            }
+            break;
+          case 'sup':
+            const supEndIndex = currentText.indexOf('</sup>', match.index + fullTag.length);
+            if (supEndIndex !== -1) {
+              const content = currentText.slice(match.index + fullTag.length, supEndIndex);
+              styles.push({
+                bold: false,
+                italic: false,
+                strike: false,
+                code: false,
+                underline: false,
+                superscript: true,
+                subscript: false,
+                content: content
+              });
+              lastIndex = supEndIndex + 6;
+              currentText = currentText.slice(0, match.index) + content + currentText.slice(lastIndex);
+              htmlTagRegex.lastIndex = match.index;
+            }
+            break;
+          case 'sub':
+            const subEndIndex = currentText.indexOf('</sub>', match.index + fullTag.length);
+            if (subEndIndex !== -1) {
+              const content = currentText.slice(match.index + fullTag.length, subEndIndex);
+              styles.push({
+                bold: false,
+                italic: false,
+                strike: false,
+                code: false,
+                underline: false,
+                superscript: false,
+                subscript: true,
+                content: content
+              });
+              lastIndex = subEndIndex + 6;
+              currentText = currentText.slice(0, match.index) + content + currentText.slice(lastIndex);
+              htmlTagRegex.lastIndex = match.index;
+            }
+            break;
+        }
+      }
+    }
+
+    // 添加剩余的文本
+    if (lastIndex < currentText.length) {
+      const remainingText = currentText.slice(lastIndex);
+      if (remainingText) {
+        styles.push({
+          bold: false,
+          italic: false,
+          strike: false,
+          code: false,
+          underline: false,
+          superscript: false,
+          subscript: false,
+          content: remainingText
+        });
+      }
+    }
+
+    // 处理Markdown样式标记
+    const processedStyles = [];
+    for (const style of styles) {
+      let text = style.content;
+
+      // 只处理一段全是加粗、斜体、加粗斜体的情况
+      const isBoldItalic = /^(\*\*\*|___)(.*?)(\*\*\*|___)$/.test(text);
+      const isBold = /^(\*\*|__)(.*?)(\*\*|__)$/.test(text) && !isBoldItalic;
+      const isItalic = /^(\*|_)(.*?)(\*|_)$/.test(text) && !isBold && !isBoldItalic;
+
+      const newStyle = {
+        ...style,
+        bold: isBold || isBoldItalic,
+        italic: isItalic || isBoldItalic,
+        content: text
+          .replace(/^(\*\*\*|___)(.*?)(\*\*\*|___)$/, '$2')
+          .replace(/^(\*\*|__)(.*?)(\*\*|__)$/, '$2')
+          .replace(/^(\*|_)(.*?)(\*|_)$/, '$2')
+      };
+
+      processedStyles.push(newStyle);
+    }
+
+    return processedStyles;
+  }
+
+  /**
+   * @method parseParagraph
+   * @description 解析段落
+   * @param {string} text - 要解析的文本
+   * @returns {Object} 解析后的段落对象
+   */
+  parseParagraph(text) {
+    const parsedStyles = this.parseInlineStyles(text);
     return {
-      fullContent: fullContent,
-      styles: styleSegments
+      type: 'paragraph',
+      rawText: text,
+      hasNumber: false,
+      number: '',
+      fullContent: parsedStyles.map(style => style.content).join(''),
+      inlineStyles: parsedStyles
     };
   }
 
@@ -188,16 +330,16 @@ class Md2Json {
     // 如果没有任何样式，则不包含inlineStyles字段
     const result = {
       rawText: cellText,
-      fullContent: parsedStyles.fullContent
+      fullContent: parsedStyles.map(style => style.content).join('')
     };
 
     // 只有当存在样式时才添加inlineStyles
-    if (parsedStyles.styles.some(style =>
+    if (parsedStyles.some(style =>
       style.bold || style.italic || style.strike ||
       style.code || style.underline ||
       style.superscript || style.subscript
     )) {
-      result.inlineStyles = parsedStyles.styles;
+      result.inlineStyles = parsedStyles;
     }
 
     return result;
@@ -459,8 +601,8 @@ class Md2Json {
             level: level,
             hasNumber: parsedHeading.hasNumber,
             number: parsedHeading.number,
-            fullContent: parsedStyles.fullContent,
-            inlineStyles: parsedStyles.styles
+            fullContent: parsedStyles.map(style => style.content).join(''),
+            inlineStyles: parsedStyles
           });
 
           currentHeadingLevel = level;
@@ -495,9 +637,9 @@ class Md2Json {
           const newItem = {
             type: 'listItem',
             rawText: rawText,
-            fullContent: parsedStyles.fullContent,
+            fullContent: parsedStyles.map(style => style.content).join(''),
             level: indentLevel,
-            inlineStyles: parsedStyles.styles,
+            inlineStyles: parsedStyles,
             blocks: [] // 添加blocks数组存放附加内容
           };
 
@@ -509,9 +651,9 @@ class Md2Json {
           const newItem = {
             type: 'listItem',
             rawText: rawText,
-            fullContent: parsedStyles.fullContent,
+            fullContent: parsedStyles.map(style => style.content).join(''),
             level: indentLevel,
-            inlineStyles: parsedStyles.styles,
+            inlineStyles: parsedStyles,
             blocks: [] // 添加blocks数组存放附加内容
           };
 
@@ -551,10 +693,10 @@ class Md2Json {
             const newItem = {
               type: 'listItem',
               rawText: rawText,
-              fullContent: parsedStyles.fullContent,
+              fullContent: parsedStyles.map(style => style.content).join(''),
               level: indentLevel,
               number: number,
-              inlineStyles: parsedStyles.styles,
+              inlineStyles: parsedStyles,
               blocks: [] // 添加blocks数组存放附加内容
             };
 
@@ -566,10 +708,10 @@ class Md2Json {
             const newItem = {
               type: 'listItem',
               rawText: rawText,
-              fullContent: parsedStyles.fullContent,
+              fullContent: parsedStyles.map(style => style.content).join(''),
               level: indentLevel,
               number: number,
-              inlineStyles: parsedStyles.styles,
+              inlineStyles: parsedStyles,
               blocks: [] // 添加blocks数组存放附加内容
             };
 
@@ -604,8 +746,8 @@ class Md2Json {
             currentListItem.blocks.push({
               type: 'paragraph',
               rawText: trimmedLine,
-              fullContent: parsedStyles.fullContent,
-              inlineStyles: parsedStyles.styles
+              fullContent: parsedStyles.map(style => style.content).join(''),
+              inlineStyles: parsedStyles
             });
           }
 
@@ -662,8 +804,8 @@ class Md2Json {
           type: 'blockquote',
           rawText: line.trim(),
           level: parsedQuote.level,
-          fullContent: parsedStyles.fullContent,
-          inlineStyles: parsedStyles.styles
+          fullContent: parsedStyles.map(style => style.content).join(''),
+          inlineStyles: parsedStyles
         });
         continue;
       }
@@ -780,12 +922,12 @@ class Md2Json {
             const parsedStyles = this.parseInlineStyles(footnoteInfo.fullContent);
 
             document.children.push({
-              type: 'footnote', // 使用特定的脚注类型
+              type: 'footnote',
               rawText: rawText,
               hasNumber: false,
               number: '',
-              fullContent: parsedStyles.fullContent,
-              inlineStyles: parsedStyles.styles,
+              fullContent: parsedStyles.map(style => style.content).join(''),
+              inlineStyles: parsedStyles,
               footnoteSign: footnoteInfo.footnoteSign,
               footnoteContent: footnoteContent
             });
@@ -800,8 +942,8 @@ class Md2Json {
               rawText: rawText,
               hasNumber: parsedParagraph.hasNumber,
               number: parsedParagraph.number,
-              fullContent: parsedStyles.fullContent,
-              inlineStyles: parsedStyles.styles
+              fullContent: parsedStyles.map(style => style.content).join(''),
+              inlineStyles: parsedStyles
             });
           }
         }
