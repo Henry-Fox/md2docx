@@ -1,5 +1,7 @@
 import { Md2Docx } from './md2docx.js';
 import { marked } from './marked.esm.js';
+import SimpleMd2Docx from './simpleMd2Docx.js';
+import { Md2Json } from './md2json.js';
 
 /**
  * @class App
@@ -60,6 +62,7 @@ class App {
     // 按钮
     this.clearBtn = document.getElementById('clear-btn');
     this.convertBtn = document.getElementById('convert-btn');
+    this.simpleConvertBtn = document.getElementById('simple-convert-btn'); // 获取简化版转换按钮
     this.resetStylesBtn = document.getElementById('reset-styles-btn');
     this.saveStylesBtn = document.getElementById('save-styles-btn');
 
@@ -142,6 +145,15 @@ class App {
     // 按钮操作
     if (this.clearBtn) this.clearBtn.addEventListener('click', () => this.clearMarkdown());
     if (this.convertBtn) this.convertBtn.addEventListener('click', () => this.convertToDocx());
+    if (this.simpleConvertBtn) {
+      console.log('绑定简化版转换按钮事件');
+      this.simpleConvertBtn.addEventListener('click', () => {
+        console.log('点击了简化版转换按钮');
+        this.simpleConvertToDocx();
+      });
+    } else {
+      console.warn('未找到简化版转换按钮');
+    }
     if (this.resetStylesBtn) this.resetStylesBtn.addEventListener('click', () => this.resetStyles());
     if (this.saveStylesBtn) this.saveStylesBtn.addEventListener('click', () => this.saveStyles());
     if (this.setProjectPathBtn) this.setProjectPathBtn.addEventListener('click', () => this.saveProjectPath());
@@ -302,11 +314,8 @@ class App {
       // 处理图片
       const imageInfos = await this.processImages(images);
 
-      // 创建转换器实例
-      const converter = new Md2Docx();
-
-      // 设置当前样式
-      converter.setStyles(this.currentStyles);
+      // 创建转换器实例，直接传入样式
+      const converter = new Md2Docx(this.currentStyles);
 
       // 设置图片信息
       converter.setImageInfos(imageInfos);
@@ -561,37 +570,29 @@ class App {
 
   /**
    * @method loadDefaultExample
-   * @description 加载默认的Markdown示例
+   * @description 加载默认示例
    */
   loadDefaultExample() {
-    // 尝试从test.md文件加载示例
-    fetch('test.md')
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('无法加载test.md文件');
-        }
-        return response.text();
-      })
-      .then(content => {
-        // 将文件内容设置到编辑器中
-        if (this.markdownInput) {
-          this.markdownInput.value = content;
+    try {
+      // 设置新的默认Markdown示例
+      const defaultMarkdown = `# Markdown测试文档
 
-          // 触发input事件以更新预览
-          const event = new Event('input', {
-            bubbles: true,
-            cancelable: true,
-          });
-          this.markdownInput.dispatchEvent(event);
+## 1. 基础文本格式
 
-          console.log('成功加载test.md示例');
-        }
-      })
-      .catch(error => {
-        console.error('加载test.md示例失败:', error);
-        // 加载失败时使用内置的默认示例
-        this.loadFallbackExample();
-      });
+这是普通段落文本。
+
+**这是加粗文本**
+*这是斜体文本*
+***这是加粗斜体文本***`;
+
+      if (this.markdownInput) {
+        this.markdownInput.value = defaultMarkdown;
+        this.updatePreview();
+      }
+    } catch (error) {
+      console.error('加载默认示例失败:', error);
+      this.loadFallbackExample();
+    }
   }
 
   /**
@@ -1852,10 +1853,95 @@ E = mc^2
       }, 300);
     }, 3000);
   }
+
+  // 在App类中添加新的测试方法
+  /**
+   * 使用简化版转换器将Markdown转换为Docx
+   * @param {string} markdown - Markdown文本
+   * @returns {Promise<Blob>} Docx文件的Blob对象
+   */
+  async simpleConvertMarkdownToDocx(markdown) {
+    try {
+      console.log('[INFO] 开始简化版转换...');
+
+      // 1. 使用md2json解析Markdown
+      const md2json = new Md2Json();
+      console.log('[INFO] 解析Markdown为JSON...');
+      const jsonData = await md2json.convert(markdown);
+      console.log('[INFO] 解析结果:', jsonData);
+
+      // 2. 使用SimpleMd2Docx生成Docx
+      const md2docx = new SimpleMd2Docx();
+      console.log('[INFO] 生成Word文档...');
+      const blob = await md2docx.convertToDocx(jsonData);
+
+      // 3. 返回生成的blob
+      return blob;
+    } catch (error) {
+      console.error('[ERROR] 简化版转换失败:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * 简化版转换为Docx的处理函数 - 直接调用test.js中的预设JSON数据
+   */
+  simpleConvertToDocx() {
+    this.showMessage('正在使用test.js中的预设JSON数据生成文档，请稍候...', 'info');
+
+    try {
+      console.log('运行test.js的预设JSON数据转换...');
+
+      // 动态导入test.js模块并执行
+      import('./test.js')
+        .then(testModule => {
+          // 如果test.js导出了默认函数，则调用它
+          if (typeof testModule.default === 'function') {
+            return testModule.default();
+          } else {
+            throw new Error('test.js没有导出默认函数');
+          }
+        })
+        .then(() => {
+          console.log('test.js执行完成');
+          this.showMessage('文档已成功生成', 'success');
+        })
+        .catch(error => {
+          console.error('运行test.js时出错:', error);
+          this.showMessage(`转换失败: ${error.message}`, 'error');
+        });
+    } catch (error) {
+      console.error('转换失败:', error);
+      this.showMessage(`转换失败: ${error.message}`, 'error');
+    }
+  }
 }
 
 // 初始化应用
 document.addEventListener('DOMContentLoaded', () => {
+  // 获取运行test.js的按钮
+  const runTestJsBtn = document.getElementById('run-test-js-btn');
+
+  // 如果按钮存在，添加点击事件监听器
+  if (runTestJsBtn) {
+    runTestJsBtn.addEventListener('click', async () => {
+      try {
+        console.log('运行test.js...');
+        // 导入test.js模块
+        const testModule = await import('./test.js');
+        // 如果test.js导出了默认函数，则调用它
+        if (typeof testModule.default === 'function') {
+          await testModule.default();
+        }
+        console.log('test.js执行完成');
+        alert('test.js执行完成，文件应已生成');
+      } catch (error) {
+        console.error('运行test.js时出错:', error);
+        alert(`运行test.js时出错: ${error.message}`);
+      }
+    });
+  }
+
   new App();
 });
 

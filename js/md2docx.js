@@ -1,7 +1,8 @@
-// 从npm包中导入所需模块
+// 导入所需模块
 import { marked } from './marked.esm.js';
 import { saveAs } from 'file-saver';
 import defaultStyles from '../styles/default-styles.json';
+import { Md2Json } from './md2json.js';
 import {
   Document,
   Paragraph,
@@ -30,123 +31,21 @@ class Md2Docx {
    * @param {Object} customStyles - 自定义样式配置
    */
   constructor(customStyles = {}) {
-    // 合并样式设置，先使用默认样式，再覆盖自定义样式
-    this.styles = this.mergeStyles(defaultStyles, customStyles);
-    this.doc = null;
-    this.footnotes = new Map(); // 存储脚注的集合
-    this.imageInfos = []; // 存储图片信息
-
-    // 为有序列表和无序列表创建编号定义
-    const listStyles = this.styles.list || {};
-    const unorderedListStyles = listStyles.unordered || {};
-    const orderedListStyles = listStyles.ordered || {};
-
-    this.bulletListNumbering = {
-      reference: "bulletList",
-      levels: [
-        {
-          level: 0,
-          format: LevelFormat.BULLET,
-          text: unorderedListStyles.bulletChars?.[0] || "●",
-          alignment: AlignmentType.LEFT,
-          style: {
-            paragraph: {
-              indent: { left: unorderedListStyles.indentLevel || 720, hanging: 360 }
-            },
-            run: {
-              font: unorderedListStyles.font || this.styles.paragraph.font
-            }
-          }
-        },
-        {
-          level: 1,
-          format: LevelFormat.BULLET,
-          text: unorderedListStyles.bulletChars?.[1] || "○",
-          alignment: AlignmentType.LEFT,
-          style: {
-            paragraph: {
-              indent: { left: (unorderedListStyles.indentLevel || 720) * 2, hanging: 360 }
-            },
-            run: {
-              font: unorderedListStyles.font || this.styles.paragraph.font
-            }
-          }
-        },
-        {
-          level: 2,
-          format: LevelFormat.BULLET,
-          text: unorderedListStyles.bulletChars?.[2] || "■",
-          alignment: AlignmentType.LEFT,
-          style: {
-            paragraph: {
-              indent: { left: (unorderedListStyles.indentLevel || 720) * 3, hanging: 360 }
-            },
-            run: {
-              font: unorderedListStyles.font || this.styles.paragraph.font
-            }
-          }
-        }
-      ]
-    };
-
-    this.orderedListNumbering = {
-      reference: "orderedList",
-      levels: [
-        {
-          level: 0,
-          format: LevelFormat.DECIMAL,
-          text: orderedListStyles.numberFormats?.[0] || "%1.",
-          alignment: AlignmentType.LEFT,
-          style: {
-            paragraph: {
-              indent: { left: orderedListStyles.indentLevel || 720, hanging: 360 }
-            },
-            run: {
-              font: orderedListStyles.font || this.styles.paragraph.font
-            }
-          }
-        },
-        {
-          level: 1,
-          format: LevelFormat.DECIMAL,
-          text: orderedListStyles.numberFormats?.[1] || "%2.",
-          alignment: AlignmentType.LEFT,
-          style: {
-            paragraph: {
-              indent: { left: (orderedListStyles.indentLevel || 720) * 2, hanging: 360 }
-            },
-            run: {
-              font: orderedListStyles.font || this.styles.paragraph.font
-            }
-          }
-        },
-        {
-          level: 2,
-          format: LevelFormat.DECIMAL,
-          text: orderedListStyles.numberFormats?.[2] || "%3.",
-          alignment: AlignmentType.LEFT,
-          style: {
-            paragraph: {
-              indent: { left: (orderedListStyles.indentLevel || 720) * 3, hanging: 360 }
-            },
-            run: {
-              font: orderedListStyles.font || this.styles.paragraph.font
-            }
-          }
-        }
-      ]
-    };
-
     // 初始化解析器
-    this.init(); // 确保调用init方法初始化解析器
+    this.md2json = new Md2Json();
+
+    // 合并样式设置
+    this.styles = this.mergeStyles(defaultStyles, customStyles);
+
+    // 初始化其他属性
+    this.doc = null;
+    this.footnotes = new Map();
+    this.imageInfos = [];
   }
 
   /**
    * @method mergeStyles
    * @description 深度合并两个样式对象
-   * @param {Object} target - 目标对象
-   * @param {Object} source - 源对象
-   * @returns {Object} 合并后的对象
    */
   mergeStyles(target, source) {
     if (!source) return target;
@@ -173,245 +72,553 @@ class Md2Docx {
   }
 
   /**
-   * @method getDefaultStyles
-   * @returns {Object} 默认样式对象
+   * @method previewMarkdown
+   * @description 使用marked库将Markdown转换为HTML用于预览
+   * @param {string} markdown - Markdown文本
+   * @returns {string} HTML字符串
    */
-  getDefaultStyles() {
-    try {
-      // 直接返回defaultStyles模块引入的对象
-      // 注意：在使用webpack等工具时，这会被正确导入
-      const styles = JSON.parse(JSON.stringify(defaultStyles));
-
-      // 输出加载的样式用于调试
-      console.log("从JSON文件加载的默认样式:", styles);
-
-      return styles;
-    } catch (error) {
-      console.error('加载默认样式出错:', error);
-
-      // 返回硬编码的基本样式，确保应用不会崩溃
-      return {
-        document: {
-          pageSize: "A4",
-          pageOrientation: "portrait",
-          margins: {
-            top: 2099,
-            right: 1474,
-            bottom: 1984,
-            left: 1587
-          }
-        },
-        heading: {
-          font: "方正小标宋简体",
-          color: "#000000",
-          colors: {
-            h1: "#000000",
-            h2: "#000000",
-            h3: "#000000",
-            h4: "#000000",
-            h5: "#000000",
-            h6: "#000000"
-          },
-          bold: {
-            h1: false,
-            h2: true,
-            h3: false,
-            h4: false,
-            h5: false,
-            h6: false
-          },
-          sizes: {
-            h1: 22,
-            h2: 16,
-            h3: 16,
-            h4: 16,
-            h5: 16,
-            h6: 10.5
-          },
-          alignment: {
-            h1: "center",
-            h2: "left",
-            h3: "left",
-            h4: "left",
-            h5: "left",
-            h6: "left"
-          },
-          fonts: {
-            h1: "方正小标宋简体",
-            h2: "黑体",
-            h3: "楷体",
-            h4: "仿宋_GB2312",
-            h5: "仿宋_GB2312",
-            h6: "仿宋_GB2312"
-          },
-          indent: {
-            h1: 0,
-            h2: 0,
-            h3: 0,
-            h4: 800,
-            h5: 800,
-            h6: 0
-          },
-          prefix: {
-            h1: "",
-            h2: "一、",
-            h3: "(一)",
-            h4: "1.",
-            h5: "(1)",
-            h6: ""
-          },
-          usePrefix: {
-            h1: false,
-            h2: true,
-            h3: true,
-            h4: true,
-            h5: true,
-            h6: false
-          }
-        },
-        paragraph: {
-          font: "仿宋_GB2312",
-          size: 16,
-          color: "#000000",
-          firstLineIndent: 800,
-          alignment: "justified",
-          lineSpacingRule: "auto",
-          lineSpacing: 1.5,
-          spacing: 0
-        }
-      };
-    }
-  }
-
-  /**
-   * @method setStyles
-   * @description 设置文档样式
-   * @param {Object} styles - 样式对象
-   */
-  setStyles(styles) {
-    this.styles = { ...styles };
-  }
-
-  /**
-   * @method setImageInfos
-   * @description 设置图片信息
-   * @param {Array} imageInfos - 图片信息数组
-   */
-  setImageInfos(imageInfos) {
-    this.imageInfos = imageInfos;
-    console.log(`设置 ${imageInfos.length} 条图片信息`);
+  previewMarkdown(markdown) {
+    return marked.parse(markdown);
   }
 
   /**
    * @method convert
    * @description 将Markdown转换为Word文档
-   * @param {string} markdown - Markdown文本内容
-   * @return {Promise<Blob>} Word文档的Blob对象
+   * @param {string} markdown - Markdown文本
+   * @returns {Promise<Blob>} - 返回Word文档的Blob对象
    */
   async convert(markdown) {
     try {
-      if (!markdown || typeof markdown !== 'string') {
-        throw new Error('无效的Markdown内容');
+      console.log('开始转换Markdown为Word文档...');
+
+      // 1. 使用md2json解析Markdown为JSON
+      console.log('使用md2json解析Markdown...');
+      let jsonData;
+      try {
+        jsonData = await this.md2json.convert(markdown);
+        console.log('Markdown解析为JSON完成:', jsonData);
+      } catch (parseError) {
+        console.error('Markdown解析失败:', parseError);
+        // 创建一个最小的有效JSON结构
+        jsonData = {
+          type: 'document',
+          children: [
+            {
+              type: 'heading',
+              level: 1,
+              fullContent: '解析错误',
+              inlineStyles: [{ content: '解析错误', bold: true }]
+            },
+            {
+              type: 'paragraph',
+              fullContent: `无法解析Markdown: ${parseError.message}`,
+              inlineStyles: [{ content: `无法解析Markdown: ${parseError.message}` }]
+            }
+          ]
+        };
       }
 
-      console.log('开始转换Markdown为DOCX');
-
-      // 解析Markdown为标记
-      const tokens = this.convertMdToTokens(markdown);
-      if (!tokens || tokens.length === 0) {
-        throw new Error('无法解析Markdown内容');
+      // 确保JSON结构有效
+      if (!jsonData || !jsonData.children) {
+        console.warn('JSON结构无效，创建默认结构');
+        jsonData = {
+          type: 'document',
+          children: [
+            {
+              type: 'paragraph',
+              fullContent: '无效的文档结构',
+              inlineStyles: [{ content: '无效的文档结构' }]
+            }
+          ]
+        };
       }
 
-      console.log(`成功解析出${tokens.length}个标记`);
+      // 2. 使用JSON数据创建Word文档
+      console.log('开始创建Word文档...');
+      const doc = this.createDocument(jsonData);
 
-      // 创建文档
-      const doc = this.createDocument(tokens);
+      // 3. 生成docx文件
+      console.log('生成docx文件...');
+      const blob = await this.generateDocx(doc);
 
-      // 将文档对象转换为Blob
-      const buffer = await this.generateDocx(doc);
-      const blob = new Blob([buffer], {
-        type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-      });
-
-      console.log('DOCX文档生成成功，大小:', Math.round(blob.size / 1024), 'KB');
+      console.log('文档转换完成');
       return blob;
     } catch (error) {
-      console.error('转换Markdown为DOCX时发生错误:', error);
-      throw error;
+      console.error('转换过程中出错:', error);
+      throw new Error(`转换失败: ${error.message}`);
     }
   }
 
   /**
    * @method createDocument
-   * @description 根据标记创建docx文档对象
-   * @param {Array} tokens - 解析后的标记数组
-   * @return {Object} docx文档对象
+   * @description 根据JSON数据创建Word文档
+   * @param {Object} jsonData - 从md2json解析得到的JSON数据
+   * @returns {Document} - 返回docx.js的Document对象
    */
-  createDocument(tokens) {
-    // 创建文档
-    const doc = new Document({
-      creator: 'Md2Docx',
-      title: 'Markdown转换文档',
-      description: '使用Md2Docx生成的文档',
-      styles: this.getDocumentStyles()
-    });
+  createDocument(jsonData) {
+    try {
+      console.log('开始创建Document对象...');
 
-    // 文档内容数组
-    const children = [];
+      // 创建一个空的子元素数组，用于存放所有文档元素
+      const children = [];
 
-    // 处理每个标记
-    for (const token of tokens) {
-      switch (token.type) {
-        case 'heading':
-          children.push(this.createHeading(token));
-          break;
+      // 处理JSON数据中的每个元素
+      if (jsonData && jsonData.children && Array.isArray(jsonData.children)) {
+        console.log(`开始处理jsonData中的${jsonData.children.length}个元素`);
 
-        case 'paragraph':
-          children.push(this.createParagraph(token));
-          break;
+        jsonData.children.forEach((item, index) => {
+          console.log(`处理第${index+1}个元素，类型: ${item.type}`);
+          let element = null;
 
-        case 'code':
-          children.push(this.createCodeBlock(token));
-          break;
-
-        case 'image':
-          const imageElement = this.createImageElement(token);
-          if (imageElement) {
-            children.push(imageElement);
+          switch (item.type) {
+            case 'heading':
+              element = this.createHeading(item);
+              break;
+            case 'paragraph':
+              element = this.createParagraph(item);
+              break;
+            case 'code_block':
+              element = this.createCodeBlock(item);
+              break;
+            case 'image':
+              element = this.createImageElement(item);
+              break;
+            case 'list':
+              // 列表的特殊处理
+              this.createListElements(item, children);
+              console.log('列表元素已直接添加到children数组');
+              break;
+            case 'table':
+              element = this.createTableElement(item);
+              break;
+            case 'blockquote':
+              element = this.createBlockquote(item);
+              break;
+            case 'horizontal_rule':
+              element = this.createHorizontalRule();
+              break;
+            default:
+              console.warn(`未知的token类型: ${item.type}`);
+              break;
           }
-          break;
 
-        case 'list':
-          this.createListElements(token, children);
-          break;
-
-        case 'table':
-          const tableElement = this.createTableElement(token);
-          if (tableElement) {
-            children.push(tableElement);
+          if (element) {
+            // 直接添加到children数组
+            children.push(element);
+            console.log(`成功添加元素 ${item.type} 到文档，children数组现在有${children.length}个元素`);
           }
-          break;
+        });
+      } else {
+        console.warn('无效的文档结构，没有children数组');
+        // 添加一个默认段落，确保文档不为空
+        children.push(
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: "无效的文档结构",
+                color: "FF0000",
+                bold: true
+              })
+            ]
+          })
+        );
+      }
 
-        case 'blockquote':
-          children.push(this.createBlockquote(token));
-          break;
+      // 确保有内容
+      if (children.length === 0) {
+        console.warn('文档没有内容，添加默认段落');
+        children.push(
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: "空文档",
+                color: "FF0000",
+                bold: true
+              })
+            ]
+          })
+        );
+      }
 
-        case 'hr':
-          children.push(this.createHorizontalRule());
-          break;
+      console.log(`准备创建文档对象，包含 ${children.length} 个元素`);
 
-        default:
-          console.warn(`未处理的标记类型: ${token.type}`);
+      // 保存到this.children用于备份
+      this.children = children;
+
+      // 使用标准的docx.js文档创建方式
+      try {
+        // 先创建一个Document对象
+        const doc = new Document({
+          creator: "Md2Docx",
+          title: "Markdown转Word文档",
+          description: "由Md2Docx自动生成的Word文档"
+        });
+
+        // 确保document对象有sections属性
+        if (!doc.sections) {
+          console.warn('创建的Document对象没有sections属性，手动初始化');
+          doc.sections = [];
+        }
+
+        // 添加一个section
+        doc.sections.push({
+          properties: {
+            page: {
+              size: {
+                orientation: this.styles.document.pageOrientation,
+                width: this.styles.document.pageSize === "A4" ? 11906 : 12240,
+                height: this.styles.document.pageSize === "A4" ? 16838 : 15840
+              },
+              margin: {
+                top: this.styles.document.margins.top,
+                right: this.styles.document.margins.right,
+                bottom: this.styles.document.margins.bottom,
+                left: this.styles.document.margins.left
+              }
+            }
+          },
+          children: children
+        });
+
+        console.log('Document对象创建完成，检查结构:',
+          doc.sections ? `sections: ${doc.sections.length}个` : 'sections: 无效',
+          doc.sections && doc.sections.length > 0 && doc.sections[0].children ?
+            `children: ${doc.sections[0].children.length}个` : 'children: 无效'
+        );
+
+        return doc;
+      } catch (docError) {
+        console.error('创建Document对象失败，使用后备方法:', docError);
+
+        // 使用直接的方式创建文档
+        return {
+          creator: "Md2Docx",
+          title: "Markdown转Word文档",
+          description: "由Md2Docx自动生成的Word文档",
+          children: children, // 保存在根级别，后续generateDocx会处理
+          sections: [
+            {
+              properties: {
+                page: {
+                  size: {
+                    orientation: this.styles.document.pageOrientation,
+                    width: this.styles.document.pageSize === "A4" ? 11906 : 12240,
+                    height: this.styles.document.pageSize === "A4" ? 16838 : 15840
+                  },
+                  margin: {
+                    top: this.styles.document.margins.top,
+                    right: this.styles.document.margins.right,
+                    bottom: this.styles.document.margins.bottom,
+                    left: this.styles.document.margins.left
+                  }
+                }
+              },
+              children: children
+            }
+          ]
+        };
+      }
+    } catch (error) {
+      console.error('创建Document对象时出错:', error);
+
+      // 返回一个最小可用的文档对象
+      const children = [
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: `文档创建失败: ${error.message}`,
+              color: "FF0000",
+              bold: true
+            })
+          ]
+        })
+      ];
+
+      // 保存children的引用，以便generateDocx可以使用
+      this.children = children;
+
+      return {
+        creator: "Md2Docx",
+        title: "错误文档",
+        description: "文档创建过程中发生错误",
+        children: children,
+        sections: [
+          {
+            children: children
+          }
+        ]
+      };
+    }
+  }
+
+  /**
+   * @method generateDocx
+   * @description 生成docx文件
+   * @param {Object} doc - 文档对象
+   * @returns {Promise<Blob>} docx文件的Blob对象
+   */
+  async generateDocx(doc) {
+    try {
+      console.log('开始生成DOCX文件...');
+
+      // 检查文档对象
+      if (!doc) {
+        console.error('无效的文档对象，无法生成DOCX');
+        throw new Error('无效的文档对象');
+      }
+
+      console.log('文档对象:', doc);
+      console.log('Document结构:',
+        doc.sections ? `有sections(${doc.sections.length}个)` : '无sections',
+        doc.document ? '有document属性' : '无document属性'
+      );
+
+      // 创建一个全新的文档对象，将内容复制过去
+      const newDoc = new Document({
+        creator: "Md2Docx",
+        title: "Markdown转Word文档",
+        description: "由Md2Docx自动生成的Word文档",
+        sections: [
+          {
+            properties: {
+              page: {
+                size: {
+                  orientation: this.styles.document.pageOrientation,
+                  width: this.styles.document.pageSize === "A4" ? 11906 : 12240,
+                  height: this.styles.document.pageSize === "A4" ? 16838 : 15840
+                },
+                margin: {
+                  top: this.styles.document.margins.top,
+                  right: this.styles.document.margins.right,
+                  bottom: this.styles.document.margins.bottom,
+                  left: this.styles.document.margins.left
+                }
+              }
+            },
+            children: []
+          }
+        ]
+      });
+
+      // 获取原始doc的内容
+      let contentChildren = [];
+
+      if (doc.sections && Array.isArray(doc.sections) && doc.sections.length > 0 &&
+          doc.sections[0].children && Array.isArray(doc.sections[0].children)) {
+        // 如果原文档有效，使用其内容
+        contentChildren = doc.sections[0].children;
+        console.log(`从原文档复制${contentChildren.length}个元素`);
+      } else if (doc.document && doc.document.sections &&
+                 Array.isArray(doc.document.sections) &&
+                 doc.document.sections.length > 0 &&
+                 doc.document.sections[0].children) {
+        // 兼容某些docx.js版本可能使用的结构
+        contentChildren = doc.document.sections[0].children;
+        console.log(`从document.sections复制${contentChildren.length}个元素`);
+      } else if (doc.children && Array.isArray(doc.children)) {
+        // 兼容直接存储在doc.children的情况
+        contentChildren = doc.children;
+        console.log(`从doc.children复制${contentChildren.length}个元素`);
+      }
+
+      // 确保有内容
+      if (contentChildren.length === 0) {
+        console.warn('文档内容为空，添加一个默认段落');
+        contentChildren.push(
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: "文档内容为空",
+                color: "FF0000",
+                bold: true,
+                size: 24 * 2
+              })
+            ]
+          })
+        );
+      }
+
+      // 将内容复制到新文档
+      newDoc.sections[0].children = contentChildren;
+
+      console.log(`新文档创建完成，包含${newDoc.sections[0].children.length}个元素`);
+
+      console.log(`准备生成DOCX文件，文档包含 ${newDoc.sections.length} 个节和 ${newDoc.sections[0].children.length} 个元素`);
+
+      try {
+        // 使用最简单的方式创建blob对象
+        return await Packer.toBlob(newDoc);
+      } catch (error) {
+        console.error('使用Packer.toBlob生成文档时错误:', error);
+
+        // 创建最简单的测试文档
+        const testDoc = new Document({
+          sections: [
+            {
+              children: [
+                new Paragraph({
+                  children: [
+                    new TextRun({
+                      text: "测试文档 - 如果你能看到这段文字，则说明docx.js基本功能正常",
+                      bold: true,
+                      color: "FF0000",
+                      font: "宋体"
+                    })
+                  ]
+                })
+              ]
+            }
+          ]
+        });
+
+        console.log('尝试生成测试文档...');
+        return await Packer.toBlob(testDoc);
+      }
+    } catch (error) {
+      console.error('生成DOCX文件时发生错误:', error);
+
+      // 创建内容为错误消息的最小文档
+      const minimalDoc = new Document({
+        sections: [
+          {
+            children: [
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: `生成文档时出错: ${error.message}`,
+                    bold: true,
+                    color: "FF0000"
+                  })
+                ]
+              })
+            ]
+          }
+        ]
+      });
+
+      try {
+        console.log('生成错误信息文档...');
+        return await Packer.toBlob(minimalDoc);
+      } catch (finalError) {
+        console.error('创建错误文档也失败:', finalError);
+        throw error; // 抛出原始错误
       }
     }
+  }
 
-    // 将内容添加到文档
-    doc.addSection({
-      properties: {},
-      children: children
-    });
+  /**
+   * @method saveAsDocx
+   * @description 保存docx文件
+   * @param {string} filename - 文件名
+   */
+  saveAsDocx(filename = 'document.docx') {
+    try {
+      console.log(`开始保存文档为 ${filename}...`);
 
-    return doc;
+      if (!this.doc) {
+        console.error('没有可保存的文档，document对象为空');
+        throw new Error('没有可保存的文档');
+      }
+
+      // 检查document对象是否有效
+      if (!this.doc.sections || !Array.isArray(this.doc.sections) || this.doc.sections.length === 0) {
+        console.error('文档sections无效，无法保存');
+        throw new Error('文档sections无效');
+      }
+
+      if (!this.doc.sections[0].children || !Array.isArray(this.doc.sections[0].children)) {
+        console.warn('文档没有内容，将保存空文档');
+        this.doc.sections[0].children = [
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: "空文档",
+                color: "FF0000",
+                bold: true
+              })
+            ]
+          })
+        ];
+      }
+
+      console.log(`文档包含 ${this.doc.sections.length} 个section和 ${this.doc.sections[0].children.length} 个元素`);
+
+      // 严格按照docx.js官方文档保存文档
+      // 确保创建一个新的Document对象，以避免可能的引用问题
+      const docToSave = this.doc;
+
+      // 使用标准的Promise方式处理
+      Packer.toBlob(docToSave)
+        .then(blob => {
+          console.log(`文档生成成功，大小: ${Math.round(blob.size / 1024)} KB`);
+
+          try {
+            // 使用FileSaver.js的saveAs函数保存文件
+            saveAs(blob, filename);
+            console.log(`文档已保存为 ${filename}`);
+          } catch (saveError) {
+            console.error('保存文件时出错:', saveError);
+
+            // 尝试使用替代方法保存文件
+            try {
+              // 创建URL并触发下载
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = filename;
+              document.body.appendChild(a);
+              a.click();
+
+              // 清理
+              setTimeout(() => {
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+              }, 0);
+
+              console.log(`已使用替代方法保存文档: ${filename}`);
+            } catch (altSaveError) {
+              console.error('替代保存方法也失败:', altSaveError);
+              throw new Error(`无法保存文档: ${saveError.message}`);
+            }
+          }
+        })
+        .catch(error => {
+          console.error('生成文档Blob时出错:', error);
+
+          // 尝试创建最小文档
+          const minimalDoc = new Document({
+            sections: [{
+              children: [
+                new Paragraph({
+                  children: [
+                    new TextRun({
+                      text: `保存文档时出错: ${error.message}`,
+                      color: "FF0000",
+                      bold: true
+                    })
+                  ]
+                })
+              ]
+            }]
+          });
+
+          Packer.toBlob(minimalDoc)
+            .then(fallbackBlob => {
+              try {
+                saveAs(fallbackBlob, filename);
+                console.log(`已保存错误提示文档: ${filename}`);
+              } catch (saveError) {
+                console.error('保存错误提示文档也失败:', saveError);
+              }
+            })
+            .catch(fallbackError => {
+              console.error('创建最小文档也失败:', fallbackError);
+            });
+        });
+    } catch (error) {
+      console.error('保存文档过程中发生错误:', error);
+      throw error;
+    }
   }
 
   /**
@@ -426,12 +633,12 @@ class Md2Docx {
           id: 'CodeBlock',
           name: 'Code Block',
           basedOn: 'Normal',
-                  run: {
+      run: {
             font: 'Courier New',
             size: 20,
             color: '333333'
-          },
-                  paragraph: {
+      },
+      paragraph: {
             spacing: { before: 120, after: 120 },
             indent: { left: 720 }
           }
@@ -454,37 +661,125 @@ class Md2Docx {
   }
 
   /**
-   * @method generateDocx
-   * @description 生成docx文档
-   * @param {Object} doc - docx文档对象
-   * @return {Promise<Uint8Array>} 文档的二进制数据
-   */
-  async generateDocx(doc) {
-    return await docx.Packer.toBuffer(doc);
-  }
-
-  /**
    * @method createHeading
    * @description 创建标题段落
    * @param {Object} token - 标题标记
    * @return {Object} 标题段落对象
    */
   createHeading(token) {
-    // 映射标题深度到docx标题级别
-    const headingLevelMap = {
-      1: docx.HeadingLevel.HEADING_1,
-      2: docx.HeadingLevel.HEADING_2,
-      3: docx.HeadingLevel.HEADING_3,
-      4: docx.HeadingLevel.HEADING_4,
-      5: docx.HeadingLevel.HEADING_5,
-      6: docx.HeadingLevel.HEADING_6
-    };
+    console.log("处理标题:", token);
 
-    return new Paragraph({
-      text: token.content,
-      heading: headingLevelMap[token.depth] || docx.HeadingLevel.HEADING_1,
-      spacing: { after: 120 }
+    const headingStyles = this.styles.heading;
+
+    // 确定标题级别
+    const level = token.level || token.depth || 1;
+    console.log(`标题级别: ${level}`);
+
+    const headingKey = `h${level}`;
+
+    // 获取字体和颜色
+      const headingFont = headingStyles.fonts?.[headingKey] || headingStyles.font;
+
+    // 获取颜色 - 优先使用级别特定颜色，如果没有则使用通用颜色
+    let headingColor = headingStyles.colors?.[headingKey] || headingStyles.color;
+    if (typeof headingColor === 'string') {
+      headingColor = headingColor.replace('#', '');
+    }
+
+    // 获取标题加粗设置
+      const isBold = headingStyles.bold?.[headingKey] !== undefined
+                   ? headingStyles.bold[headingKey]
+                 : (level === 1 || headingStyles.bold === true);
+
+      // 获取对齐方式
+      const alignmentSetting = headingStyles.alignment?.[headingKey] || 'left';
+      const alignment = this.getAlignmentType(alignmentSetting);
+
+    // 获取标题缩进设置
+      const leftIndent = headingStyles.indent?.[headingKey] || 0;
+
+    // 创建文本运行数组
+    const children = [];
+
+    // 添加前缀（如果需要）
+    const usePrefix = headingStyles.usePrefix?.[headingKey] || false;
+    const prefix = headingStyles.prefix?.[headingKey] || '';
+
+    if (usePrefix && prefix) {
+      children.push(
+        new TextRun({
+          text: prefix,
+          bold: isBold,
+          font: headingFont,
+          size: (headingStyles.sizes?.[headingKey] || 24) * 2,
+          color: headingColor
+        })
+      );
+    }
+
+    // 处理inlineStyles中的文本和格式
+    if (token.inlineStyles && token.inlineStyles.length > 0) {
+      token.inlineStyles.forEach(style => {
+        if (style.content) {
+          children.push(
+            new TextRun({
+              text: style.content,
+              bold: style.bold || isBold, // 合并Markdown样式和标题样式
+              italic: style.italic,
+              strike: style.strike,
+              font: headingFont,
+              size: (headingStyles.sizes?.[headingKey] || 24) * 2,
+              color: headingColor,
+              underline: style.underline ? {} : undefined,
+              superScript: style.superscript,
+              subScript: style.subscript
+            })
+          );
+        }
+      });
+    } else if (token.fullContent) {
+      // 兜底方案，使用fullContent
+      children.push(
+        new TextRun({
+          text: token.fullContent,
+          bold: isBold,
+          font: headingFont,
+          size: (headingStyles.sizes?.[headingKey] || 24) * 2,
+          color: headingColor
+        })
+      );
+    } else {
+      // 极端情况，生成空标题
+      children.push(
+        new TextRun({
+          text: `标题 ${level}`,
+          bold: isBold,
+          font: headingFont,
+          size: (headingStyles.sizes?.[headingKey] || 24) * 2,
+          color: headingColor
+        })
+      );
+    }
+
+    console.log(`标题样式: 字体=${headingFont}, 颜色=${headingColor}, 加粗=${isBold}, 对齐=${alignmentSetting}`);
+
+    // 创建段落对象
+    const paragraph = new Paragraph({
+      heading: level,
+      style: `Heading${level}`,
+          spacing: {
+        before: level === 1 ? 240 : 120,
+        after: level === 1 ? 120 : 120
+      },
+      alignment: alignment,
+          indent: {
+        left: leftIndent
+      },
+      children: children
     });
+
+    console.log("创建标题段落:", paragraph);
+    return paragraph;
   }
 
   /**
@@ -494,14 +789,84 @@ class Md2Docx {
    * @return {Object} 段落对象
    */
   createParagraph(token) {
-    return new Paragraph({
-      children: [
+    // 使用正文样式
+    const paragraphStyles = this.styles.paragraph || {};
+
+    // 处理行距设置
+    const lineSpacingValue = paragraphStyles.lineSpacingRule === 'exact' ?
+                           paragraphStyles.lineSpacing * 20 : // 磅值转twip
+                           paragraphStyles.lineSpacing * 240; // 倍数行距
+
+    const lineSpacingRule = paragraphStyles.lineSpacingRule === 'exact' ?
+                          'exact' : 'auto';
+
+    // 创建文本运行数组
+    const children = [];
+
+    // 从inlineStyles获取格式信息
+    if (token.inlineStyles && token.inlineStyles.length > 0) {
+      token.inlineStyles.forEach(style => {
+        if (style.content) {
+          children.push(
+            new TextRun({
+              text: style.content,
+              size: paragraphStyles.size * 2,
+              font: paragraphStyles.font,
+              color: paragraphStyles.color.replace('#', ''),
+              bold: style.bold,
+              italic: style.italic,
+              strike: style.strike,
+              underline: style.underline ? {} : undefined,
+              superScript: style.superscript,
+              subScript: style.subscript
+            })
+          );
+        }
+      });
+    } else if (token.fullContent) {
+      // 兜底方案，使用fullContent
+      children.push(
         new TextRun({
-          text: token.content,
-          break: 0
+          text: token.fullContent,
+          size: paragraphStyles.size * 2,
+              font: paragraphStyles.font,
+          color: paragraphStyles.color.replace('#', '')
         })
-      ],
-      spacing: { after: 120 }
+      );
+    } else if (token.rawText) {
+      // 备选方案
+      children.push(
+        new TextRun({
+          text: token.rawText,
+              size: paragraphStyles.size * 2,
+          font: paragraphStyles.font,
+          color: paragraphStyles.color.replace('#', '')
+        })
+      );
+    } else {
+      // 极端情况
+      children.push(
+        new TextRun({
+          text: "",
+          size: paragraphStyles.size * 2,
+          font: paragraphStyles.font,
+          color: paragraphStyles.color.replace('#', '')
+        })
+      );
+    }
+
+    // 创建段落对象
+    return new Paragraph({
+              spacing: {
+        after: paragraphStyles.spacing || 0,
+                line: lineSpacingValue,
+        lineRule: lineSpacingRule
+      },
+      indent: {
+        firstLine: paragraphStyles.firstLineIndent || 800 // 首行缩进2字符
+      },
+      alignment: this.getAlignmentType(paragraphStyles.alignment) || AlignmentType.JUSTIFIED,
+      children: children
     });
   }
 
@@ -512,10 +877,41 @@ class Md2Docx {
    * @return {Object} 代码块段落
    */
   createCodeBlock(token) {
+    // 获取代码文本
+    let codeText = '';
+
+    // 直接使用fullContent作为代码内容
+    if (token.fullContent) {
+      codeText = token.fullContent;
+    } else if (token.content) {
+      codeText = token.content;
+    } else if (token.text) {
+      codeText = token.text;
+    } else {
+      codeText = '';
+    }
+
+    // 获取语言信息（如果有）
+    const language = token.language || '';
+    if (language) {
+      console.log(`代码块语言: ${language}`);
+    }
+
+    // 获取代码样式
+    const codeStyles = this.styles.code || {};
+
+    // 创建代码块段落
     return new Paragraph({
-      text: token.content,
       style: 'CodeBlock',
-      spacing: { before: 200, after: 200 }
+      spacing: { before: 200, after: 200 },
+      children: [
+        new TextRun({
+          text: codeText,
+          font: codeStyles.font || 'Courier New',
+          size: (codeStyles.size || 10) * 2,
+          color: codeStyles.color || '333333'
+        })
+      ]
     });
   }
 
@@ -526,23 +922,32 @@ class Md2Docx {
    * @return {Object} 图片段落
    */
   createImageElement(token) {
+    // 检查token是否有效
+    if (!token) {
+      console.warn('无效的图片标记');
+      return null;
+    }
+
     // 检查是否有图片信息
-    if (!this.imageInfos || this.imageInfos.length === 0) {
+    if (!this.imageInfos || !Array.isArray(this.imageInfos) || this.imageInfos.length === 0) {
       console.warn('没有可用的图片信息');
       return this.createImagePlaceholder(token.text || '图片');
     }
 
     // 查找匹配的图片
     const imageInfo = this.imageInfos.find(info =>
-      info.src === token.href || info.alt === token.text
+      info && (info.src === token.href || info.alt === token.text)
     );
 
     if (!imageInfo || !imageInfo.buffer) {
-      console.warn(`未找到图片信息: ${token.href}`);
+      console.warn(`未找到图片信息: ${token.href || 'N/A'}`);
       return this.createImagePlaceholder(token.text || token.href || '图片');
     }
 
     try {
+      // 确保AlignmentType可用
+      const alignment = AlignmentType ? AlignmentType.CENTER : 'center';
+
       // 创建图片段落
       return new Paragraph({
         children: [
@@ -554,7 +959,7 @@ class Md2Docx {
             }
           })
         ],
-        alignment: docx.AlignmentType.CENTER,
+        alignment: alignment,
         spacing: { before: 160, after: 160 }
       });
     } catch (error) {
@@ -570,9 +975,73 @@ class Md2Docx {
    * @return {Object} 引用块段落
    */
   createBlockquote(token) {
+    const blockquoteStyles = this.styles.blockquote || {};
+    const paragraphStyles = this.styles.paragraph || {};
+
+    // 引用块缩进级别
+    const level = token.level || 1;
+    const indentSize = level * 720; // 根据引用层级增加缩进
+
+    // 创建文本运行数组
+    const children = [];
+
+    // 使用inlineStyles处理格式
+    if (token.inlineStyles && token.inlineStyles.length > 0) {
+      token.inlineStyles.forEach(style => {
+        if (style.content) {
+          children.push(
+            new TextRun({
+              text: style.content,
+              size: (blockquoteStyles.size || paragraphStyles.size) * 2,
+              font: blockquoteStyles.font || paragraphStyles.font,
+              color: (blockquoteStyles.color || paragraphStyles.color).replace('#', ''),
+              italics: blockquoteStyles.italic !== undefined ? blockquoteStyles.italic : true,
+              bold: style.bold,
+              strike: style.strike,
+              underline: style.underline ? {} : undefined
+            })
+          );
+        }
+      });
+    } else if (token.fullContent) {
+      // 使用fullContent
+      children.push(
+        new TextRun({
+          text: token.fullContent,
+          size: (blockquoteStyles.size || paragraphStyles.size) * 2,
+          font: blockquoteStyles.font || paragraphStyles.font,
+          color: (blockquoteStyles.color || paragraphStyles.color).replace('#', ''),
+          italics: blockquoteStyles.italic !== undefined ? blockquoteStyles.italic : true
+        })
+      );
+    } else {
+      // 兜底方案
+      const content = token.content || token.text || '';
+      children.push(
+        new TextRun({
+          text: content,
+          size: (blockquoteStyles.size || paragraphStyles.size) * 2,
+          font: blockquoteStyles.font || paragraphStyles.font,
+          color: (blockquoteStyles.color || paragraphStyles.color).replace('#', ''),
+          italics: blockquoteStyles.italic !== undefined ? blockquoteStyles.italic : true
+        })
+      );
+    }
+
+    // 创建引用块段落
     return new Paragraph({
-      text: token.content,
-      style: 'Blockquote'
+      style: 'Blockquote',
+      indent: { left: indentSize },
+      spacing: { before: 120, after: 120 },
+      border: {
+        left: {
+          color: blockquoteStyles.borderColor || '#CCCCCC',
+          space: 12,
+          style: BorderStyle.SINGLE,
+          size: 4
+        }
+      },
+      children: children
     });
   }
 
@@ -604,18 +1073,120 @@ class Md2Docx {
    */
   createListElements(token, children) {
     // 处理列表项
-    if (token.items && Array.isArray(token.items)) {
+    if (!token || !token.items) {
+      console.warn('无效的列表结构:', token);
+      return;
+    }
+
+    // 确保children是有效的数组
+    if (!children || !Array.isArray(children)) {
+      console.warn('传递给createListElements的children不是数组');
+      return;
+    }
+
+    console.log(`处理列表元素，包含 ${token.items.length} 个项目`);
+
+    // 获取列表项和样式
+    const listStyles = this.styles.list || {};
+    const paragraphStyles = this.styles.paragraph || {};
+    const isOrdered = token.listType === 'ordered';
+    console.log(`列表类型: ${isOrdered ? '有序' : '无序'}`);
+
+    const childrenCountBefore = children.length;
+
+    if (Array.isArray(token.items)) {
       token.items.forEach((item, index) => {
-        children.push(
-          new Paragraph({
-            text: item,
-            bullet: {
-              level: 0
+        // 跳过无效的列表项
+        if (!item) {
+          console.warn(`列表项 #${index} 无效`);
+          return;
+        }
+
+        // 获取列表级别
+        const level = item.level || 0;
+
+        // 创建列表项文本运行数组
+        const textRuns = [];
+
+        // 优先使用inlineStyles处理格式
+        if (item.inlineStyles && Array.isArray(item.inlineStyles) && item.inlineStyles.length > 0) {
+          console.log(`处理列表项 #${index} 的 ${item.inlineStyles.length} 个内联样式`);
+          item.inlineStyles.forEach(style => {
+            if (style && style.content) {
+              textRuns.push(
+                new TextRun({
+                  text: style.content,
+                  size: paragraphStyles.size * 2,
+                  font: paragraphStyles.font,
+                  color: paragraphStyles.color?.replace('#', '') || '000000',
+                  bold: style.bold,
+                  italic: style.italic,
+                  strike: style.strike,
+                  underline: style.underline ? {} : undefined,
+                  superScript: style.superscript,
+                  subScript: style.subscript
+                })
+              );
             }
-          })
-        );
+          });
+        } else if (item.fullContent) {
+          // 使用fullContent
+          console.log(`列表项 #${index} 使用fullContent: ${item.fullContent.substring(0, 30)}${item.fullContent.length > 30 ? '...' : ''}`);
+          textRuns.push(
+            new TextRun({
+              text: item.fullContent,
+              size: paragraphStyles.size * 2,
+              font: paragraphStyles.font,
+              color: paragraphStyles.color?.replace('#', '') || '000000'
+            })
+          );
+        } else if (typeof item === 'string') {
+          // 兼容旧版本
+          console.log(`列表项 #${index} 是字符串: ${item.substring(0, 30)}${item.length > 30 ? '...' : ''}`);
+          textRuns.push(
+            new TextRun({
+              text: item,
+              size: paragraphStyles.size * 2,
+              font: paragraphStyles.font,
+              color: paragraphStyles.color?.replace('#', '') || '000000'
+            })
+          );
+        } else {
+          // 当item是对象但没有处理的属性时
+          console.log(`列表项 #${index} 使用替代内容`);
+          const content = item.text || item.content || (typeof item === 'object' ? JSON.stringify(item) : String(item || ''));
+          textRuns.push(
+            new TextRun({
+              text: content,
+              size: paragraphStyles.size * 2,
+              font: paragraphStyles.font,
+              color: paragraphStyles.color?.replace('#', '') || '000000'
+            })
+          );
+        }
+
+        // 只有在textRuns不为空时才添加段落
+        if (textRuns.length > 0) {
+          // 添加列表项到children数组
+          const paragraph = new Paragraph({
+            text: '',
+            indent: { left: level * 720 }, // 根据层级增加缩进
+            spacing: { before: 80, after: 80 },
+            bullet: {
+              level: level
+            },
+            children: textRuns
+          });
+          children.push(paragraph);
+          console.log(`已添加列表项 #${index} 到children数组`);
+        } else {
+          console.warn(`列表项 #${index} 的textRuns为空，不添加到文档`);
+        }
       });
     }
+
+    const childrenCountAfter = children.length;
+    console.log(`列表处理前children数组长度: ${childrenCountBefore}, 处理后: ${childrenCountAfter}, 新增: ${childrenCountAfter - childrenCountBefore}`);
   }
 
   /**
@@ -626,15 +1197,29 @@ class Md2Docx {
    */
   createTableElement(token) {
     // 如果没有表头或行数据，返回null
-    if (!token.header || !token.rows) {
+    if (!token.headers || !token.rows) {
+      console.warn('表格缺少表头或行数据');
       return null;
     }
 
     // 创建表头行
     const headerRow = new TableRow({
-      children: token.header.map(text => {
+      children: token.headers.map(header => {
+        // 处理表头单元格内容
+        const content = header.fullContent || header.rawText || '';
+
         return new TableCell({
-          children: [new Paragraph({ text })],
+          children: [
+            new Paragraph({
+              alignment: AlignmentType.CENTER,
+              children: [
+                new TextRun({
+                  text: content,
+                  bold: true
+                })
+              ]
+            })
+          ],
           shading: {
             fill: "EEEEEE"
           }
@@ -642,20 +1227,45 @@ class Md2Docx {
       })
     });
 
+    // 获取表格对齐方式
+    const alignments = token.alignments || [];
+
     // 创建数据行
     const rows = token.rows.map(rowData => {
       return new TableRow({
-        children: rowData.map(text => {
+        children: rowData.map((cell, cellIndex) => {
+          // 处理单元格内容
+          const content = cell.fullContent || cell.rawText || '';
+
+          // 获取该列的对齐方式
+          const cellAlignment = alignments[cellIndex]
+            ? this.getAlignmentType(alignments[cellIndex])
+            : AlignmentType.LEFT;
+
           return new TableCell({
-            children: [new Paragraph({ text })]
+            children: [
+              new Paragraph({
+                alignment: cellAlignment,
+                children: [
+                  new TextRun({
+                    text: content
+                  })
+                ]
+              })
+            ]
           });
         })
       });
     });
 
-    // 所有行的列数需要一致
+    // 创建表格
     return new Table({
-      rows: [headerRow, ...rows]
+      rows: [headerRow, ...rows],
+      width: {
+        size: 100,
+        type: WidthType.PERCENTAGE
+      },
+      layout: TableLayoutType.FIXED
     });
   }
 
@@ -676,6 +1286,9 @@ class Md2Docx {
    * @return {Object} 占位符段落
    */
   createImagePlaceholder(altText) {
+    // 确保AlignmentType可用
+    const alignment = AlignmentType ? AlignmentType.CENTER : 'center';
+
     return new Paragraph({
       children: [
         new TextRun({
@@ -684,7 +1297,7 @@ class Md2Docx {
           color: '999999'
         })
       ],
-      alignment: docx.AlignmentType.CENTER,
+      alignment: alignment,
       spacing: { before: 120, after: 120 }
     });
   }
@@ -1403,857 +2016,6 @@ class Md2Docx {
   }
 
   /**
-   * @method createHeading
-   * @param {Object} token - 标题token
-   * @returns {Paragraph}
-   */
-  createHeading(token) {
-    console.log("处理标题:", token);
-
-    // 确保文本是字符串
-    if (typeof token.text !== 'string') {
-      token.text = token.text?.toString() || '';
-    }
-
-    const headingStyles = this.styles.heading;
-
-    // 确定标题级别
-    const level = token.depth || 1;
-    console.log(`标题级别: ${level}`);
-
-    const headingKey = `h${level}`;
-
-    // 获取字体和颜色
-    const headingFont = headingStyles.fonts?.[headingKey] || headingStyles.font;
-
-    // 获取颜色 - 优先使用级别特定颜色，如果没有则使用通用颜色
-    let headingColor = headingStyles.colors?.[headingKey] || headingStyles.color;
-    if (typeof headingColor === 'string') {
-      headingColor = headingColor.replace('#', '');
-    }
-
-    // 获取标题加粗设置
-    const isBold = headingStyles.bold?.[headingKey] !== undefined
-                 ? headingStyles.bold[headingKey]
-                 : (level === 1 || headingStyles.bold === true);
-
-    // 获取对齐方式
-    const alignmentSetting = headingStyles.alignment?.[headingKey] || 'left';
-    const alignment = this.getAlignmentType(alignmentSetting);
-
-    // 获取标题缩进设置 (4级和5级标题需要左空2字符)
-    const leftIndent = headingStyles.indent?.[headingKey] || 0;
-
-    // 标题包含前缀？
-    let titleText = token.text;
-    const usePrefix = headingStyles.usePrefix?.[headingKey] || false;
-    const prefix = headingStyles.prefix?.[headingKey] || '';
-
-    if (usePrefix && prefix) {
-      titleText = prefix + titleText;
-    }
-
-    console.log(`标题文本: "${titleText}"`);
-    console.log(`标题样式: 字体=${headingFont}, 颜色=${headingColor}, 加粗=${isBold}, 对齐=${alignmentSetting}`);
-
-    // 基于标题级别和样式创建段落格式
-    const paragraph = new Paragraph({
-      heading: level,
-      style: `Heading${level}`,
-      spacing: {
-        before: level === 1 ? 240 : 120,
-        after: level === 1 ? 120 : 120
-      },
-      alignment: alignment,
-      indent: {
-        left: leftIndent
-      },
-      children: [
-        new TextRun({
-          text: titleText,
-          bold: isBold,
-          font: headingFont,
-          size: (headingStyles.sizes?.[headingKey] || 24) * 2, // 转换为半点单位
-          color: headingColor
-        })
-      ]
-    });
-
-    console.log("创建标题段落:", paragraph);
-    return paragraph;
-  }
-
-  /**
-   * @method createParagraph
-   * @param {Object} token - 段落token
-   * @returns {Paragraph} 段落对象
-   */
-  createParagraph(token) {
-    // 确保文本是字符串
-    if (typeof token.text !== 'string') {
-      token.text = token.text?.toString() || '';
-    }
-
-    // 使用正文样式替代段落样式
-    const paragraphStyles = this.styles.paragraph || {};
-
-    // 处理行距设置
-    // 如果是固定行距（磅值），直接使用数值；如果是倍数行距，则需要乘以240转换
-    const lineSpacingValue = paragraphStyles.lineSpacingRule === 'exact' ?
-                             paragraphStyles.lineSpacing * 20 : // 磅值转twip (1磅 = 20 twip)
-                             paragraphStyles.lineSpacing * 240; // 倍数行距
-
-    const lineSpacingRule = paragraphStyles.lineSpacingRule === 'exact' ?
-                            'exact' : 'auto';
-
-    return new Paragraph({
-      spacing: {
-        after: paragraphStyles.spacing || 0,
-        line: lineSpacingValue,
-        lineRule: lineSpacingRule
-      },
-      indent: {
-        firstLine: paragraphStyles.firstLineIndent || 800 // 首行缩进2字符，约为800 twip
-      },
-      alignment: this.getAlignmentType(paragraphStyles.alignment) || AlignmentType.JUSTIFIED, // 两端对齐
-      children: this.parseInlineContent(token.text)
-    });
-  }
-
-  /**
-   * @method createList
-   * @param {Object} token - 列表token
-   * @param {number} level - 嵌套级别
-   * @returns {Array<Paragraph>}
-   */
-  createList(token, level = 0) {
-    const paragraphs = [];
-    const paragraphStyles = this.styles.paragraph;
-    const listStyles = this.styles.list || {};
-
-    // 处理行距设置
-    // 如果是固定行距（磅值），直接使用数值；如果是倍数行距，则需要乘以240转换
-    const lineSpacingValue = paragraphStyles.lineSpacingRule === 'exact' ?
-                            paragraphStyles.lineSpacing * 20 : // 磅值转twip (1磅 = 20 twip)
-                            paragraphStyles.lineSpacing * 240; // 倍数行距
-
-    const lineSpacingRule = paragraphStyles.lineSpacingRule === 'exact' ?
-                           'exact' : 'auto';
-
-    // 根据GB/T 9704-2012标准，公文中的条款序号格式有严格规定：
-    // 一级条款："一、二、三、..." (黑体)
-    // 二级条款："(一)(二)(三)..." (楷体)
-    // 三级条款："1. 2. 3. ..." (仿宋)
-    // 四级条款："(1)(2)(3)..." (仿宋)
-
-    // 序号字体设置
-    const levelFonts = [
-      "黑体",         // 一级条款：黑体
-      "楷体",         // 二级条款：楷体
-      "仿宋_GB2312",  // 三级条款：仿宋
-      "仿宋_GB2312"   // 四级条款：仿宋
-    ];
-
-    // 是否加粗，一般只有一级序号（黑体）需要加粗
-    const levelBold = [true, false, false, false];
-
-    token.items.forEach(item => {
-      // 处理从Word粘贴的内容
-      let itemText = '';
-      if (typeof item.text === 'string') {
-        // 处理可能包含子项目的情况（如：项目二 * 子项目A * 子项目B）
-        if (item.text.includes(' * ')) {
-          const parts = item.text.split(' * ');
-          itemText = parts[0];
-
-          // 为子项目创建嵌套列表项
-          const subItems = parts.slice(1).map(subText => {
-            return { text: subText, items: [] };
-          });
-
-          // 如果之前没有嵌套列表，则添加
-          if (!item.items) {
-            item.items = [];
-          }
-
-          // 将解析出的子项目添加到嵌套列表中
-          item.items.push(...subItems);
-        } else {
-          itemText = item.text;
-        }
-      } else {
-        // 处理非字符串类型
-        itemText = String(item.text || '');
-      }
-
-      // 清理列表项前缀
-      // 如果列表项已经有中文序号或特定格式，保留原文本
-      let cleanedText = itemText;
-
-      // 清理可能的前导序号和符号
-      if (token.ordered) {
-        cleanedText = cleanedText.replace(/^[\d一二三四五六七八九十]+(\.|\、|\）|\))\s*/, '');
-      } else {
-        cleanedText = cleanedText.replace(/^[●○■•◦▪▫□▹▻➢➣➤◆◇◈⦿⦾⚫⚪✦✧✩✪✫✬✭✮✯✰✱✲✳✴✵✶✷✸✹✺✻✼❉❊❋⁕⁑⁂✽✾✿❀❁❂❃❄❅❆❇❈❉❊❋☙☯✡✢✣✤✥✦✧✩✪✫✬✭✮✯✰✱✲✳✴✵✶✷✸✹✺✻✼⚜❧\t]+\s*/, '');
-      }
-
-      // 获取当前级别的字体和加粗设置
-      const levelFont = levelFonts[Math.min(level, levelFonts.length - 1)];
-      const isLevelBold = levelBold[Math.min(level, levelBold.length - 1)];
-
-      // 创建段落，应用公文规范中的对应格式
-      const para = new Paragraph({
-        spacing: {
-          before: 120,
-          after: 120,
-          line: lineSpacingValue,
-          lineRule: lineSpacingRule
-        },
-        bullet: token.ordered ? undefined : {
-          level: level
-        },
-        numbering: token.ordered ? {
-          reference: "orderedList",
-          level: level
-        } : undefined,
-        children: [
-          // 使用自定义格式处理列表项内容
-          new TextRun({
-            text: cleanedText,
-            font: levelFont,
-            size: paragraphStyles.size * 2, // 3号字体，与正文一致
-            bold: isLevelBold,
-            color: paragraphStyles.color.replace('#', '')
-          })
-        ],
-        alignment: AlignmentType.JUSTIFIED // 公文要求正文两端对齐
-      });
-
-      paragraphs.push(para);
-
-      // 处理嵌套列表
-      if (item.items && item.items.length > 0) {
-        // 递归处理嵌套列表
-        const nestedToken = {
-          type: 'list',
-          ordered: token.ordered,
-          items: item.items
-        };
-        const subList = this.createList(nestedToken, Math.min(level + 1, 3)); // 最多只支持到4级嵌套
-        paragraphs.push(...subList);
-      }
-    });
-
-    return paragraphs;
-  }
-
-  /**
-   * @method createCode
-   * @param {Object} token - 代码token
-   * @returns {Paragraph}
-   */
-  createCode(token) {
-    // 处理代码文本，确保为字符串
-    let codeText = token.text;
-    if (typeof codeText !== 'string') {
-      codeText = String(codeText || '');
-    }
-
-    // 处理从Word粘贴的代码块，它们可能已经丢失换行符
-    // 查找像"function xx() {"这样的模式后面应该有换行
-    codeText = codeText.replace(/\{(?!\s*\n)/g, '{\n');
-    // 为每个分号后面添加换行（如果没有的话）
-    codeText = codeText.replace(/;(?!\s*\n)/g, ';\n');
-    // 分行处理，保持缩进
-    const lines = codeText.split(/\n|\r\n/);
-
-    // 检测并调整缩进
-    const codeLines = lines.map(line => {
-      // 移除行首的过多空格但保持适当缩进
-      const trimmedLine = line.trimStart();
-      // 如果当前行看起来是缩进代码，添加适当的缩进
-      if (trimmedLine.startsWith('}') ||
-          trimmedLine.startsWith('else') ||
-          trimmedLine.startsWith('catch')) {
-        return '  ' + trimmedLine;
-      }
-      return trimmedLine;
-    });
-
-    // 获取代码样式 - 根据GB/T 9704-2012标准，附件（如代码）可以使用等线字体
-    const codeStyles = this.styles.code;
-    const codeFont = codeStyles.font || "等线";
-    const codeFontSize = (codeStyles.size || 16) * 2; // 5号字体，适合附件代码
-    const codeColor = codeStyles.color.replace('#', '');
-    const codeBackgroundColor = codeStyles.backgroundColor.replace('#', '');
-
-    // 构建代码块段落 - 公文附件格式
-    // 附件标识和内容之间应有一空行
-    const codeBlock = new Paragraph({
-      spacing: {
-        before: 240,
-        after: 240,
-        line: 360 // 固定行距，适合代码
-      },
-      indent: {
-        left: 600, // 缩进调整为公文附件要求
-        right: 600
-      },
-      shading: {
-        type: 'clear',
-        fill: codeBackgroundColor
-      },
-      border: {
-        top: { style: BorderStyle.SINGLE, size: 1, color: "000000" },
-        bottom: { style: BorderStyle.SINGLE, size: 1, color: "000000" },
-        left: { style: BorderStyle.SINGLE, size: 1, color: "000000" },
-        right: { style: BorderStyle.SINGLE, size: 1, color: "000000" },
-      },
-      children: [
-        new TextRun({
-          text: codeLines.join('\n'),
-          font: codeFont,
-          size: codeFontSize,
-          color: codeColor
-        })
-      ],
-      alignment: AlignmentType.LEFT // 代码通常左对齐
-    });
-
-    // 根据公文规范，附件应有标识（如：附件：代码示例）
-    // 实际应用中可在Markdown中明确标明"附件"，此处仅作参考
-    return codeBlock;
-  }
-
-  /**
-   * @method createBlockquote
-   * @param {Object} token - 引用块token
-   * @returns {Paragraph}
-   */
-  createBlockquote(token) {
-    // 处理引用文本，确保为字符串
-    let quoteText = token.text;
-    if (typeof quoteText !== 'string') {
-      quoteText = String(quoteText || '');
-    }
-
-    // 处理从Word粘贴的引用块
-    // 清理可能的">"前缀和多余空格
-    quoteText = quoteText.replace(/^>\s*/mg, '');
-    quoteText = quoteText.replace(/^\s+/mg, '');
-
-    // 获取样式配置
-    const blockquoteStyles = this.styles.blockquote || {};
-    const paragraphStyles = this.styles.paragraph;
-    const blockquoteColor = (blockquoteStyles.color || paragraphStyles.color).replace('#', '');
-    const borderColor = (blockquoteStyles.borderColor || "#000000").replace('#', '');
-
-    // 处理行距设置
-    // 如果是固定行距（磅值），直接使用数值；如果是倍数行距，则需要乘以240转换
-    const lineSpacingValue = paragraphStyles.lineSpacingRule === 'exact' ?
-                             paragraphStyles.lineSpacing * 20 : // 磅值转twip (1磅 = 20 twip)
-                             paragraphStyles.lineSpacing * 240; // 倍数行距
-
-    const lineSpacingRule = paragraphStyles.lineSpacingRule === 'exact' ?
-                            'exact' : 'auto';
-
-    // 根据GB/T 9704-2012标准，引用（如领导批示、文件引述）使用仿宋_GB2312字体
-    // 首行缩进2字符，具有一定的标识性
-    return new Paragraph({
-      spacing: {
-        before: 120,
-        after: 120,
-        line: lineSpacingValue,
-        lineRule: lineSpacingRule
-      },
-      indent: {
-        left: blockquoteStyles.leftIndent || 800, // 左侧缩进
-        firstLine: blockquoteStyles.firstLineIndent || 800 // 首行缩进2字符（约800twip）
-      },
-      border: {
-        left: {
-          style: BorderStyle.SINGLE,
-          size: 12,
-          color: borderColor,
-          space: 15
-        }
-      },
-      alignment: AlignmentType.JUSTIFIED, // 两端对齐，符合公文规范
-      children: this.parseInlineContent(quoteText).map(run => {
-        // 确保引用文本使用仿宋_GB2312字体
-        return new TextRun({
-          ...run,
-          font: "仿宋_GB2312",
-          size: paragraphStyles.size * 2, // 与正文字号相同，通常为3号（16pt）
-          color: blockquoteColor
-        });
-      })
-    });
-  }
-
-  /**
-   * @method createHorizontalRule
-   * @returns {Paragraph}
-   */
-  createHorizontalRule() {
-    return new Paragraph({
-      text: "",
-      border: {
-        bottom: {
-          style: BorderStyle.SINGLE,
-          size: 1,
-          color: 'AAAAAA'
-        }
-      },
-      spacing: { before: 240, after: 240 }
-    });
-  }
-
-  /**
-   * @method createTable
-   * @param {Object} token - 表格token
-   * @returns {Table} 表格对象
-   */
-  createTable(token) {
-    try {
-      // 获取样式设置
-      const tableStyles = this.styles.table || {};
-      const paragraphStyles = this.styles.paragraph || {};
-
-      // 处理颜色值（确保没有#前缀）
-      const tableBorderColor = (tableStyles.borderColor || "000000").replace('#', '');
-      const tableHeaderBg = (tableStyles.headerBackground || "E6E6E6").replace('#', '');
-      const textColor = (paragraphStyles.color || "000000").replace('#', '');
-
-      // 设置字体和字号
-      const headerFont = tableStyles.headerFont || "仿宋_GB2312";
-      const fontSize = (tableStyles.fontSize || 16) * 2; // 转换为twip单位
-
-      // 处理表格数据
-      let headerCells = [];
-      let rowsData = [];
-
-      // 处理表头 - 处理可能是JSON字符串的情况
-      if (token.header) {
-        headerCells = Array.isArray(token.header)
-          ? token.header.map(cell => this.processTableCell(cell))
-          : this.processTableData(token.header);
-      }
-
-      // 处理表格行 - 处理可能是JSON字符串的情况
-      if (token.rows) {
-        if (Array.isArray(token.rows)) {
-          rowsData = token.rows.map(row =>
-            Array.isArray(row)
-              ? row.map(cell => this.processTableCell(cell))
-              : this.processTableData(row)
-          );
-        } else if (typeof token.rows === 'string') {
-          // 可能是制表符分隔的行数据，按行分割
-          const rowLines = token.rows.split('\n').filter(line => line.trim());
-          rowsData = rowLines.map(line => this.processTableData(line));
-        }
-      }
-
-      // 如果没有表头但有文本，尝试从文本中解析表格
-      if ((!headerCells || headerCells.length === 0) && token.text) {
-        const tableText = token.text.trim();
-        if (tableText) {
-          const lines = tableText.split('\n').filter(line => line.trim());
-          if (lines.length > 0) {
-            // 第一行作为表头
-            headerCells = this.processTableData(lines[0]);
-            // 剩余行作为数据行
-            if (lines.length > 1) {
-              rowsData = lines.slice(1).map(line => this.processTableData(line));
-            }
-          }
-        }
-      }
-
-      // 确保表格数据有效
-      if (!headerCells || headerCells.length === 0) {
-        console.warn("创建表格失败：无效的表头数据");
-        return new Paragraph({ text: "无效的表格数据" });
-      }
-
-      // 计算表格列数和列宽
-      const columnCount = headerCells.length;
-      const tableWidth = 8000; // 表格总宽度，约为页面宽度的80%
-      const columnWidth = Math.floor(tableWidth / columnCount);
-
-      // 创建表头行
-      const headerRow = new TableRow({
-        tableHeader: true, // 指定这是表头行
-        height: { value: 400, rule: 'atLeast' }, // 设置最小行高
-        children: headerCells.map(cellText => {
-          return new TableCell({
-            shading: { fill: tableHeaderBg, type: 'clear' },
-            verticalAlign: 'center',
-            margins: { top: 100, bottom: 100, left: 100, right: 100 },
-            children: [
-              new Paragraph({
-                alignment: AlignmentType.CENTER,
-                spacing: { before: 60, after: 60 },
-                children: [
-                  new TextRun({
-                    text: cellText,
-                    font: headerFont,
-                    size: fontSize,
-                    bold: true
-                  })
-                ]
-              })
-            ]
-          });
-        })
-      });
-
-      // 创建数据行
-      const dataRows = rowsData.map(rowData => {
-        return new TableRow({
-          height: { value: 400, rule: 'atLeast' }, // 设置最小行高
-          children: rowData.map(cellText => {
-            return new TableCell({
-              verticalAlign: 'center',
-              margins: { top: 100, bottom: 100, left: 100, right: 100 },
-              children: [
-                new Paragraph({
-                  alignment: AlignmentType.CENTER,
-                  spacing: { before: 60, after: 60 },
-                  children: [
-                    new TextRun({
-                      text: cellText,
-                      font: paragraphStyles.font || "仿宋_GB2312",
-                      size: fontSize,
-                      color: textColor
-                    })
-                  ]
-                })
-              ]
-            });
-          })
-        });
-      });
-
-      // 创建表格
-      return new Table({
-        // 表格宽度设置
-        width: { size: tableWidth, type: WidthType.DXA },
-
-        // 表格对齐方式
-        alignment: AlignmentType.CENTER,
-
-        // 表格边框设置
-        borders: {
-          top: { style: BorderStyle.SINGLE, size: tableStyles.borderWidth || 1, color: tableBorderColor },
-          bottom: { style: BorderStyle.SINGLE, size: tableStyles.borderWidth || 1, color: tableBorderColor },
-          left: { style: BorderStyle.SINGLE, size: tableStyles.borderWidth || 1, color: tableBorderColor },
-          right: { style: BorderStyle.SINGLE, size: tableStyles.borderWidth || 1, color: tableBorderColor },
-          insideHorizontal: { style: BorderStyle.SINGLE, size: tableStyles.borderWidth || 1, color: tableBorderColor },
-          insideVertical: { style: BorderStyle.SINGLE, size: tableStyles.borderWidth || 1, color: tableBorderColor }
-        },
-
-        // 表格行数据
-        rows: [headerRow, ...dataRows],
-
-        // 设置列宽
-        columnWidths: Array(columnCount).fill(columnWidth),
-
-        // 表格布局类型：固定宽度布局
-        layout: TableLayoutType.FIXED
-      });
-    } catch (error) {
-      console.error("创建表格时出错:", error);
-      return new Paragraph({ text: `表格创建失败: ${error.message}` });
-    }
-  }
-
-  /**
-   * @method createImagePlaceholder
-   * @description 创建图片占位符或插入真实图片
-   * @param {Object} token - 图片token
-   * @returns {Promise<Paragraph>} 包含图片的段落
-   */
-  async createImagePlaceholder(token) {
-    try {
-      // 获取图片描述信息
-      let altText = token.text || token.title || "图片";
-      if (typeof altText === 'string' && altText.match(/!\[(.+?)\]/)) {
-        altText = altText.match(/!\[(.+?)\]/)[1];
-      }
-
-      // 获取图片路径
-      const imgSrc = token.href || '';
-
-      // 确定对齐方式
-      const paragraphStyles = this.styles.paragraph || {};
-      const imageStyles = this.styles.image || {};
-      let alignment = AlignmentType.CENTER;
-      if (imageStyles.alignment) {
-        switch (imageStyles.alignment.toLowerCase()) {
-          case 'left':
-            alignment = AlignmentType.LEFT;
-            break;
-          case 'right':
-            alignment = AlignmentType.RIGHT;
-            break;
-          default:
-            alignment = AlignmentType.CENTER;
-        }
-      }
-
-      // 设置默认图片尺寸
-      let width = 400;
-      let height = 300;
-
-      // 判断是否为Markdown图标
-      if (altText === 'Markdown Logo' || imgSrc.includes('markdown-here.com')) {
-        width = 64;
-        height = 64;
-      }
-
-      console.log(`处理图片: ${imgSrc}`);
-
-      // 1. 检查图片信息中是否有匹配的图片
-      if (this.imageInfos && this.imageInfos.length > 0) {
-        // 查找匹配的图片信息
-        const imgInfo = this.imageInfos.find(img =>
-          (img.url === imgSrc) ||
-          (img.original.includes(imgSrc)) ||
-          (img.original.includes(altText))
-        );
-
-        if (imgInfo) {
-          console.log(`找到匹配的图片信息:`, imgInfo);
-
-          // 如果有文件句柄，使用本地文件
-          if (imgInfo.fileHandle) {
-            try {
-              // 从FileHandle获取文件
-              const file = await imgInfo.fileHandle.getFile();
-              // 将文件转换为ArrayBuffer
-              const arrayBuffer = await file.arrayBuffer();
-
-              console.log(`成功从本地文件加载图片数据，大小: ${arrayBuffer.byteLength} 字节`);
-
-              // 创建图片段落
-              return new Paragraph({
-                alignment: alignment,
-                spacing: { before: 200, after: 200 },
-                children: [
-                  new ImageRun({
-                    data: arrayBuffer,
-                    transformation: {
-                      width,
-                      height
-                    }
-                  })
-                ]
-              });
-            } catch (error) {
-              console.error(`从本地文件加载图片失败:`, error);
-              // 尝试使用localPath
-              if (imgInfo.localPath) {
-                console.log(`尝试使用本地文件路径: ${imgInfo.localPath}`);
-                try {
-                  return new Paragraph({
-                    alignment: alignment,
-                    spacing: { before: 200, after: 200 },
-                    children: [
-                      new ImageRun({
-                        data: imgInfo.localPath,
-                        transformation: {
-                          width,
-                          height
-                        }
-                      })
-                    ]
-                  });
-                } catch (pathError) {
-                  console.error(`使用本地路径加载图片失败:`, pathError);
-                  return this.createImageErrorPlaceholder(
-                    altText,
-                    `无法加载图片: ${pathError.message}`,
-                    alignment,
-                    paragraphStyles
-                  );
-                }
-              } else {
-              // 失败时使用错误占位符
-              return this.createImageErrorPlaceholder(
-                altText,
-                `无法从本地文件加载图片: ${error.message}`,
-                  alignment,
-                  paragraphStyles
-                );
-              }
-            }
-          }
-
-          // 使用本地文件路径（直接传给docx.js）
-          if (imgInfo.localPath) {
-            try {
-              console.log(`尝试使用本地文件路径: ${imgInfo.localPath}`);
-              return new Paragraph({
-                alignment: alignment,
-                spacing: { before: 200, after: 200 },
-                children: [
-                  new ImageRun({
-                    data: imgInfo.localPath,
-                    transformation: {
-                      width,
-                      height
-                    }
-                  })
-                ]
-              });
-            } catch (error) {
-              console.error(`从本地路径加载图片失败:`, error);
-              // 失败时使用错误占位符
-              return this.createImageErrorPlaceholder(
-                altText,
-                `无法从本地路径加载图片: ${error.message}`,
-                alignment,
-                paragraphStyles
-              );
-            }
-          }
-
-          // 如果是Base64格式
-          if (imgInfo.isBase64 && imgInfo.url && imgInfo.url.startsWith('data:')) {
-            try {
-              const base64Data = imgInfo.url.split(',')[1];
-              if (!base64Data) throw new Error('无效的Base64数据');
-
-              // 解码Base64
-              const binaryString = window.atob(base64Data);
-              const bytes = new Uint8Array(binaryString.length);
-              for (let i = 0; i < binaryString.length; i++) {
-                bytes[i] = binaryString.charCodeAt(i);
-              }
-
-              // 创建图片段落
-              return new Paragraph({
-                alignment: alignment,
-                spacing: { before: 200, after: 200 },
-                children: [
-                  new ImageRun({
-                    data: bytes.buffer,
-                    transformation: {
-                      width,
-                      height
-                    }
-                  })
-                ]
-              });
-            } catch (error) {
-              console.error(`处理Base64图片失败:`, error);
-              // 失败时使用错误占位符
-              return this.createImageErrorPlaceholder(
-                altText,
-                `Base64图片处理失败: ${error.message}`,
-                alignment,
-                paragraphStyles
-              );
-            }
-          }
-        }
-      }
-
-      // 2. 直接处理Base64图片
-      if (imgSrc && imgSrc.startsWith('data:')) {
-        try {
-          // 提取Base64数据
-          const base64Data = imgSrc.split(',')[1];
-          if (!base64Data) throw new Error('无效的Base64数据');
-
-          // 解码Base64
-          const binaryString = window.atob(base64Data);
-          const bytes = new Uint8Array(binaryString.length);
-          for (let i = 0; i < binaryString.length; i++) {
-            bytes[i] = binaryString.charCodeAt(i);
-          }
-
-          // 创建图片段落
-          return new Paragraph({
-            alignment: alignment,
-            spacing: { before: 200, after: 200 },
-            children: [
-              new ImageRun({
-                data: bytes.buffer,
-                transformation: {
-                  width,
-                  height
-                }
-              })
-            ]
-          });
-        } catch (error) {
-          console.error(`处理Base64图片失败:`, error);
-          // 失败时使用错误占位符
-          return this.createImageErrorPlaceholder(
-            altText,
-            `Base64图片处理失败: ${error.message}`,
-            alignment,
-            paragraphStyles
-          );
-        }
-      }
-
-      // 3. 没有找到匹配的图片，使用占位符
-      console.warn(`未找到匹配的图片信息: ${imgSrc}`);
-      return this.createImageErrorPlaceholder(
-        altText,
-        `未设置临时文件夹或未找到图片: ${imgSrc.substring(0, 30)}${imgSrc.length > 30 ? '...' : ''}`,
-        alignment,
-        paragraphStyles
-      );
-    } catch (error) {
-      console.error("创建图片时出错:", error);
-      return new Paragraph({
-        text: `图片创建失败: ${error.message}`,
-        alignment: AlignmentType.CENTER
-      });
-    }
-  }
-
-  /**
-   * @method createImageErrorPlaceholder
-   * @description 创建图片错误占位符
-   * @private
-   */
-  createImageErrorPlaceholder(altText, errorMessage, alignment, paragraphStyles) {
-    const imageDescription = altText ? `图片: ${altText} (${errorMessage})` : `图片 (${errorMessage})`;
-    const paragraphColor = paragraphStyles.color.replace('#', '');
-
-    return new Paragraph({
-      alignment: alignment,
-      spacing: {
-        before: 200,
-        after: 200
-      },
-      border: {
-        top: { style: BorderStyle.DOTTED, size: 1, color: "AAAAAA" },
-        bottom: { style: BorderStyle.DOTTED, size: 1, color: "AAAAAA" },
-        left: { style: BorderStyle.DOTTED, size: 1, color: "AAAAAA" },
-        right: { style: BorderStyle.DOTTED, size: 1, color: "AAAAAA" }
-      },
-      shading: {
-        type: 'clear',
-        fill: "F5F5F5"
-      },
-      children: [
-        new TextRun({
-          text: imageDescription,
-          italic: true,
-          color: paragraphColor
-        })
-      ]
-    });
-  }
-
-  /**
    * @method createTaskList
    * @param {Object} token - 任务列表token
    * @returns {Array<Paragraph>} 任务列表段落数组
@@ -2348,21 +2110,6 @@ class Md2Docx {
           color: (footnoteStyles.color || paragraphStyles.color).replace('#', '')
         })
       ]
-    });
-  }
-
-  /**
-   * @method saveAsDocx
-   * @description 保存文档为docx文件
-   * @param {string} filename - 文件名
-   */
-  saveAsDocx(filename = 'document.docx') {
-    if (!this.doc) {
-      throw new Error('请先调用convert方法生成文档');
-    }
-
-    Packer.toBlob(this.doc).then(blob => {
-      saveAs(blob, filename);
     });
   }
 
@@ -2626,6 +2373,114 @@ class Md2Docx {
           };
       }
     }).filter(token => token !== null);
+  }
+
+  /**
+   * @method getDefaultStyles
+   * @description 获取默认样式配置
+   * @returns {Object} 默认样式对象
+   */
+  getDefaultStyles() {
+    try {
+      // 直接返回defaultStyles模块引入的对象
+      const styles = JSON.parse(JSON.stringify(defaultStyles));
+      console.log("从JSON文件加载的默认样式:", styles);
+      return styles;
+    } catch (error) {
+      console.error('加载默认样式出错:', error);
+
+      // 返回硬编码的基本样式，确保应用不会崩溃
+      return {
+        document: {
+          pageSize: "A4",
+          pageOrientation: "portrait",
+          margins: {
+            top: 2099,
+            right: 1474,
+            bottom: 1984,
+            left: 1587
+          }
+        },
+        heading: {
+          font: "方正小标宋简体",
+          color: "#000000",
+          colors: {
+            h1: "#000000",
+            h2: "#000000",
+            h3: "#000000",
+            h4: "#000000",
+            h5: "#000000",
+            h6: "#000000"
+          },
+          bold: {
+            h1: false,
+            h2: true,
+            h3: false,
+            h4: false,
+            h5: false,
+            h6: false
+          },
+          sizes: {
+            h1: 22,
+            h2: 16,
+            h3: 16,
+            h4: 16,
+            h5: 16,
+            h6: 10.5
+          },
+          alignment: {
+            h1: "center",
+            h2: "left",
+            h3: "left",
+            h4: "left",
+            h5: "left",
+            h6: "left"
+          },
+          fonts: {
+            h1: "方正小标宋简体",
+            h2: "黑体",
+            h3: "楷体",
+            h4: "仿宋_GB2312",
+            h5: "仿宋_GB2312",
+            h6: "仿宋_GB2312"
+          },
+          indent: {
+            h1: 0,
+            h2: 0,
+            h3: 0,
+            h4: 800,
+            h5: 800,
+            h6: 0
+          },
+          prefix: {
+            h1: "",
+            h2: "一、",
+            h3: "(一)",
+            h4: "1.",
+            h5: "(1)",
+            h6: ""
+          },
+          usePrefix: {
+            h1: false,
+            h2: true,
+            h3: true,
+            h4: true,
+            h5: true,
+            h6: false
+          }
+        },
+        paragraph: {
+          font: "仿宋_GB2312",
+          size: 16,
+          color: "#000000",
+          firstLineIndent: 800,
+          alignment: "justified",
+          lineSpacingRule: "auto",
+          lineSpacing: 1.5,
+          spacing: 0
+        }
+      };
+    }
   }
 }
 

@@ -20,7 +20,7 @@ class Md2Json {
     // 初始化样式对象
     const style = {
       bold: false,
-      italic: false,
+      italics: false,
       strike: false,
       code: false,
       underline: false,
@@ -33,20 +33,20 @@ class Md2Json {
     if ((text.startsWith('***') && text.endsWith('***')) ||
         (text.startsWith('___') && text.endsWith('___'))) {
       style.bold = true;
-      style.italic = true;
+      style.italics = true;
       style.content = text.slice(3, -3);
     }
     // 检查是否是加粗文本 (** 或 __)
     else if ((text.startsWith('**') && text.endsWith('**')) ||
         (text.startsWith('__') && text.endsWith('__'))) {
       style.bold = true;
-      style.italic = false; // 确保加粗文本不是斜体
+      style.italics = false; // 确保加粗文本不是斜体
       style.content = text.slice(2, -2);
     }
     // 检查是否是斜体文本 (* 或 _)
     else if ((text.startsWith('*') && text.endsWith('*') && !text.startsWith('**')) ||
              (text.startsWith('_') && text.endsWith('_') && !text.startsWith('__'))) {
-      style.italic = true;
+      style.italics = true;
       style.content = text.slice(1, -1);
     }
     // 检查是否是删除线文本 (~~)
@@ -88,6 +88,29 @@ class Md2Json {
     const styles = [];
     let currentText = text;
 
+    // 检查是否是任务列表项
+    const taskMatch = text.match(/^\s*[-*+]\s+\[([ x])\]\s+(.+)$/i);
+    if (taskMatch) {
+      return {
+        type: "task",
+        rawText: text,
+        isChecked: taskMatch[1].toLowerCase() === 'x',
+        fullContent: taskMatch[2],
+        inlineStyles: [
+          {
+            bold: false,
+            italics: false,
+            strike: false,
+            code: false,
+            underline: false,
+            superScript: false,
+            subScript: false,
+            content: taskMatch[2]
+          }
+        ]
+      };
+    }
+
     // 首先处理HTML标签
     const htmlTagRegex = /<(\/?)([a-z]+)([^>]*)>/g;
     let match;
@@ -100,7 +123,7 @@ class Md2Json {
         if (beforeText) {
           styles.push({
             bold: false,
-            italic: false,
+            italics: false,
             strike: false,
             code: false,
             underline: false,
@@ -122,7 +145,7 @@ class Md2Json {
               const content = currentText.slice(match.index + fullTag.length, endTagIndex);
               styles.push({
                 bold: false,
-                italic: false,
+                italics: false,
                 strike: false,
                 code: false,
                 underline: true,
@@ -144,7 +167,7 @@ class Md2Json {
               const content = currentText.slice(match.index + fullTag.length, supEndIndex);
               styles.push({
                 bold: false,
-                italic: false,
+                italics: false,
                 strike: false,
                 code: false,
                 underline: false,
@@ -163,7 +186,7 @@ class Md2Json {
               const content = currentText.slice(match.index + fullTag.length, subEndIndex);
               styles.push({
                 bold: false,
-                italic: false,
+                italics: false,
                 strike: false,
                 code: false,
                 underline: false,
@@ -186,7 +209,7 @@ class Md2Json {
       if (remainingText) {
         styles.push({
           bold: false,
-          italic: false,
+          italics: false,
           strike: false,
           code: false,
           underline: false,
@@ -210,7 +233,7 @@ class Md2Json {
       const newStyle = {
         ...style,
         bold: isBold || isBoldItalic,
-        italic: isItalic || isBoldItalic,
+        italics: isItalic || isBoldItalic,
         content: text
           .replace(/^(\*\*\*|___)(.*?)(\*\*\*|___)$/, '$2')
           .replace(/^(\*\*|__)(.*?)(\*\*|__)$/, '$2')
@@ -335,7 +358,7 @@ class Md2Json {
 
     // 只有当存在样式时才添加inlineStyles
     if (parsedStyles.some(style =>
-      style.bold || style.italic || style.strike ||
+      style.bold || style.italics || style.strike ||
       style.code || style.underline ||
       style.superscript || style.subscript
     )) {
@@ -401,9 +424,8 @@ class Md2Json {
     } else if (match = text.match(linkRegex)) {
       return {
         type: 'hyperlink',
-        text: match[1] || '',
+        text: match[3] || match[1] || '', // 优先使用title，如果没有则使用text
         url: match[2] || '',
-        title: match[3] || '',
         rawText: text
       };
     } else if (match = text.match(autoLinkRegex)) {
@@ -411,7 +433,6 @@ class Md2Json {
         type: 'hyperlink',
         text: match[1],
         url: match[1],
-        title: '',
         rawText: text
       };
     }
@@ -615,52 +636,36 @@ class Md2Json {
         const rawText = line.trim();
         const indentMatch = line.match(/^(\s*)/);
         const indentLevel = indentMatch ? Math.floor(indentMatch[0].length / 2) : 0; // 转为整数
+
+        // 检查是否是任务列表
+        const taskListMatch = line.match(/^\s*[-*+]\s+\[([ x])\]\s+(.+)$/i);
+        if (taskListMatch) {
+          const text = taskListMatch[2].trim();
+          // 解析列表项中的内联样式
+          const parsedStyles = this.parseInlineStyles(text);
+
+          document.children.push({
+            type: 'task',
+            rawText: rawText,
+            isChecked: taskListMatch[1].toLowerCase() === 'x',
+            fullContent: text,
+            inlineStyles: parsedStyles
+          });
+          continue;
+        }
+
         const text = line.replace(/^\s*[-*+]\s+/, '').trim();
         // 解析列表项中的内联样式
         const parsedStyles = this.parseInlineStyles(text);
 
-        if (!inList || listType !== 'unordered') {
-          // 开始新的无序列表
-          if (inList) {
-            // 先添加之前的列表
-            document.children.push({
-              type: 'list',
-              listType: listType,
-              items: listItems
-            });
-          }
-
-          inList = true;
-          listType = 'unordered';
-
-          // 创建新的列表项
-          const newItem = {
-            type: 'listItem',
-            rawText: rawText,
-            fullContent: parsedStyles.map(style => style.content).join(''),
-            level: indentLevel,
-            inlineStyles: parsedStyles,
-            blocks: [] // 添加blocks数组存放附加内容
-          };
-
-          listItems = [newItem];
-          currentListItem = newItem;
-          currentListLevel = indentMatch ? indentMatch[0].length : 0;
-        } else {
-          // 继续添加到当前列表
-          const newItem = {
-            type: 'listItem',
-            rawText: rawText,
-            fullContent: parsedStyles.map(style => style.content).join(''),
-            level: indentLevel,
-            inlineStyles: parsedStyles,
-            blocks: [] // 添加blocks数组存放附加内容
-          };
-
-          listItems.push(newItem);
-          currentListItem = newItem;
-          currentListLevel = indentMatch ? indentMatch[0].length : 0;
-        }
+        document.children.push({
+          type: 'list',
+          rawText: rawText,
+          level: indentLevel,
+          hasNumber: false,
+          fullContent: text,
+          inlineStyles: parsedStyles
+        });
         continue;
       }
 
@@ -670,55 +675,18 @@ class Md2Json {
         if (listItemMatch) {
           const rawText = line.trim();
           const indentLevel = Math.floor((listItemMatch[1].length) / 2); // 转为整数
-          const number = listItemMatch[2]; // 只保留数字部分
           const text = listItemMatch[4].trim();
           // 解析列表项中的内联样式
           const parsedStyles = this.parseInlineStyles(text);
 
-          if (!inList || listType !== 'ordered') {
-            // 开始新的有序列表
-            if (inList) {
-              // 先添加之前的列表
-              document.children.push({
-                type: 'list',
-                listType: listType,
-                items: listItems
-              });
-            }
-
-            inList = true;
-            listType = 'ordered';
-
-            // 创建新的列表项
-            const newItem = {
-              type: 'listItem',
-              rawText: rawText,
-              fullContent: parsedStyles.map(style => style.content).join(''),
-              level: indentLevel,
-              number: number,
-              inlineStyles: parsedStyles,
-              blocks: [] // 添加blocks数组存放附加内容
-            };
-
-            listItems = [newItem];
-            currentListItem = newItem;
-            currentListLevel = listItemMatch[1].length;
-          } else {
-            // 继续添加到当前列表
-            const newItem = {
-              type: 'listItem',
-              rawText: rawText,
-              fullContent: parsedStyles.map(style => style.content).join(''),
-              level: indentLevel,
-              number: number,
-              inlineStyles: parsedStyles,
-              blocks: [] // 添加blocks数组存放附加内容
-            };
-
-            listItems.push(newItem);
-            currentListItem = newItem;
-            currentListLevel = listItemMatch[1].length;
-          }
+          document.children.push({
+            type: 'list',
+            rawText: rawText,
+            level: indentLevel,
+            hasNumber: true,
+            fullContent: text,
+            inlineStyles: parsedStyles
+          });
           continue;
         }
       }
