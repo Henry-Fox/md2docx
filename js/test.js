@@ -862,6 +862,64 @@ export default async function runTest() {
         clickUrl: "https://www.baidu.com",
         clickTitle: "点击链接",
       },
+      {
+        type: "heading",
+        rawText: "## 脚注测试",
+        level: 2,
+        hasNumber: false,
+        number: "",
+        fullContent: "脚注测试",
+        inlineStyles: [
+          {
+            bold: false,
+            italics: false,
+            strike: false,
+            code: false,
+            underline: false,
+            superScript: false,
+            subScript: false,
+            content: "脚注测试"
+          }
+        ]
+      },
+      {
+        type: "footnote",
+        rawText: "这是一个带脚注的文本[^1]",
+        fullContent: "这是一个带脚注的文本",
+        footnoteSign: "1",
+        footnoteContent: "这是脚注的内容",
+        inlineStyles: [
+          {
+            bold: false,
+            italics: false,
+            strike: false,
+            code: false,
+            underline: false,
+            superScript: false,
+            subScript: false,
+            content: "这是一个带脚注的文本"
+          }
+        ]
+      },
+      {
+        type: "footnote",
+        rawText: "这是另一个带脚注的文本[^note]",
+        fullContent: "这是另一个带脚注的文本",
+        footnoteSign: "note",
+        footnoteContent: "这是一个有标签的脚注",
+        inlineStyles: [
+          {
+            bold: false,
+            italics: false,
+            strike: false,
+            code: false,
+            underline: false,
+            superScript: false,
+            subScript: false,
+            content: "这是另一个带脚注的文本"
+          }
+        ]
+      },
     ],
   };
 
@@ -1493,6 +1551,64 @@ export default async function runTest() {
     }
   }
 
+  // 添加脚注处理函数
+  function footnoteRecognition(footnote) {
+    // 创建主文本段落
+    const mainParagraph = new Paragraph({
+      children: [
+        // 主文本
+        ...footnote.inlineStyles.map(style =>
+          new TextRun({
+            text: style.content,
+            bold: style.bold,
+            italics: style.italics,
+            strike: style.strike,
+            underline: style.underline,
+            superScript: style.superScript,
+            subScript: style.subScript,
+            size: 24,
+            font: "仿宋",
+            color: "000000"
+          })
+        ),
+        // 脚注引用标记
+        new TextRun({
+          text: `[${footnote.footnoteSign}]`,
+          size: 20, // 稍微小一点的字体
+          superScript: true,
+          color: "000000"
+        })
+      ]
+    });
+
+    // 创建脚注内容段落
+    const footnoteParagraph = new Paragraph({
+      style: "Footnote",
+      children: [
+        // 脚注标记
+        new TextRun({
+          text: `${footnote.footnoteSign}. `,
+          size: 20,
+          superScript: true,
+          color: "000000"
+        }),
+        // 脚注内容
+        new TextRun({
+          text: footnote.footnoteContent,
+          size: 20,
+          font: "仿宋",
+          color: "000000"
+        })
+      ],
+      spacing: {
+        before: 120,
+        after: 120
+      }
+    });
+
+    return [mainParagraph, footnoteParagraph];
+  }
+
   // 处理json数据，将内容添加到paragraphs数组
   for (const child of json.children) {
     console.log(child);
@@ -1618,6 +1734,11 @@ export default async function runTest() {
         });
         paragraphs.push(placeholderParagraph);
       }
+    }
+    // 处理脚注
+    if (child.type === "footnote") {
+      const footnoteParagraphs = footnoteRecognition(child);
+      paragraphs.push(...footnoteParagraphs);
     }
   }
 
@@ -1759,6 +1880,25 @@ export default async function runTest() {
             },
           },
         },
+      },
+      footnote: {
+        run: {
+          size: 20, // 10磅
+          font: "仿宋",
+          color: "000000"
+        },
+        paragraph: {
+          alignment: AlignmentType.JUSTIFIED,
+          spacing: {
+            before: 120,
+            after: 120,
+            line: 400
+          },
+          indent: {
+            left: 720, // 36磅左缩进
+            hanging: 360 // 18磅悬挂缩进
+          }
+        }
       },
     },
     numbering: {

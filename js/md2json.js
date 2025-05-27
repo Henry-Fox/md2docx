@@ -442,11 +442,12 @@ class Md2Json {
 
   /**
    * @method parseFootnote
-   * @description 解析段落中的脚注引用
+   * @description 解析段落中的脚注引用和定义
    * @param {string} text - 段落文本
+   * @param {string} nextLine - 下一行文本（用于检查脚注定义）
    * @returns {Object|null} 包含脚注信息的对象，如果没有脚注则返回null
    */
-  parseFootnote(text) {
+  parseFootnote(text, nextLine = '') {
     // 匹配脚注引用格式 [^id]
     const footnoteRegex = /\[\^(.*?)\]/;
     const match = text.match(footnoteRegex);
@@ -455,40 +456,30 @@ class Md2Json {
       const footnoteSign = match[1]; // 脚注标识符
       const fullContent = text.replace(match[0], '').trim(); // 去除脚注标记的内容
 
+      // 检查下一行是否是脚注定义
+      const footnoteDefRegex = new RegExp(`^\\[\\^${footnoteSign}\\]:\\s*(.*?)$`);
+      const defMatch = nextLine.trim().match(footnoteDefRegex);
+
+      let footnoteContent = '';
+      if (defMatch) {
+        footnoteContent = defMatch[1].trim();
+      }
+
+      // 解析内联样式
+      const parsedStyles = this.parseInlineStyles(fullContent);
+
       return {
-        hasFootnote: true,
-        footnoteSign: footnoteSign,
+        type: 'footnote',
+        rawText: text,
         fullContent: fullContent,
-        footnoteMatch: match[0] // 完整的脚注标记
+        footnoteSign: footnoteSign,
+        footnoteContent: footnoteContent,
+        inlineStyles: parsedStyles,
+        hasDefinition: !!defMatch
       };
     }
 
-    return {
-      hasFootnote: false
-    };
-  }
-
-  /**
-   * @method isFootnoteDefinition
-   * @description 检查一行是否是脚注定义行
-   * @param {string} line - 要检查的行
-   * @returns {Object|null} 包含脚注定义信息的对象，如果不是脚注定义则返回null
-   */
-  isFootnoteDefinition(line) {
-    // 匹配脚注定义格式 [^id]: content
-    const match = line.match(/^\[\^(.*?)\]:\s*(.*?)$/);
-
-    if (match) {
-      return {
-        isDefinition: true,
-        footnoteSign: match[1], // 脚注标识符
-        footnoteContent: match[2].trim() // 脚注内容
-      };
-    }
-
-    return {
-      isDefinition: false
-    };
+    return null;
   }
 
   /**
@@ -510,16 +501,6 @@ class Md2Json {
       children: []
     };
 
-    // 首先收集所有脚注定义
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i].trim();
-      const footnoteDefInfo = this.isFootnoteDefinition(line);
-
-      if (footnoteDefInfo.isDefinition) {
-        this.footnotes.set(footnoteDefInfo.footnoteSign, footnoteDefInfo.footnoteContent);
-      }
-    }
-
     // 解析每一行，生成相应的tokens
     let currentHeadingLevel = 0;
     let inCodeBlock = false;
@@ -537,6 +518,7 @@ class Md2Json {
 
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
+      const nextLine = i + 1 < lines.length ? lines[i + 1] : '';
 
       // 处理代码块
       if (line.startsWith('```')) {
@@ -853,12 +835,6 @@ class Md2Json {
         continue;
       }
 
-      // 跳过脚注定义行，因为已经在之前的循环中处理过
-      const footnoteDefInfo = this.isFootnoteDefinition(line.trim());
-      if (footnoteDefInfo.isDefinition) {
-        continue;
-      }
-
       // 处理普通段落和脚注引用
       if (line.trim() !== '') {
         // 如果不在列表中或者缩进小于当前列表项
@@ -880,25 +856,14 @@ class Md2Json {
           const rawText = line.trim();
 
           // 检查是否包含脚注引用
-          const footnoteInfo = this.parseFootnote(rawText);
+          const footnoteInfo = this.parseFootnote(rawText, nextLine);
 
-          if (footnoteInfo.hasFootnote) {
-            // 获取脚注内容
-            const footnoteContent = this.footnotes.get(footnoteInfo.footnoteSign) || '';
-
-            // 解析内联样式
-            const parsedStyles = this.parseInlineStyles(footnoteInfo.fullContent);
-
-            document.children.push({
-              type: 'footnote',
-              rawText: rawText,
-              hasNumber: false,
-              number: '',
-              fullContent: parsedStyles.map(style => style.content).join(''),
-              inlineStyles: parsedStyles,
-              footnoteSign: footnoteInfo.footnoteSign,
-              footnoteContent: footnoteContent
-            });
+          if (footnoteInfo) {
+            document.children.push(footnoteInfo);
+            // 如果下一行是脚注定义，跳过它
+            if (footnoteInfo.hasDefinition) {
+              i++;
+            }
           } else {
             // 检查段落是否以数字序号开头
             const parsedParagraph = this.parseHeadingWithNumber(rawText);
