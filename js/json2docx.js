@@ -79,6 +79,19 @@ async function loadImage(url) {
  * @returns {Promise<Array>} 处理后的图片信息数组
  */
 async function processImages(json) {
+  // 检查json是否有效
+  if (!json || !json.children) {
+    console.log("JSON数据无效或为空");
+    return [];
+  }
+
+  // 检查是否有图片类型的元素
+  const hasImages = json.children.some(child => child.type === "image");
+  if (!hasImages) {
+    console.log("JSON数据中没有图片需要处理");
+    return [];
+  }
+
   const imageInfos = [];
 
   // 遍历JSON数据查找图片
@@ -110,822 +123,15 @@ async function processImages(json) {
 // This simple example will only contain one section
 
 // 浏览器环境中使用Packer.toBlob和saveAs
-export default async function runTest() {
+export default async function runTest(jsonData) {
   console.log("开始生成文档...");
 
   // 创建一个数组用于收集所有段落
   const paragraphs = [];
 
-  //设置一个json
-  const json = {
-    type: "document",
-    children: [
-      {
-        type: "quote",
-        rawText: "> 这是一段引用文本",
-        fullContent: "这是一段引用文本",
-        inlineStyles: [
-          {
-            bold: false,
-            italics: false,
-            strike: false,
-            code: false,
-            underline: false,
-            superScript: false,
-            subScript: false,
-            content: "这是一段引用文本",
-          },
-        ],
-      },
-      {
-        type: "paragraph",
-        rawText: "这是一个普通段落，用于分隔引用",
-        hasNumber: false,
-        number: "",
-        fullContent: "这是一个普通段落，用于分隔引用",
-        inlineStyles: [
-          {
-            bold: false,
-            italics: false,
-            strike: false,
-            code: false,
-            underline: false,
-            superScript: false,
-            subScript: false,
-            content: "这是一个普通段落，用于分隔引用",
-          },
-        ],
-      },
-      {
-        type: "quote",
-        rawText: "> 这是另一段引用文本，包含**粗体**和*斜体*",
-        fullContent: "这是另一段引用文本，包含粗体和斜体",
-        inlineStyles: [
-          {
-            bold: false,
-            italics: false,
-            strike: false,
-            code: false,
-            underline: false,
-            superScript: false,
-            subScript: false,
-            content: "这是另一段引用文本，包含",
-          },
-          {
-            bold: true,
-            italics: false,
-            strike: false,
-            code: false,
-            underline: false,
-            superScript: false,
-            subScript: false,
-            content: "粗体",
-          },
-          {
-            bold: false,
-            italics: false,
-            strike: false,
-            code: false,
-            underline: false,
-            superScript: false,
-            subScript: false,
-            content: "和",
-          },
-          {
-            bold: false,
-            italics: true,
-            strike: false,
-            code: false,
-            underline: false,
-            superScript: false,
-            subScript: false,
-            content: "斜体",
-          },
-        ],
-      },
-      {
-        type: "list",
-        rawText: "1. 这是第一个有序列表项",
-        hasNumber: true,
-        level: 0,
-        fullContent: "这是第一个有序列表项",
-        inlineStyles: [
-          {
-            bold: false,
-            italics: false,
-            strike: false,
-            code: false,
-            underline: false,
-            superScript: false,
-            subScript: false,
-            content: "这是第一个有序列表项",
-          },
-        ],
-      },
-      {
-        type: "list",
-        rawText: "2. 这是第二个有序列表项",
-        level: 0,
-        hasNumber: true,
-        fullContent: "这是第二个有序列表项",
-        inlineStyles: [
-          {
-            bold: false,
-            italics: false,
-            strike: false,
-            code: false,
-            underline: false,
-            superScript: false,
-            subScript: false,
-            content: "这是第二个有序列表项",
-          },
-        ],
-      },
-      {
-        type: "list",
-        rawText: "3. 这是第三个有序列表项",
-        level: 0,
-        hasNumber: true,
-        fullContent: "这是第三个有序列表项",
-        inlineStyles: [
-          {
-            bold: false,
-            italics: false,
-            strike: false,
-            code: false,
-            underline: false,
-            superScript: false,
-            subScript: false,
-            content: "这是第三个有序列表项",
-          },
-        ],
-      },
-      {
-        type: "paragraph",
-        rawText: "这是一个普通段落，用于分隔列表",
-        hasNumber: false,
-        number: "",
-        fullContent: "这是一个普通段落，用于分隔列表",
-        inlineStyles: [
-          {
-            bold: false,
-            italics: false,
-            strike: false,
-            code: false,
-            underline: false,
-            superScript: false,
-            subScript: false,
-            content: "这是一个普通段落，用于分隔列表",
-          },
-        ],
-      },
-      {
-        type: "list",
-        rawText: "- 这是第一个无序列表项",
-        level: 0,
-        hasNumber: false,
-        fullContent: "这是第一个无序列表项",
-        inlineStyles: [
-          {
-            bold: false,
-            italics: false,
-            strike: false,
-            code: false,
-            underline: false,
-            superScript: false,
-            subScript: false,
-            content: "这是第一个无序列表项",
-          },
-        ],
-      },
-      {
-        type: "list",
-        rawText: "- 这是第二个无序列表项",
-        level: 0,
-        hasNumber: false,
-        fullContent: "这是第二个无序列表项",
-        inlineStyles: [
-          {
-            bold: false,
-            italics: false,
-            strike: false,
-            code: false,
-            underline: false,
-            superScript: false,
-            subScript: false,
-            content: "这是第二个无序列表项",
-          },
-        ],
-      },
-      {
-        type: "list",
-        rawText: "- 这是第三个无序列表项",
-        level: 0,
-        hasNumber: false,
-        fullContent: "这是第三个无序列表项",
-        inlineStyles: [
-          {
-            bold: false,
-            italics: false,
-            strike: false,
-            code: false,
-            underline: false,
-            superScript: false,
-            subScript: false,
-            content: "这是第三个无序列表项",
-          },
-        ],
-      },
-      {
-        type: "heading",
-        rawText: "## 代码块测试",
-        level: 2,
-        hasNumber: true,
-        number: "1",
-        fullContent: "代码块测试",
-        inlineStyles: [
-          {
-            bold: false,
-            italics: false,
-            strike: false,
-            code: false,
-            underline: false,
-            superScript: false,
-            subScript: false,
-            content: "代码块测试",
-          },
-        ],
-      },
-      {
-        type: "paragraph",
-        rawText: "下面是一个简单的JavaScript代码块：",
-        hasNumber: false,
-        number: "",
-        fullContent: "下面是一个简单的JavaScript代码块：",
-        inlineStyles: [
-          {
-            bold: false,
-            italics: false,
-            strike: false,
-            code: false,
-            underline: false,
-            superScript: false,
-            subScript: false,
-            content: "下面是一个简单的JavaScript代码块：",
-          },
-        ],
-      },
-      {
-        type: "code",
-        rawText:
-          "```javascript\nfunction hello() {\n    console.log('Hello, World!');\n}\n```",
-        fullContent: "function hello() {\n    console.log('Hello, World!');\n}",
-        inlineStyles: [
-          {
-            bold: false,
-            italics: false,
-            strike: false,
-            code: false,
-            underline: false,
-            superScript: false,
-            subScript: false,
-            content: "function hello() {\n    console.log('Hello, World!');\n}",
-          },
-        ],
-      },
-      {
-        type: "paragraph",
-        rawText: "下面是一个HTML代码块：",
-        hasNumber: false,
-        number: "",
-        fullContent: "下面是一个HTML代码块：",
-        inlineStyles: [
-          {
-            bold: false,
-            italics: false,
-            strike: false,
-            code: false,
-            underline: false,
-            superScript: false,
-            subScript: false,
-            content: "下面是一个HTML代码块：",
-          },
-        ],
-      },
-      {
-        type: "code",
-        rawText:
-          '```html\n<div class="container">\n    <h1>标题</h1>\n    <p>段落内容</p>\n</div>\n```',
-        fullContent:
-          '<div class="container">\n    <h1>标题</h1>\n    <p>段落内容</p>\n</div>',
-        inlineStyles: [
-          {
-            bold: false,
-            italics: false,
-            strike: false,
-            code: false,
-            underline: false,
-            superScript: false,
-            subScript: false,
-            content:
-              '<div class="container">\n    <h1>标题</h1>\n    <p>段落内容</p>\n</div>',
-          },
-        ],
-      },
-      {
-        type: "paragraph",
-        rawText: "下面是一个CSS代码块：",
-        hasNumber: false,
-        number: "",
-        fullContent: "下面是一个CSS代码块：",
-        inlineStyles: [
-          {
-            bold: false,
-            italics: false,
-            strike: false,
-            code: false,
-            underline: false,
-            superScript: false,
-            subScript: false,
-            content: "下面是一个CSS代码块：",
-          },
-        ],
-      },
-      {
-        type: "code",
-        rawText:
-          "```css\n.container {\n    width: 100%;\n    max-width: 1200px;\n    margin: 0 auto;\n    padding: 20px;\n}\n```",
-        fullContent:
-          ".container {\n    width: 100%;\n    max-width: 1200px;\n    margin: 0 auto;\n    padding: 20px;\n}",
-        inlineStyles: [
-          {
-            bold: false,
-            italics: false,
-            strike: false,
-            code: false,
-            underline: false,
-            superScript: false,
-            subScript: false,
-            content:
-              ".container {\n    width: 100%;\n    max-width: 1200px;\n    margin: 0 auto;\n    padding: 20px;\n}",
-          },
-        ],
-      },
-      {
-        type: "paragraph",
-        rawText: "下面是一些超链接示例：",
-        hasNumber: false,
-        number: "",
-        fullContent: "下面是一些超链接示例：",
-        inlineStyles: [
-          {
-            bold: false,
-            italics: false,
-            strike: false,
-            code: false,
-            underline: false,
-            superScript: false,
-            subScript: false,
-            content: "下面是一些超链接示例：",
-          },
-        ],
-      },
-      {
-        type: "hyperlink",
-        text: "这是一个链接",
-        url: "https://www.example.com",
-        title: "",
-        rawText: "[这是一个链接](https://www.example.com)",
-      },
-      {
-        type: "hyperlink",
-        text: "带有标题的链接",
-        url: "https://www.example.com",
-        title: "链接标题",
-        rawText: '[带有标题的链接](https://www.example.com "链接标题")',
-      },
-      {
-        type: "hyperlink",
-        text: "https://www.example.com",
-        url: "https://www.example.com",
-        title: "",
-        rawText: "<https://www.example.com> (自动链接)",
-      },
-      {
-        type: "heading",
-        rawText: "### 人员信息表格",
-        level: 3,
-        hasNumber: false,
-        number: "",
-        fullContent: "人员信息表格",
-        inlineStyles: [
-          {
-            bold: false,
-            italics: false,
-            strike: false,
-            code: false,
-            underline: false,
-            superScript: false,
-            subScript: false,
-            content: "人员信息表格",
-          },
-        ],
-      },
-      {
-        type: "table",
-        headers: [
-          {
-            rawText: "姓名",
-            fullContent: "姓名",
-          },
-          {
-            rawText: "年龄",
-            fullContent: "年龄",
-          },
-          {
-            rawText: "职业",
-            fullContent: "职业",
-          },
-        ],
-        alignments: ["left", "left", "left"],
-        rows: [
-          [
-            {
-              rawText: "张三",
-              fullContent: "张三",
-            },
-            {
-              rawText: "25",
-              fullContent: "25",
-            },
-            {
-              rawText: "工程师",
-              fullContent: "工程师",
-            },
-          ],
-          [
-            {
-              rawText: "李四",
-              fullContent: "李四",
-            },
-            {
-              rawText: "30",
-              fullContent: "30",
-            },
-            {
-              rawText: "设计师",
-              fullContent: "设计师",
-            },
-          ],
-          [
-            {
-              rawText: "王五",
-              fullContent: "王五",
-            },
-            {
-              rawText: "28",
-              fullContent: "28",
-            },
-            {
-              rawText: "产品经理",
-              fullContent: "产品经理",
-            },
-          ],
-        ],
-      },
-      {
-        type: "heading",
-        rawText: "### 对齐方式表格",
-        level: 3,
-        hasNumber: false,
-        number: "",
-        fullContent: "对齐方式表格",
-        inlineStyles: [
-          {
-            bold: false,
-            italics: false,
-            strike: false,
-            code: false,
-            underline: false,
-            superScript: false,
-            subScript: false,
-            content: "对齐方式表格",
-          },
-        ],
-      },
-      {
-        type: "table",
-        headers: [
-          {
-            rawText: "左对齐",
-            fullContent: "左对齐",
-          },
-          {
-            rawText: "居中对齐",
-            fullContent: "居中对齐",
-          },
-          {
-            rawText: "右对齐",
-            fullContent: "右对齐",
-          },
-        ],
-        alignments: ["left", "center", "right"],
-        rows: [
-          [
-            {
-              rawText: "内容",
-              fullContent: "内容",
-            },
-            {
-              rawText: "内容",
-              fullContent: "内容",
-            },
-            {
-              rawText: "内容",
-              fullContent: "内容",
-            },
-          ],
-          [
-            {
-              rawText: "文本",
-              fullContent: "文本",
-            },
-            {
-              rawText: "文本",
-              fullContent: "文本",
-            },
-            {
-              rawText: "文本",
-              fullContent: "文本",
-            },
-          ],
-        ],
-      },
-      {
-        type: "horizontal_rule",
-        rawText: "---",
-      },
-      {
-        type: "heading",
-        rawText: "## 任务列表测试",
-        level: 2,
-        hasNumber: false,
-        number: "",
-        fullContent: "任务列表测试",
-        inlineStyles: [
-          {
-            bold: false,
-            italics: false,
-            strike: false,
-            code: false,
-            underline: false,
-            superScript: false,
-            subScript: false,
-            content: "任务列表测试",
-          },
-        ],
-      },
-      {
-        type: "task",
-        rawText: "- [ ] 未完成任务1",
-        isChecked: false,
-        fullContent: "未完成任务1",
-        inlineStyles: [
-          {
-            bold: false,
-            italics: false,
-            strike: false,
-            code: false,
-            underline: false,
-            superScript: false,
-            subScript: false,
-            content: "未完成任务1",
-          },
-        ],
-      },
-      {
-        type: "task",
-        rawText: "- [x] 已完成任务1",
-        isChecked: true,
-        fullContent: "已完成任务1",
-        inlineStyles: [
-          {
-            bold: false,
-            italics: false,
-            strike: false,
-            code: false,
-            underline: false,
-            superScript: false,
-            subScript: false,
-            content: "已完成任务1",
-          },
-        ],
-      },
-      {
-        type: "task",
-        rawText: "  - [ ] 嵌套的未完成任务",
-        isChecked: false,
-        fullContent: "嵌套的未完成任务",
-        inlineStyles: [
-          {
-            bold: false,
-            italics: false,
-            strike: false,
-            code: false,
-            underline: false,
-            superScript: false,
-            subScript: false,
-            content: "嵌套的未完成任务",
-          },
-        ],
-      },
-      {
-        type: "task",
-        rawText: "  - [x] 嵌套的已完成任务",
-        isChecked: true,
-        fullContent: "嵌套的已完成任务",
-        inlineStyles: [
-          {
-            bold: false,
-            italics: false,
-            strike: false,
-            code: false,
-            underline: false,
-            superScript: false,
-            subScript: false,
-            content: "嵌套的已完成任务",
-          },
-        ],
-      },
-      {
-        type: "paragraph",
-        rawText: "这是一个普通段落，用于分隔任务列表",
-        hasNumber: false,
-        number: "",
-        fullContent: "这是一个普通段落，用于分隔任务列表",
-        inlineStyles: [
-          {
-            bold: false,
-            italics: false,
-            strike: false,
-            code: false,
-            underline: false,
-            superScript: false,
-            subScript: false,
-            content: "这是一个普通段落，用于分隔任务列表",
-          },
-        ],
-      },
-      {
-        type: "task",
-        rawText: "- [ ] 带**粗体**的任务",
-        isChecked: false,
-        fullContent: "带粗体的任务",
-        inlineStyles: [
-          {
-            bold: false,
-            italics: false,
-            strike: false,
-            code: false,
-            underline: false,
-            superScript: false,
-            subScript: false,
-            content: "带",
-          },
-          {
-            bold: true,
-            italics: false,
-            strike: false,
-            code: false,
-            underline: false,
-            superScript: false,
-            subScript: false,
-            content: "粗体",
-          },
-          {
-            bold: false,
-            italics: false,
-            strike: false,
-            code: false,
-            underline: false,
-            superScript: false,
-            subScript: false,
-            content: "的任务",
-          },
-        ],
-      },
-      {
-        type: "task",
-        rawText: "- [x] 带*斜体*的任务",
-        isChecked: true,
-        fullContent: "带斜体的任务",
-        inlineStyles: [
-          {
-            bold: false,
-            italics: false,
-            strike: false,
-            code: false,
-            underline: false,
-            superScript: false,
-            subScript: false,
-            content: "带",
-          },
-          {
-            bold: false,
-            italics: true,
-            strike: false,
-            code: false,
-            underline: false,
-            superScript: false,
-            subScript: false,
-            content: "斜体",
-          },
-          {
-            bold: false,
-            italics: false,
-            strike: false,
-            code: false,
-            underline: false,
-            superScript: false,
-            subScript: false,
-            content: "的任务",
-          },
-        ],
-      },
-      {
-        type: "image",
-        rawText:
-          '[![示例图片](./img/test.jpg "示例图片标题")](https://www.baidu.com "点击链接")',
-        alt: "示例图片",
-        url: "./img/test.jpg",
-        title: "示例图片标题",
-        clickUrl: "https://www.baidu.com",
-        clickTitle: "点击链接",
-      },
-      {
-        type: "heading",
-        rawText: "## 脚注测试",
-        level: 2,
-        hasNumber: false,
-        number: "",
-        fullContent: "脚注测试",
-        inlineStyles: [
-          {
-            bold: false,
-            italics: false,
-            strike: false,
-            code: false,
-            underline: false,
-            superScript: false,
-            subScript: false,
-            content: "脚注测试"
-          }
-        ]
-      },
-      {
-        type: "footnote",
-        rawText: "这是一个带脚注的文本[^1]",
-        fullContent: "这是一个带脚注的文本",
-        footnoteSign: "1",
-        footnoteContent: "这是脚注的内容",
-        inlineStyles: [
-          {
-            bold: false,
-            italics: false,
-            strike: false,
-            code: false,
-            underline: false,
-            superScript: false,
-            subScript: false,
-            content: "这是一个带脚注的文本"
-          }
-        ]
-      },
-      {
-        type: "footnote",
-        rawText: "这是另一个带脚注的文本[^note]",
-        fullContent: "这是另一个带脚注的文本",
-        footnoteSign: "note",
-        footnoteContent: "这是一个有标签的脚注",
-        inlineStyles: [
-          {
-            bold: false,
-            italics: false,
-            strike: false,
-            code: false,
-            underline: false,
-            superScript: false,
-            subScript: false,
-            content: "这是另一个带脚注的文本"
-          }
-        ]
-      },
-    ],
-  };
-
   // 处理所有图片
   console.log("开始处理图片...");
-  const imageInfos = await processImages(json);
+  const imageInfos = await processImages(jsonData);
   console.log(`图片处理完成，共处理 ${imageInfos.length} 张图片`);
 
   // 辅助函数：根据字号计算首行缩进（2个汉字宽度）
@@ -961,7 +167,8 @@ export default async function runTest() {
             paragraph: {
               alignment: AlignmentType.START,
               indent: {
-                left: convertCharesToTwip(0),
+                left: convertCharesToTwip(0),// 左缩进
+                firstLine: convertCharesToTwip(0), // 首行缩进
               },
             },
           },
@@ -974,7 +181,8 @@ export default async function runTest() {
           style: {
             paragraph: {
               indent: {
-                left: convertCharesToTwip(0.5),
+                left: convertCharesToTwip(0),
+                firstLine: convertCharesToTwip(0), // 首行缩进
               },
             },
           },
@@ -987,7 +195,8 @@ export default async function runTest() {
           style: {
             paragraph: {
               indent: {
-                left: convertCharesToTwip(1),
+                left: convertCharesToTwip(0),
+                firstLine: convertCharesToTwip(0), // 首行缩进
               },
             },
           },
@@ -1000,7 +209,8 @@ export default async function runTest() {
           style: {
             paragraph: {
               indent: {
-                left: convertCharesToTwip(1.5),
+                left: convertCharesToTwip(0),
+                firstLine: convertCharesToTwip(0), // 首行缩进
               },
             },
           },
@@ -1013,7 +223,8 @@ export default async function runTest() {
           style: {
             paragraph: {
               indent: {
-                left: convertCharesToTwip(2),
+                left: convertCharesToTwip(0),
+                firstLine: convertCharesToTwip(0), // 首行缩进
               },
             },
           },
@@ -1056,14 +267,15 @@ export default async function runTest() {
       levels: [
         {
           level: 0,
-          format: LevelFormat.BULLET,
+          format: LevelFormat.JUSTIFIED,
           text: "\u25CF",
           alignment: AlignmentType.LEFT,
           style: {
             paragraph: {
               indent: {
-                left: convertCharesToTwip(0),
-                hanging: convertCharesToTwip(0),
+                left: convertCharesToTwip(0), // 左缩进0
+                hanging: convertCharesToTwip(0), // 悬挂缩进0
+                firstLine: 480, // 首行缩进2个汉字宽度（12磅 × 2 = 24磅 = 480 twip）
               },
             },
           },
@@ -1098,44 +310,43 @@ export default async function runTest() {
     const textRuns = [];
     //根据标题级别设置不同的字体样式
     let fontSize, fontFamily, isBold;
-    let hangingIndent;
+
 
     switch (level) {
-      case 2: // 一级标题
-        fontSize = 32; // 16磅
+      case 1: // 标题
+        fontSize = 44; // 2号
         fontFamily = "黑体";
         isBold = true;
-        hangingIndent = convertCharesToTwip(1.5);
+        break;
+      case 2: // 一级标题
+        fontSize = 32; // 三号
+        fontFamily = "黑体";
+        isBold = true;
         break;
       case 3: // 二级标题
         fontSize = 32; // 16磅
         fontFamily = "楷体";
         isBold = true;
-        hangingIndent = convertCharesToTwip(1.5);
         break;
       case 4: // 三级标题
         fontSize = 28; // 14磅
         fontFamily = "仿宋";
         isBold = true;
-        hangingIndent = convertCharesToTwip(1.5);
         break;
       case 5: // 四级标题
         fontSize = 24; // 12磅
         fontFamily = "仿宋";
         isBold = true;
-        hangingIndent = convertCharesToTwip(1.5);
         break;
       case 6: // 五级标题
         fontSize = 21; // 10.5磅
         fontFamily = "仿宋";
         isBold = true;
-        hangingIndent = convertCharesToTwip(1.5);
         break;
       default:
         fontSize = 32;
         fontFamily = "黑体";
         isBold = true;
-        hangingIndent = convertCharesToTwip(1.5);
     }
     //遍历inlineStyles
     inlineStyles.forEach((word) => {
@@ -1145,9 +356,6 @@ export default async function runTest() {
           size: fontSize,
           font: fontFamily,
           bold: isBold,
-          indent: {
-            hanging: hangingIndent,
-          },
         })
       );
     });
@@ -1509,6 +717,22 @@ export default async function runTest() {
       const response = await fetch(url);
       const blob = await response.blob();
 
+      // 优先用Content-Type判断图片类型
+      let imageType = '';
+      const contentType = response.headers.get('Content-Type');
+      if (contentType && contentType.startsWith('image/')) {
+        imageType = contentType.split('/')[1].toLowerCase();
+        if (imageType === 'jpeg') imageType = 'jpg'; // 兼容jpeg
+      } else {
+        // 兜底：尝试用扩展名，否则默认png
+        const ext = url.split('.').pop().toLowerCase();
+        if (["png", "jpg", "jpeg", "gif", "webp", "bmp"].includes(ext)) {
+          imageType = ext === 'jpeg' ? 'jpg' : ext;
+        } else {
+          imageType = 'png';
+        }
+      }
+
       // 获取图片尺寸
       const img = new Image();
       await new Promise((resolve, reject) => {
@@ -1535,9 +759,6 @@ export default async function runTest() {
         width = (maxHeight / height) * width;
         height = maxHeight;
       }
-
-      // 从 URL 中推断图片类型
-      const imageType = url.split(".").pop().toLowerCase(); // 获取文件扩展名
 
       return {
         buffer,
@@ -1610,7 +831,7 @@ export default async function runTest() {
   }
 
   // 处理json数据，将内容添加到paragraphs数组
-  for (const child of json.children) {
+  for (const child of jsonData.children) {
     console.log(child);
     //判断child的type
     if (child.type === "heading") {
@@ -1801,6 +1022,7 @@ export default async function runTest() {
             lineSpacing: { before: 440, lineRule: LineRuleType.EXACT }, //行距设置为固定值22磅，约合440 twip
             indent: {
               left: convertCharesToTwip(0), // 左缩进0
+              firstLine: convertCharesToTwip(0), // 首行缩进
             },
           },
         },
@@ -1820,6 +1042,7 @@ export default async function runTest() {
             lineSpacing: { before: 360, lineRule: LineRuleType.EXACT }, //行距设置为固定值18磅，约合360 twip
             indent: {
               left: convertCharesToTwip(0), // 左缩进0
+              firstLine: convertCharesToTwip(0), // 首行缩进
             },
           },
         },
@@ -1839,6 +1062,7 @@ export default async function runTest() {
             lineSpacing: { before: 320, lineRule: LineRuleType.EXACT }, //行距设置为固定值16磅，约合320 twip
             indent: {
               left: convertCharesToTwip(0), // 左缩进0
+              firstLine: convertCharesToTwip(0), // 首行缩进
             },
           },
         },
@@ -1858,6 +1082,7 @@ export default async function runTest() {
             lineSpacing: { before: 280, lineRule: LineRuleType.EXACT }, //行距设置为固定值14磅，约合280 twip
             indent: {
               left: convertCharesToTwip(0), // 左缩进0
+              firstLine: convertCharesToTwip(0), // 首行缩进
             },
           },
         },
@@ -1877,6 +1102,7 @@ export default async function runTest() {
             lineSpacing: { before: 240, lineRule: LineRuleType.EXACT }, //行距设置为固定值12磅，约合240 twip
             indent: {
               left: convertCharesToTwip(0), // 左缩进0
+              firstLine: convertCharesToTwip(0), // 首行缩进
             },
           },
         },

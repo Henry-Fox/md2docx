@@ -59,10 +59,10 @@ class Md2Json {
       style.code = true;
       style.content = text.slice(1, -1);
     }
-    // 检查是否是下划线文本 (<ins></ins>)
-    else if (text.startsWith('<ins>') && text.endsWith('</ins>')) {
+    // 检查是否是下划线文本 (<u></u>)
+    else if (text.startsWith('<u>') && text.endsWith('</u>')) {
       style.underline = true;
-      style.content = text.slice(5, -6);
+      style.content = text.slice(3, -4);
     }
     // 检查是否是上标文本 (<sup></sup>)
     else if (text.startsWith('<sup>') && text.endsWith('</sup>')) {
@@ -80,170 +80,163 @@ class Md2Json {
 
   /**
    * @method parseInlineStyles
-   * @description 解析行内样式
+   * @description 解析行内样式，支持<u>、<sup>、<sub>等HTML标签和Markdown语法，避免内容重复，支持嵌套
    * @param {string} text - 要解析的文本
    * @returns {Array} 解析后的样式数组
    */
   parseInlineStyles(text) {
     const styles = [];
-    let currentText = text;
-
-    // 检查是否是任务列表项
-    const taskMatch = text.match(/^\s*[-*+]\s+\[([ x])\]\s+(.+)$/i);
-    if (taskMatch) {
-      return {
-        type: "task",
-        rawText: text,
-        isChecked: taskMatch[1].toLowerCase() === 'x',
-        fullContent: taskMatch[2],
-        inlineStyles: [
-          {
-            bold: false,
-            italics: false,
-            strike: false,
-            code: false,
-            underline: false,
-            superScript: false,
-            subScript: false,
-            content: taskMatch[2]
-          }
-        ]
-      };
-    }
-
-    // 首先处理HTML标签
-    const htmlTagRegex = /<(\/?)([a-z]+)([^>]*)>/g;
+    // 先递归处理HTML标签（u、sup、sub）
+    const tagRegex = /<(u|sup|sub)>([\s\S]*?)<\/\1>/ig;
     let match;
-    let lastIndex = 0;
-
-    while ((match = htmlTagRegex.exec(currentText)) !== null) {
-      // 添加标签前的文本
-      if (match.index > lastIndex) {
-        const beforeText = currentText.slice(lastIndex, match.index);
-        if (beforeText) {
-          styles.push({
-            bold: false,
-            italics: false,
-            strike: false,
-            code: false,
-            underline: false,
-            superscript: false,
-            subscript: false,
-            content: beforeText
-          });
+    let cursor = 0;
+    let hasTag = false;
+    while ((match = tagRegex.exec(text)) !== null) {
+      hasTag = true;
+      // 递归处理标签前的所有内容（而不是整体推入）
+      if (match.index > cursor) {
+        const before = text.slice(cursor, match.index);
+        if (before) {
+          styles.push(...this.parseInlineStyles(before));
         }
       }
-
-      // 处理标签
-      const [fullTag, isClosing, tagName, attributes] = match;
-      if (!isClosing) {
-        switch (tagName.toLowerCase()) {
-          case 'ins':
-            // 找到对应的结束标签
-            const endTagIndex = currentText.indexOf(`</${tagName}>`, match.index + fullTag.length);
-            if (endTagIndex !== -1) {
-              const content = currentText.slice(match.index + fullTag.length, endTagIndex);
-              styles.push({
-                bold: false,
-                italics: false,
-                strike: false,
-                code: false,
-                underline: true,
-                superscript: false,
-                subscript: false,
-                content: content
-              });
-              // 更新lastIndex到结束标签之后
-              lastIndex = endTagIndex + fullTag.length + 3; // +3 for </
-              // 更新currentText，移除已处理的部分
-              currentText = currentText.slice(0, match.index) + content + currentText.slice(lastIndex);
-              // 重置正则表达式的lastIndex
-              htmlTagRegex.lastIndex = match.index;
-            }
-            break;
-          case 'sup':
-            const supEndIndex = currentText.indexOf('</sup>', match.index + fullTag.length);
-            if (supEndIndex !== -1) {
-              const content = currentText.slice(match.index + fullTag.length, supEndIndex);
-              styles.push({
-                bold: false,
-                italics: false,
-                strike: false,
-                code: false,
-                underline: false,
-                superscript: true,
-                subscript: false,
-                content: content
-              });
-              lastIndex = supEndIndex + 6;
-              currentText = currentText.slice(0, match.index) + content + currentText.slice(lastIndex);
-              htmlTagRegex.lastIndex = match.index;
-            }
-            break;
-          case 'sub':
-            const subEndIndex = currentText.indexOf('</sub>', match.index + fullTag.length);
-            if (subEndIndex !== -1) {
-              const content = currentText.slice(match.index + fullTag.length, subEndIndex);
-              styles.push({
-                bold: false,
-                italics: false,
-                strike: false,
-                code: false,
-                underline: false,
-                superscript: false,
-                subscript: true,
-                content: content
-              });
-              lastIndex = subEndIndex + 6;
-              currentText = currentText.slice(0, match.index) + content + currentText.slice(lastIndex);
-              htmlTagRegex.lastIndex = match.index;
-            }
-            break;
-        }
+      // 处理标签内的内容（递归，支持嵌套）
+      const inner = this.parseInlineStyles(match[2]);
+      inner.forEach(style => {
+        if (match[1].toLowerCase() === 'u') style.underline = true;
+        if (match[1].toLowerCase() === 'sup') style.superscript = true;
+        if (match[1].toLowerCase() === 'sub') style.subscript = true;
+      });
+      styles.push(...inner);
+      cursor = match.index + match[0].length;
+    }
+    // 处理最后剩余的文本
+    if (cursor < text.length) {
+      const after = text.slice(cursor);
+      if (after) {
+        styles.push(...this._parseMarkdownInlineStyles(after));
       }
     }
+    // 如果没有任何HTML标签，直接用Markdown样式分割
+    if (!hasTag) {
+      return this._mergePlainTextRuns(this._parseMarkdownInlineStyles(text));
+    }
+    // 合并相邻普通文本段
+    return this._mergePlainTextRuns(styles);
+  }
 
-    // 添加剩余的文本
-    if (lastIndex < currentText.length) {
-      const remainingText = currentText.slice(lastIndex);
-      if (remainingText) {
+  /**
+   * @private
+   * @method _parseMarkdownInlineStyles
+   * @description 递归处理Markdown语法的行内样式，支持嵌套
+   * @param {string} text
+   * @param {Object} parentStyle - 父级样式（用于递归叠加）
+   * @returns {Array}
+   */
+  _parseMarkdownInlineStyles(text, parentStyle = {}) {
+    const styles = [];
+    if (!text) return styles;
+    // 支持的样式正则，顺序很重要（先处理复杂的）
+    const regex = /\*\*\*([\s\S]+?)\*\*\*|___([\s\S]+?)___|\*\*([\s\S]+?)\*\*|__([\s\S]+?)__|\*([\s\S]+?)\*|_([\s\S]+?)_|~~([\s\S]+?)~~|`([^`]+?)`/g;
+    let lastIndex = 0;
+    let match;
+    while ((match = regex.exec(text)) !== null) {
+      // 普通文本
+      if (match.index > lastIndex) {
         styles.push({
-          bold: false,
-          italics: false,
-          strike: false,
-          code: false,
-          underline: false,
-          superscript: false,
-          subscript: false,
-          content: remainingText
+          bold: !!parentStyle.bold,
+          italics: !!parentStyle.italics,
+          strike: !!parentStyle.strike,
+          code: !!parentStyle.code,
+          underline: !!parentStyle.underline,
+          superscript: !!parentStyle.superscript,
+          subscript: !!parentStyle.subscript,
+          content: text.slice(lastIndex, match.index)
         });
       }
-    }
-
-    // 处理Markdown样式标记
-    const processedStyles = [];
-    for (const style of styles) {
-      let text = style.content;
-
-      // 只处理一段全是加粗、斜体、加粗斜体的情况
-      const isBoldItalic = /^(\*\*\*|___)(.*?)(\*\*\*|___)$/.test(text);
-      const isBold = /^(\*\*|__)(.*?)(\*\*|__)$/.test(text) && !isBoldItalic;
-      const isItalic = /^(\*|_)(.*?)(\*|_)$/.test(text) && !isBold && !isBoldItalic;
-
-      const newStyle = {
-        ...style,
-        bold: isBold || isBoldItalic,
-        italics: isItalic || isBoldItalic,
-        content: text
-          .replace(/^(\*\*\*|___)(.*?)(\*\*\*|___)$/, '$2')
-          .replace(/^(\*\*|__)(.*?)(\*\*|__)$/, '$2')
-          .replace(/^(\*|_)(.*?)(\*|_)$/, '$2')
+      // 匹配到的样式，递归处理内容
+      let style = {
+        bold: !!parentStyle.bold,
+        italics: !!parentStyle.italics,
+        strike: !!parentStyle.strike,
+        code: !!parentStyle.code,
+        underline: !!parentStyle.underline,
+        superscript: !!parentStyle.superscript,
+        subscript: !!parentStyle.subscript
       };
-
-      processedStyles.push(newStyle);
+      let innerContent = '';
+      if (match[1] !== undefined) { // ***加粗斜体***
+        style.bold = true;
+        style.italics = true;
+        innerContent = match[1];
+      } else if (match[2] !== undefined) { // ___加粗斜体___
+        style.bold = true;
+        style.italics = true;
+        innerContent = match[2];
+      } else if (match[3] !== undefined) { // **加粗**
+        style.bold = true;
+        innerContent = match[3];
+      } else if (match[4] !== undefined) { // __加粗__
+        style.bold = true;
+        innerContent = match[4];
+      } else if (match[5] !== undefined) { // *斜体*
+        style.italics = true;
+        innerContent = match[5];
+      } else if (match[6] !== undefined) { // _斜体_
+        style.italics = true;
+        innerContent = match[6];
+      } else if (match[7] !== undefined) { // ~~删除线~~
+        style.strike = true;
+        innerContent = match[7];
+      } else if (match[8] !== undefined) { // `代码`
+        style.code = true;
+        innerContent = match[8];
+      }
+      // 递归处理内容，叠加样式
+      if (innerContent) {
+        const inner = this._parseMarkdownInlineStyles(innerContent, style);
+        styles.push(...inner);
+      }
+      lastIndex = match.index + match[0].length;
     }
+    // 剩余普通文本
+    if (lastIndex < text.length) {
+      styles.push({
+        bold: !!parentStyle.bold,
+        italics: !!parentStyle.italics,
+        strike: !!parentStyle.strike,
+        code: !!parentStyle.code,
+        underline: !!parentStyle.underline,
+        superscript: !!parentStyle.superscript,
+        subscript: !!parentStyle.subscript,
+        content: text.slice(lastIndex)
+      });
+    }
+    return styles;
+  }
 
-    return processedStyles;
+  /**
+   * @private
+   * @method _mergePlainTextRuns
+   * @description 合并相邻的普通文本（所有样式属性全为false的段）
+   * @param {Array} styles
+   * @returns {Array}
+   */
+  _mergePlainTextRuns(styles) {
+    if (!styles.length) return styles;
+    const merged = [styles[0]];
+    for (let i = 1; i < styles.length; i++) {
+      const prev = merged[merged.length - 1];
+      const curr = styles[i];
+      // 判断所有样式属性都为false
+      const isPlain = s => !s.bold && !s.italics && !s.strike && !s.code && !s.underline && !s.superscript && !s.subscript;
+      if (isPlain(prev) && isPlain(curr)) {
+        prev.content += curr.content;
+      } else {
+        merged.push(curr);
+      }
+    }
+    return merged;
   }
 
   /**

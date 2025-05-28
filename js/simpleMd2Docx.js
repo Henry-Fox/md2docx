@@ -1,6 +1,8 @@
 // 引入需要的库
 import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, Table, TableRow, TableCell, WidthType, BorderStyle } from "docx";
 import { saveAs } from "file-saver";
+import { Md2Json } from './md2json.js';
+import runTest from './json2docx.js';
 
 /**
  * 简化版的Markdown到Docx转换器
@@ -8,94 +10,29 @@ import { saveAs } from "file-saver";
 class SimpleMd2Docx {
   constructor() {
     console.log("SimpleMd2Docx 初始化");
+    this.md2json = new Md2Json();
   }
 
   /**
    * 转换Markdown为Word文档
-   * @param {Object} jsonData - 从md2json解析得到的JSON数据
-   * @returns {Promise<Blob>} docx文件的Blob对象
+   * @param {string} markdown - Markdown文本
+   * @returns {Promise<boolean>} 转换是否成功
    */
-  async convertToDocx(jsonData) {
+  async convertToDocx(markdown) {
     try {
-      console.log("开始转换JSON到Word文档...");
-      console.log("JSON数据:", jsonData);
+      console.log("开始转换Markdown到Word文档...");
 
-      // 检查jsonData结构
-      if (!jsonData || !jsonData.children || !Array.isArray(jsonData.children)) {
-        console.error("无效的JSON数据格式");
-        return this.createErrorDocument("无效的JSON数据格式");
-      }
+      // 使用Md2Json将markdown转换为json
+      const jsonData = this.md2json.convert(markdown);
+      console.log("Markdown转换为JSON成功:", jsonData);
 
-      // 创建Document的children数组
-      const children = [];
+      // 使用json2docx.js中的runTest函数生成docx
+      await runTest(jsonData);
 
-      // 处理所有元素
-      console.log(`处理${jsonData.children.length}个元素`);
-
-      jsonData.children.forEach((item, index) => {
-        console.log(`处理第${index+1}个元素，类型: ${item.type}`);
-
-        try {
-          const elements = this.processElement(item);
-
-          if (Array.isArray(elements)) {
-            // 如果是数组，添加所有元素
-            children.push(...elements);
-          } else if (elements) {
-            // 如果是单个元素，直接添加
-            children.push(elements);
-          }
-        } catch (processError) {
-          console.error(`处理元素时出错:`, processError);
-          children.push(
-            new Paragraph({
-              children: [
-                new TextRun({
-                  text: `处理元素时出错: ${processError.message}`,
-                  color: "FF0000"
-                })
-              ]
-            })
-          );
-        }
-      });
-
-      // 确保有内容
-      if (children.length === 0) {
-        console.warn("未生成任何内容，添加默认段落");
-        children.push(
-          new Paragraph({
-            children: [
-              new TextRun({
-                text: "文档内容为空",
-                color: "FF0000",
-                bold: true
-              })
-            ]
-          })
-        );
-      }
-
-      console.log(`创建文档，包含${children.length}个元素`);
-
-      // 创建Document对象
-      const doc = new Document({
-        sections: [
-          {
-            children: children
-          }
-        ]
-      });
-
-      // 生成docx文件
-      console.log("生成Word文档...");
-      const blob = await Packer.toBlob(doc);
-      console.log(`Word文档生成成功，大小: ${Math.round(blob.size / 1024)} KB`);
-
-      return blob;
+      return true;
     } catch (error) {
-      console.error("转换过程中出错:", error);
-      return this.createErrorDocument(`转换失败: ${error.message}`);
+      console.error('转换过程中出错:', error);
+      throw error;
     }
   }
 

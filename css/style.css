@@ -362,7 +362,7 @@ footer {
 #preview-container h4,
 #preview-container h5,
 #preview-container h6 {
-  margin-top: 1em;
+  margin-top: 0em !important;
   margin-bottom: 0.5em;
   line-height: 1.2;
   color: #2c3e50;

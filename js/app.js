@@ -1,4 +1,3 @@
-import { Md2Docx } from './md2docx.js';
 import { marked } from './marked.esm.js';
 import SimpleMd2Docx from './simpleMd2Docx.js';
 import { Md2Json } from './md2json.js';
@@ -9,29 +8,11 @@ import { Md2Json } from './md2json.js';
  */
 class App {
   constructor() {
-    this.md2docx = new Md2Docx();
-
-    // 强制重新初始化样式（从JSON文件加载）
-    this.currentStyles = null;
-
-    // 项目文件夹路径设置（默认路径）
-    this.projectPath = "D:\\MD2DOCX\\";
-
-    // 临时文件夹设置
-    this.tempDirHandle = null;
-    this.tempDirName = "";
-
     // 初始化DOM元素
     this.initElements();
 
     // 初始化事件监听
     this.initEventListeners();
-
-    // 重新直接从md2docx加载默认样式
-    this.currentStyles = this.md2docx.getDefaultStyles();
-
-    // 初始化样式编辑器
-    this.initStyleEditor();
 
     // 初始化预览渲染器
     this.initPreview();
@@ -39,14 +20,8 @@ class App {
     // 加载默认Markdown示例
     this.loadDefaultExample();
 
-    // 初始化项目路径设置
-    this.initProjectPath();
-
-    // 尝试初始化临时目录
-    this.initTempDirectory();
-
     // 更新界面后确认数据正确加载
-    console.log("当前加载的样式:", JSON.stringify(this.currentStyles));
+    console.log("App初始化完成");
   }
 
   /**
@@ -61,53 +36,9 @@ class App {
 
     // 按钮
     this.clearBtn = document.getElementById('clear-btn');
-    this.convertBtn = document.getElementById('convert-btn');
-    this.simpleConvertBtn = document.getElementById('simple-convert-btn'); // 获取简化版转换按钮
+    this.convertBtn = document.getElementById('simple-convert-btn'); // 使用简化版转换按钮
     this.resetStylesBtn = document.getElementById('reset-styles-btn');
     this.saveStylesBtn = document.getElementById('save-styles-btn');
-
-    // 项目路径设置
-    this.projectPathInput = document.getElementById('project-path-input');
-    this.setProjectPathBtn = document.getElementById('set-project-path-btn');
-
-    // 如果项目路径元素不存在，则创建
-    if (!this.projectPathInput) {
-      // 创建项目路径设置容器
-      const pathContainer = document.createElement('div');
-      pathContainer.className = 'project-path-container';
-
-      // 创建标签
-      const pathLabel = document.createElement('label');
-      pathLabel.htmlFor = 'project-path-input';
-      pathLabel.textContent = '项目路径:';
-      pathContainer.appendChild(pathLabel);
-
-      // 创建输入框
-      this.projectPathInput = document.createElement('input');
-      this.projectPathInput.id = 'project-path-input';
-      this.projectPathInput.type = 'text';
-      this.projectPathInput.className = 'project-path-input';
-      this.projectPathInput.value = this.projectPath;
-      this.projectPathInput.placeholder = 'D:\\MD2DOCX\\';
-      pathContainer.appendChild(this.projectPathInput);
-
-      // 创建保存按钮
-      this.setProjectPathBtn = document.createElement('button');
-      this.setProjectPathBtn.id = 'set-project-path-btn';
-      this.setProjectPathBtn.className = 'btn';
-      this.setProjectPathBtn.innerText = '保存项目路径';
-      this.setProjectPathBtn.addEventListener('click', () => this.saveProjectPath());
-      pathContainer.appendChild(this.setProjectPathBtn);
-
-      // 添加到工具栏中合适位置
-      const toolBar = document.querySelector('.toolbar') || document.querySelector('.controls');
-      if (toolBar) {
-        toolBar.appendChild(pathContainer);
-      } else {
-        // 如果没有找到工具栏，则添加到body
-        document.body.insertBefore(pathContainer, document.body.firstChild);
-      }
-    }
 
     // 预览相关
     this.previewContainer = document.getElementById('preview-container');
@@ -144,68 +75,12 @@ class App {
 
     // 按钮操作
     if (this.clearBtn) this.clearBtn.addEventListener('click', () => this.clearMarkdown());
-    if (this.convertBtn) this.convertBtn.addEventListener('click', () => this.convertToDocx());
-    if (this.simpleConvertBtn) {
-      console.log('绑定简化版转换按钮事件');
-      this.simpleConvertBtn.addEventListener('click', () => {
-        console.log('点击了简化版转换按钮');
-        this.simpleConvertToDocx();
-      });
-    } else {
-      console.warn('未找到简化版转换按钮');
+    if (this.convertBtn) {
+      this.convertBtn.textContent = '转换为DOCX'; // 修改按钮文字
+      this.convertBtn.addEventListener('click', () => this.simpleConvertToDocx());
     }
     if (this.resetStylesBtn) this.resetStylesBtn.addEventListener('click', () => this.resetStyles());
     if (this.saveStylesBtn) this.saveStylesBtn.addEventListener('click', () => this.saveStyles());
-    if (this.setProjectPathBtn) this.setProjectPathBtn.addEventListener('click', () => this.saveProjectPath());
-  }
-
-  /**
-   * @method saveProjectPath
-   * @description 保存项目路径设置
-   */
-  saveProjectPath() {
-    const path = this.projectPathInput.value.trim();
-    if (!path) {
-      alert('请输入有效的项目路径！');
-      return;
-    }
-
-    // 确保路径以斜杠结尾
-    this.projectPath = path.endsWith('\\') ? path : path + '\\';
-    this.projectPathInput.value = this.projectPath;
-
-    // 保存设置以便下次使用
-    localStorage.setItem('projectPath', this.projectPath);
-
-    console.log(`项目路径已设置: ${this.projectPath}`);
-
-    alert(`项目路径已设置为: ${this.projectPath}\n请确保以下文件夹存在:\n${this.projectPath}`);
-  }
-
-  /**
-   * @method initProjectPath
-   * @description 初始化项目路径
-   */
-  initProjectPath() {
-    try {
-      // 尝试从localStorage获取上次使用的项目路径
-      const savedPath = localStorage.getItem('projectPath');
-      if (savedPath) {
-        this.projectPath = savedPath;
-        this.projectPathInput.value = this.projectPath;
-      }
-
-      // 首次加载时提示
-      const hasPrompted = localStorage.getItem('projectPathPrompted');
-      if (!hasPrompted) {
-        setTimeout(() => {
-          alert(`当前项目路径设置为: ${this.projectPath}\n请确保以下文件夹存在:\n${this.projectPath}\n\n如需修改，请点击"保存设置"按钮。`);
-          localStorage.setItem('projectPathPrompted', 'true');
-        }, 2000);
-      }
-    } catch (error) {
-      console.warn('初始化项目路径失败:', error);
-    }
   }
 
   /**
@@ -1584,87 +1459,6 @@ E = mc^2
   }
 
   /**
-   * @method setTempDirectory
-   * @description 设置临时文件夹
-   */
-  async setTempDirectory() {
-    try {
-      // 请求用户选择文件夹
-      this.tempDirHandle = await window.showDirectoryPicker({
-        id: 'tempImagesDir',
-        startIn: 'documents',
-        mode: 'readwrite'
-      });
-
-      this.tempDirName = this.tempDirHandle.name;
-      this.tempDirDisplay.innerText = `当前临时文件夹: ${this.tempDirName}`;
-      console.log(`临时文件夹已设置: ${this.tempDirName}`);
-
-      // 保存设置以便下次使用
-      localStorage.setItem('tempDirName', this.tempDirName);
-
-      return this.tempDirHandle;
-    } catch (error) {
-      console.error('设置临时文件夹失败:', error);
-      this.tempDirDisplay.innerText = '未设置临时文件夹';
-      return null;
-    }
-  }
-
-  /**
-   * @method initTempDirectory
-   * @description 初始化临时目录和相关UI（可选功能）
-   */
-  async initTempDirectory() {
-    try {
-      // 添加临时目录显示区域
-      const tempDirContainer = document.createElement('div');
-      tempDirContainer.className = 'temp-dir-container';
-
-      // 创建临时目录信息显示区域
-      this.tempDirDisplay = document.createElement('div');
-      this.tempDirDisplay.className = 'temp-dir-info';
-      this.tempDirDisplay.innerText = '未设置临时文件夹（可选，仅用于包含图片的文档）';
-      tempDirContainer.appendChild(this.tempDirDisplay);
-
-      // 创建选择按钮
-      const setTempDirBtn = document.createElement('button');
-      setTempDirBtn.id = 'set-temp-dir-btn';
-      setTempDirBtn.className = 'btn';
-      setTempDirBtn.innerText = '选择临时文件夹(可选)';
-      setTempDirBtn.addEventListener('click', () => this.setTempDirectory());
-      tempDirContainer.appendChild(setTempDirBtn);
-
-      // 添加到页面
-      const toolBar = document.querySelector('.project-path-container');
-      if (toolBar) {
-        toolBar.parentNode.insertBefore(tempDirContainer, toolBar.nextSibling);
-      } else {
-        // 如果找不到项目路径容器，则添加到工具栏
-        const fallbackToolbar = document.querySelector('.toolbar') || document.querySelector('.controls');
-        if (fallbackToolbar) {
-          fallbackToolbar.appendChild(tempDirContainer);
-        } else {
-          // 最后的选择：添加到body
-          document.body.insertBefore(tempDirContainer, document.body.firstChild);
-        }
-      }
-
-      // 尝试从localStorage获取上次使用的临时目录名称
-      const savedDirName = localStorage.getItem('tempDirName');
-      if (savedDirName) {
-        this.tempDirName = savedDirName;
-        this.tempDirDisplay.innerText = `上次使用的临时文件夹: ${savedDirName} (可选功能)`;
-      }
-
-      // 不再主动提示用户设置临时文件夹
-      localStorage.setItem('tempDirPrompted', 'true');
-    } catch (error) {
-      console.warn('初始化临时目录失败:', error);
-    }
-  }
-
-  /**
    * 检查Markdown语法的简单函数
    * @param {string} markdown - 要检查的Markdown文本
    * @returns {Object} 包含错误和警告的对象
@@ -1884,32 +1678,26 @@ E = mc^2
   }
 
   /**
-   * 简化版转换为Docx的处理函数 - 直接调用test.js中的预设JSON数据
+   * 简化版转换为Docx的处理函数
    */
-  simpleConvertToDocx() {
-    this.showMessage('正在使用test.js中的预设JSON数据生成文档，请稍候...', 'info');
-
+  async simpleConvertToDocx() {
     try {
-      console.log('运行test.js的预设JSON数据转换...');
+      // 获取Markdown内容
+      const markdownContent = this.markdownInput.value;
 
-      // 动态导入test.js模块并执行
-      import('./test.js')
-        .then(testModule => {
-          // 如果test.js导出了默认函数，则调用它
-          if (typeof testModule.default === 'function') {
-            return testModule.default();
-          } else {
-            throw new Error('test.js没有导出默认函数');
-          }
-        })
-        .then(() => {
-          console.log('test.js执行完成');
-          this.showMessage('文档已成功生成', 'success');
-        })
-        .catch(error => {
-          console.error('运行test.js时出错:', error);
-          this.showMessage(`转换失败: ${error.message}`, 'error');
-        });
+      // 检查Markdown内容是否为空
+      if (!markdownContent.trim()) {
+        this.showMessage('请先输入或上传Markdown内容', 'error');
+        return;
+      }
+
+      this.showMessage('正在转换文档，请稍候...', 'info');
+
+      // 创建SimpleMd2Docx实例并执行转换
+      const simpleMd2Docx = new SimpleMd2Docx();
+      await simpleMd2Docx.convertToDocx(markdownContent);
+
+      this.showMessage('文档已成功生成', 'success');
     } catch (error) {
       console.error('转换失败:', error);
       this.showMessage(`转换失败: ${error.message}`, 'error');
@@ -1919,29 +1707,6 @@ E = mc^2
 
 // 初始化应用
 document.addEventListener('DOMContentLoaded', () => {
-  // 获取运行test.js的按钮
-  const runTestJsBtn = document.getElementById('run-test-js-btn');
-
-  // 如果按钮存在，添加点击事件监听器
-  if (runTestJsBtn) {
-    runTestJsBtn.addEventListener('click', async () => {
-      try {
-        console.log('运行test.js...');
-        // 导入test.js模块
-        const testModule = await import('./test.js');
-        // 如果test.js导出了默认函数，则调用它
-        if (typeof testModule.default === 'function') {
-          await testModule.default();
-        }
-        console.log('test.js执行完成');
-        alert('test.js执行完成，文件应已生成');
-      } catch (error) {
-        console.error('运行test.js时出错:', error);
-        alert(`运行test.js时出错: ${error.message}`);
-      }
-    });
-  }
-
   new App();
 });
 
