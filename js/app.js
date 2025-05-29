@@ -1,4 +1,4 @@
-import { marked } from './marked.esm.js';
+import { marked } from 'marked';
 import SimpleMd2Docx from './simpleMd2Docx.js';
 import { Md2Json } from './md2json.js';
 
@@ -39,6 +39,7 @@ class App {
     this.convertBtn = document.getElementById('simple-convert-btn'); // 使用简化版转换按钮
     this.resetStylesBtn = document.getElementById('reset-styles-btn');
     this.saveStylesBtn = document.getElementById('save-styles-btn');
+    this.directConvertBtn = document.getElementById('direct-convert-btn');
 
     // 预览相关
     this.previewContainer = document.getElementById('preview-container');
@@ -81,6 +82,10 @@ class App {
     }
     if (this.resetStylesBtn) this.resetStylesBtn.addEventListener('click', () => this.resetStyles());
     if (this.saveStylesBtn) this.saveStylesBtn.addEventListener('click', () => this.saveStyles());
+    if (this.directConvertBtn) {
+      this.directConvertBtn.textContent = '直接转换为DOCX'; // 修改按钮文字
+      this.directConvertBtn.addEventListener('click', () => this.directConvertToDocx());
+    }
   }
 
   /**
@@ -1697,10 +1702,37 @@ E = mc^2
       const simpleMd2Docx = new SimpleMd2Docx();
       await simpleMd2Docx.convertToDocx(markdownContent);
 
-      this.showMessage('文档已成功生成', 'success');
+          this.showMessage('文档已成功生成', 'success');
     } catch (error) {
       console.error('转换失败:', error);
       this.showMessage(`转换失败: ${error.message}`, 'error');
+    }
+  }
+
+  /**
+   * 直接转换为Docx的处理函数
+   */
+  async directConvertToDocx() {
+    try {
+      // 获取Markdown内容
+      const markdownContent = this.markdownInput.value;
+
+      // 检查Markdown内容是否为空
+      if (!markdownContent.trim()) {
+        this.showMessage('请先输入或上传Markdown内容', 'error');
+        return;
+      }
+
+      this.showMessage('正在转换文档，请稍候...', 'info');
+
+      // 创建SimpleMd2Docx实例并执行转换
+      const simpleMd2Docx = new SimpleMd2Docx();
+      await simpleMd2Docx.convertToDocxDirect(markdownContent);
+
+      this.showMessage('文档已成功生成', 'success');
+    } catch (error) {
+      console.error('直接转换失败:', error);
+      this.showMessage(`直接转换失败: ${error.message}`, 'error');
     }
   }
 }
