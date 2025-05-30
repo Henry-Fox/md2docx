@@ -1,2096 +1,278 @@
-{
-  "type": "document",
-  "children": [
-    {
+[
+  {
       "type": "heading",
-      "rawText": "# Markdown测试文档 (GFM版本)",
-      "level": 1,
-      "hasNumber": false,
-      "number": "",
-      "fullContent": "Markdown测试文档 (GFM版本)",
-      "inlineStyles": [
-        {
-          "bold": false,
-          "italic": false,
-          "strike": false,
-          "code": false,
-          "underline": false,
-          "superscript": false,
-          "subscript": false,
-          "content": "Markdown测试文档 (GFM版本)"
-        }
-      ]
-    },
-    {
-      "type": "heading",
-      "rawText": "## 1. 基础文本格式",
-      "level": 2,
-      "hasNumber": true,
-      "number": "1",
-      "fullContent": "基础文本格式",
-      "inlineStyles": [
-        {
-          "bold": false,
-          "italic": false,
-          "strike": false,
-          "code": false,
-          "underline": false,
-          "superscript": false,
-          "subscript": false,
-          "content": "基础文本格式"
-        }
-      ]
-    },
-    {
-      "type": "paragraph",
-      "rawText": "这是普通段落文本。",
-      "hasNumber": false,
-      "number": "",
-      "fullContent": "这是普通段落文本。",
-      "inlineStyles": [
-        {
-          "bold": false,
-          "italic": false,
-          "strike": false,
-          "code": false,
-          "underline": false,
-          "superscript": false,
-          "subscript": false,
-          "content": "这是普通段落文本。"
-        }
-      ]
-    },
-    {
-      "type": "paragraph",
-      "rawText": "**这是加粗文本**",
-      "hasNumber": false,
-      "number": "",
-      "fullContent": "这是加粗文本",
-      "inlineStyles": [
-        {
-          "bold": true,
-          "italic": false,
-          "strike": false,
-          "code": false,
-          "underline": false,
-          "superscript": false,
-          "subscript": false,
-          "content": "这是加粗文本"
-        }
-      ]
-    },
-    {
-      "type": "paragraph",
-      "rawText": "*这是斜体文本*",
-      "hasNumber": false,
-      "number": "",
-      "fullContent": "这是斜体文本",
-      "inlineStyles": [
-        {
-          "bold": false,
-          "italic": true,
-          "strike": false,
-          "code": false,
-          "underline": false,
-          "superscript": false,
-          "subscript": false,
-          "content": "这是斜体文本"
-        }
-      ]
-    },
-    {
-      "type": "paragraph",
-      "rawText": "***这是加粗斜体文本***",
-      "hasNumber": false,
-      "number": "",
-      "fullContent": "这是加粗斜体文本",
-      "inlineStyles": [
-        {
-          "bold": true,
-          "italic": true,
-          "strike": false,
-          "code": false,
-          "underline": false,
-          "superscript": false,
-          "subscript": false,
-          "content": "这是加粗斜体文本"
-        }
-      ]
-    },
-    {
-      "type": "paragraph",
-      "rawText": "~~这是删除线文本~~",
-      "hasNumber": false,
-      "number": "",
-      "fullContent": "这是删除线文本",
-      "inlineStyles": [
-        {
-          "bold": false,
-          "italic": false,
-          "strike": true,
-          "code": false,
-          "underline": false,
-          "superscript": false,
-          "subscript": false,
-          "content": "这是删除线文本"
-        }
-      ]
-    },
-    {
-      "type": "paragraph",
-      "rawText": "<ins>这是下划线文本</ins>",
-      "hasNumber": false,
-      "number": "",
-      "fullContent": "这是下划线文本",
-      "inlineStyles": [
-        {
-          "bold": false,
-          "italic": false,
-          "strike": false,
-          "code": false,
-          "underline": true,
-          "superscript": false,
-          "subscript": false,
-          "content": "这是下划线文本"
-        }
-      ]
-    },
-    {
-      "type": "paragraph",
-      "rawText": "这是带有`行内代码`的文本",
-      "hasNumber": false,
-      "number": "",
-      "fullContent": "这是带有行内代码的文本",
-      "inlineStyles": [
-        {
-          "bold": false,
-          "italic": false,
-          "strike": false,
-          "code": false,
-          "underline": false,
-          "superscript": false,
-          "subscript": false,
-          "content": "这是带有"
-        },
-        {
-          "bold": false,
-          "italic": false,
-          "strike": false,
-          "code": true,
-          "underline": false,
-          "superscript": false,
-          "subscript": false,
-          "content": "行内代码"
-        },
-        {
-          "bold": false,
-          "italic": false,
-          "strike": false,
-          "code": false,
-          "underline": false,
-          "superscript": false,
-          "subscript": false,
-          "content": "的文本"
-        }
-      ]
-    },
-    {
-      "type": "paragraph",
-      "rawText": "这是<sup>上标</sup>和<sub>下标</sub>文本",
-      "hasNumber": false,
-      "number": "",
-      "fullContent": "这是上标和下标文本",
-      "inlineStyles": [
-        {
-          "bold": false,
-          "italic": false,
-          "strike": false,
-          "code": false,
-          "underline": false,
-          "superscript": false,
-          "subscript": false,
-          "content": "这是"
-        },
-        {
-          "bold": false,
-          "italic": false,
-          "strike": false,
-          "code": false,
-          "underline": false,
-          "superscript": true,
-          "subscript": false,
-          "content": "上标"
-        },
-        {
-          "bold": false,
-          "italic": false,
-          "strike": false,
-          "code": false,
-          "underline": false,
-          "superscript": false,
-          "subscript": false,
-          "content": "和"
-        },
-        {
-          "bold": false,
-          "italic": false,
-          "strike": false,
-          "code": false,
-          "underline": false,
-          "superscript": false,
-          "subscript": true,
-          "content": "下标"
-        },
-        {
-          "bold": false,
-          "italic": false,
-          "strike": false,
-          "code": false,
-          "underline": false,
-          "superscript": false,
-          "subscript": false,
-          "content": "文本"
-        }
-      ]
-    },
-    {
-      "type": "heading",
-      "rawText": "## 2. 列表",
-      "level": 2,
-      "hasNumber": true,
-      "number": "2",
-      "fullContent": "列表",
-      "inlineStyles": [
-        {
-          "bold": false,
-          "italic": false,
-          "strike": false,
-          "code": false,
-          "underline": false,
-          "superscript": false,
-          "subscript": false,
-          "content": "列表"
-        }
-      ]
-    },
-    {
-      "type": "heading",
-      "rawText": "### 无序列表",
-      "level": 3,
-      "hasNumber": false,
-      "number": "",
-      "fullContent": "无序列表",
-      "inlineStyles": [
-        {
-          "bold": false,
-          "italic": false,
-          "strike": false,
-          "code": false,
-          "underline": false,
-          "superscript": false,
-          "subscript": false,
-          "content": "无序列表"
-        }
-      ]
-    },
-    {
-      "type": "list",
-      "listType": "unordered",
-      "items": [
-        {
-          "type": "listItem",
-          "rawText": "- 项目1",
-          "fullContent": "项目1",
-          "level": 0,
-          "inlineStyles": [
-            {
-              "bold": false,
-              "italic": false,
-              "strike": false,
-              "code": false,
-              "underline": false,
-              "superscript": false,
-              "subscript": false,
-              "content": "项目1"
-            }
-          ],
-          "blocks": []
-        },
-        {
-          "type": "listItem",
-          "rawText": "- 项目2",
-          "fullContent": "项目2",
-          "level": 0,
-          "inlineStyles": [
-            {
-              "bold": false,
-              "italic": false,
-              "strike": false,
-              "code": false,
-              "underline": false,
-              "superscript": false,
-              "subscript": false,
-              "content": "项目2"
-            }
-          ],
-          "blocks": []
-        },
-        {
-          "type": "listItem",
-          "rawText": "- 子项目2.1",
-          "fullContent": "子项目2.1",
-          "level": 1,
-          "inlineStyles": [
-            {
-              "bold": false,
-              "italic": false,
-              "strike": false,
-              "code": false,
-              "underline": false,
-              "superscript": false,
-              "subscript": false,
-              "content": "子项目2.1"
-            }
-          ],
-          "blocks": []
-        },
-        {
-          "type": "listItem",
-          "rawText": "- 子项目2.2",
-          "fullContent": "子项目2.2",
-          "level": 1,
-          "inlineStyles": [
-            {
-              "bold": false,
-              "italic": false,
-              "strike": false,
-              "code": false,
-              "underline": false,
-              "superscript": false,
-              "subscript": false,
-              "content": "子项目2.2"
-            }
-          ],
-          "blocks": []
-        },
-        {
-          "type": "listItem",
-          "rawText": "- 项目3",
-          "fullContent": "项目3",
-          "level": 0,
-          "inlineStyles": [
-            {
-              "bold": false,
-              "italic": false,
-              "strike": false,
-              "code": false,
-              "underline": false,
-              "superscript": false,
-              "subscript": false,
-              "content": "项目3"
-            }
-          ],
-          "blocks": []
-        }
-      ]
-    },
-    {
-      "type": "heading",
-      "rawText": "### 有序列表",
-      "level": 3,
-      "hasNumber": false,
-      "number": "",
-      "fullContent": "有序列表",
-      "inlineStyles": [
-        {
-          "bold": false,
-          "italic": false,
-          "strike": false,
-          "code": false,
-          "underline": false,
-          "superscript": false,
-          "subscript": false,
-          "content": "有序列表"
-        }
-      ]
-    },
-    {
-      "type": "list",
-      "listType": "ordered",
-      "items": [
-        {
-          "type": "listItem",
-          "rawText": "1. 第一项",
-          "fullContent": "第一项",
-          "level": 0,
-          "number": "1",
-          "inlineStyles": [
-            {
-              "bold": false,
-              "italic": false,
-              "strike": false,
-              "code": false,
-              "underline": false,
-              "superscript": false,
-              "subscript": false,
-              "content": "第一项"
-            }
-          ],
-          "blocks": []
-        },
-        {
-          "type": "listItem",
-          "rawText": "2. 第二项",
-          "fullContent": "第二项",
-          "level": 0,
-          "number": "2",
-          "inlineStyles": [
-            {
-              "bold": false,
-              "italic": false,
-              "strike": false,
-              "code": false,
-              "underline": false,
-              "superscript": false,
-              "subscript": false,
-              "content": "第二项"
-            }
-          ],
-          "blocks": []
-        },
-        {
-          "type": "listItem",
-          "rawText": "1. 子项2.1",
-          "fullContent": "子项2.1",
-          "level": 1,
-          "number": "1",
-          "inlineStyles": [
-            {
-              "bold": false,
-              "italic": false,
-              "strike": false,
-              "code": false,
-              "underline": false,
-              "superscript": false,
-              "subscript": false,
-              "content": "子项2.1"
-            }
-          ],
-          "blocks": []
-        },
-        {
-          "type": "listItem",
-          "rawText": "2. 子项2.2",
-          "fullContent": "子项2.2",
-          "level": 1,
-          "number": "2",
-          "inlineStyles": [
-            {
-              "bold": false,
-              "italic": false,
-              "strike": false,
-              "code": false,
-              "underline": false,
-              "superscript": false,
-              "subscript": false,
-              "content": "子项2.2"
-            }
-          ],
-          "blocks": []
-        },
-        {
-          "type": "listItem",
-          "rawText": "3. 第三项",
-          "fullContent": "第三项",
-          "level": 0,
-          "number": "3",
-          "inlineStyles": [
-            {
-              "bold": false,
-              "italic": false,
-              "strike": false,
-              "code": false,
-              "underline": false,
-              "superscript": false,
-              "subscript": false,
-              "content": "第三项"
-            }
-          ],
-          "blocks": []
-        }
-      ]
-    },
-    {
-      "type": "heading",
-      "rawText": "## 3. 引用",
-      "level": 2,
-      "hasNumber": true,
-      "number": "3",
-      "fullContent": "引用",
-      "inlineStyles": [
-        {
-          "bold": false,
-          "italic": false,
-          "strike": false,
-          "code": false,
-          "underline": false,
-          "superscript": false,
-          "subscript": false,
-          "content": "引用"
-        }
-      ]
-    },
-    {
-      "type": "blockquote",
-      "rawText": "> 这是一段引用文本",
-      "level": 1,
-      "fullContent": "这是一段引用文本",
-      "inlineStyles": [
-        {
-          "bold": false,
-          "italic": false,
-          "strike": false,
-          "code": false,
-          "underline": false,
-          "superscript": false,
-          "subscript": false,
-          "content": "这是一段引用文本"
-        }
-      ]
-    },
-    {
-      "type": "blockquote",
-      "rawText": ">",
-      "level": 1,
-      "fullContent": "",
-      "inlineStyles": [
-        {
-          "bold": false,
-          "italic": false,
-          "strike": false,
-          "code": false,
-          "underline": false,
-          "superscript": false,
-          "subscript": false,
-          "content": ""
-        }
-      ]
-    },
-    {
-      "type": "blockquote",
-      "rawText": "> 这是引用的第二段",
-      "level": 1,
-      "fullContent": "这是引用的第二段",
-      "inlineStyles": [
-        {
-          "bold": false,
-          "italic": false,
-          "strike": false,
-          "code": false,
-          "underline": false,
-          "superscript": false,
-          "subscript": false,
-          "content": "这是引用的第二段"
-        }
-      ]
-    },
-    {
-      "type": "blockquote",
-      "rawText": "> > 这是嵌套引用",
-      "level": 2,
-      "fullContent": "这是嵌套引用",
-      "inlineStyles": [
-        {
-          "bold": false,
-          "italic": false,
-          "strike": false,
-          "code": false,
-          "underline": false,
-          "superscript": false,
-          "subscript": false,
-          "content": "这是嵌套引用"
-        }
-      ]
-    },
-    {
-      "type": "heading",
-      "rawText": "## 4. 代码",
-      "level": 2,
-      "hasNumber": true,
-      "number": "4",
-      "fullContent": "代码",
-      "inlineStyles": [
-        {
-          "bold": false,
-          "italic": false,
-          "strike": false,
-          "code": false,
-          "underline": false,
-          "superscript": false,
-          "subscript": false,
-          "content": "代码"
-        }
-      ]
-    },
-    {
-      "type": "paragraph",
-      "rawText": "行内代码：`console.log('Hello World')`",
-      "hasNumber": false,
-      "number": "",
-      "fullContent": "行内代码：console.log('Hello World')",
-      "inlineStyles": [
-        {
-          "bold": false,
-          "italic": false,
-          "strike": false,
-          "code": false,
-          "underline": false,
-          "superscript": false,
-          "subscript": false,
-          "content": "行内代码："
-        },
-        {
-          "bold": false,
-          "italic": false,
-          "strike": false,
-          "code": true,
-          "underline": false,
-          "superscript": false,
-          "subscript": false,
-          "content": "console.log('Hello World')"
-        }
-      ]
-    },
-    {
-      "type": "paragraph",
-      "rawText": "代码块：",
-      "hasNumber": false,
-      "number": "",
-      "fullContent": "代码块：",
-      "inlineStyles": [
-        {
-          "bold": false,
-          "italic": false,
-          "strike": false,
-          "code": false,
-          "underline": false,
-          "superscript": false,
-          "subscript": false,
-          "content": "代码块："
-        }
-      ]
-    },
-    {
-      "type": "code_block",
-      "rawText": "```javascript\nfunction hello() {\n    console.log('Hello World');\n    return true;\n}\n```",
-      "language": "javascript",
-      "fullContent": "function hello() {\n    console.log('Hello World');\n    return true;\n}"
-    },
-    {
-      "type": "paragraph",
-      "rawText": "没有语言标记的代码块：",
-      "hasNumber": false,
-      "number": "",
-      "fullContent": "没有语言标记的代码块：",
-      "inlineStyles": [
-        {
-          "bold": false,
-          "italic": false,
-          "strike": false,
-          "code": false,
-          "underline": false,
-          "superscript": false,
-          "subscript": false,
-          "content": "没有语言标记的代码块："
-        }
-      ]
-    },
-    {
-      "type": "code_block",
-      "rawText": "```\n这是普通代码块\n没有语法高亮\n```",
-      "language": "",
-      "fullContent": "这是普通代码块\n没有语法高亮"
-    },
-    {
-      "type": "heading",
-      "rawText": "## 5. 表格",
-      "level": 2,
-      "hasNumber": true,
-      "number": "5",
-      "fullContent": "表格",
-      "inlineStyles": [
-        {
-          "bold": false,
-          "italic": false,
-          "strike": false,
-          "code": false,
-          "underline": false,
-          "superscript": false,
-          "subscript": false,
-          "content": "表格"
-        }
-      ]
-    },
-    {
-      "type": "heading",
-      "rawText": "### 基本表格",
-      "level": 3,
-      "hasNumber": false,
-      "number": "",
-      "fullContent": "基本表格",
-      "inlineStyles": [
-        {
-          "bold": false,
-          "italic": false,
-          "strike": false,
-          "code": false,
-          "underline": false,
-          "superscript": false,
-          "subscript": false,
-          "content": "基本表格"
-        }
-      ]
-    },
-    {
-      "type": "table",
-      "headers": [
-        {
-          "rawText": "姓名",
-          "fullContent": "姓名",
-          "inlineStyles": [
-            {
-              "bold": false,
-              "italic": false,
-              "strike": false,
-              "code": false,
-              "underline": false,
-              "superscript": false,
-              "subscript": false,
-              "content": "姓名"
-            }
-          ]
-        },
-        {
-          "rawText": "年龄",
-          "fullContent": "年龄",
-          "inlineStyles": [
-            {
-              "bold": false,
-              "italic": false,
-              "strike": false,
-              "code": false,
-              "underline": false,
-              "superscript": false,
-              "subscript": false,
-              "content": "年龄"
-            }
-          ]
-        },
-        {
-          "rawText": "职业",
-          "fullContent": "职业",
-          "inlineStyles": [
-            {
-              "bold": false,
-              "italic": false,
-              "strike": false,
-              "code": false,
-              "underline": false,
-              "superscript": false,
-              "subscript": false,
-              "content": "职业"
-            }
-          ]
-        }
-      ],
-      "alignments": [
-        "left",
-        "left",
-        "left"
-      ],
-      "rows": [
-        [
+      "raw": "## 3. 文本样式 (Text Styles)\n\n",
+      "depth": 2,
+      "text": "3. 文本样式 (Text Styles)",
+      "tokens": [
           {
-            "rawText": "张三",
-            "fullContent": "张三",
-            "inlineStyles": [
-              {
-                "bold": false,
-                "italic": false,
-                "strike": false,
-                "code": false,
-                "underline": false,
-                "superscript": false,
-                "subscript": false,
-                "content": "张三"
-              }
-            ]
-          },
-          {
-            "rawText": "25",
-            "fullContent": "25",
-            "inlineStyles": [
-              {
-                "bold": false,
-                "italic": false,
-                "strike": false,
-                "code": false,
-                "underline": false,
-                "superscript": false,
-                "subscript": false,
-                "content": "25"
-              }
-            ]
-          },
-          {
-            "rawText": "工程师",
-            "fullContent": "工程师",
-            "inlineStyles": [
-              {
-                "bold": false,
-                "italic": false,
-                "strike": false,
-                "code": false,
-                "underline": false,
-                "superscript": false,
-                "subscript": false,
-                "content": "工程师"
-              }
-            ]
+              "type": "text",
+              "raw": "3. 文本样式 (Text Styles)",
+              "text": "3. 文本样式 (Text Styles)",
+              "escaped": false
           }
-        ],
-        [
+      ]
+  },
+  {
+      "type": "heading",
+      "raw": "### 删除线\n",
+      "depth": 3,
+      "text": "删除线",
+      "tokens": [
           {
-            "rawText": "李四",
-            "fullContent": "李四",
-            "inlineStyles": [
-              {
-                "bold": false,
-                "italic": false,
-                "strike": false,
-                "code": false,
-                "underline": false,
-                "superscript": false,
-                "subscript": false,
-                "content": "李四"
-              }
-            ]
-          },
-          {
-            "rawText": "30",
-            "fullContent": "30",
-            "inlineStyles": [
-              {
-                "bold": false,
-                "italic": false,
-                "strike": false,
-                "code": false,
-                "underline": false,
-                "superscript": false,
-                "subscript": false,
-                "content": "30"
-              }
-            ]
-          },
-          {
-            "rawText": "设计师",
-            "fullContent": "设计师",
-            "inlineStyles": [
-              {
-                "bold": false,
-                "italic": false,
-                "strike": false,
-                "code": false,
-                "underline": false,
-                "superscript": false,
-                "subscript": false,
-                "content": "设计师"
-              }
-            ]
+              "type": "text",
+              "raw": "删除线",
+              "text": "删除线",
+              "escaped": false
           }
-        ],
-        [
+      ]
+  },
+  {
+      "type": "paragraph",
+      "raw": "这是一个段落，其中~~这部分是删除线~~，而这部分是普通文本。",
+      "text": "这是一个段落，其中~~这部分是删除线~~，而这部分是普通文本。",
+      "tokens": [
           {
-            "rawText": "王五",
-            "fullContent": "王五",
-            "inlineStyles": [
-              {
-                "bold": false,
-                "italic": false,
-                "strike": false,
-                "code": false,
-                "underline": false,
-                "superscript": false,
-                "subscript": false,
-                "content": "王五"
-              }
-            ]
+              "type": "text",
+              "raw": "这是一个段落，其中",
+              "text": "这是一个段落，其中",
+              "escaped": false
           },
           {
-            "rawText": "28",
-            "fullContent": "28",
-            "inlineStyles": [
-              {
-                "bold": false,
-                "italic": false,
-                "strike": false,
-                "code": false,
-                "underline": false,
-                "superscript": false,
-                "subscript": false,
-                "content": "28"
-              }
-            ]
+              "type": "del",
+              "raw": "~~这部分是删除线~~",
+              "text": "这部分是删除线",
+              "tokens": [
+                  {
+                      "type": "text",
+                      "raw": "这部分是删除线",
+                      "text": "这部分是删除线",
+                      "escaped": false
+                  }
+              ]
           },
           {
-            "rawText": "产品经理",
-            "fullContent": "产品经理",
-            "inlineStyles": [
-              {
-                "bold": false,
-                "italic": false,
-                "strike": false,
-                "code": false,
-                "underline": false,
-                "superscript": false,
-                "subscript": false,
-                "content": "产品经理"
-              }
-            ]
+              "type": "text",
+              "raw": "，而这部分是普通文本。",
+              "text": "，而这部分是普通文本。",
+              "escaped": false
           }
-        ]
       ]
-    },
-    {
+  },
+  {
+      "type": "space",
+      "raw": "\n\n\n"
+  },
+  {
       "type": "heading",
-      "rawText": "### 对齐方式表格",
-      "level": 3,
-      "hasNumber": false,
-      "number": "",
-      "fullContent": "对齐方式表格",
-      "inlineStyles": [
-        {
-          "bold": false,
-          "italic": false,
-          "strike": false,
-          "code": false,
-          "underline": false,
-          "superscript": false,
-          "subscript": false,
-          "content": "对齐方式表格"
-        }
-      ]
-    },
-    {
-      "type": "table",
-      "headers": [
-        {
-          "rawText": "左对齐",
-          "fullContent": "左对齐",
-          "inlineStyles": [
-            {
-              "bold": false,
-              "italic": false,
-              "strike": false,
-              "code": false,
-              "underline": false,
-              "superscript": false,
-              "subscript": false,
-              "content": "左对齐"
-            }
-          ]
-        },
-        {
-          "rawText": "居中对齐",
-          "fullContent": "居中对齐",
-          "inlineStyles": [
-            {
-              "bold": false,
-              "italic": false,
-              "strike": false,
-              "code": false,
-              "underline": false,
-              "superscript": false,
-              "subscript": false,
-              "content": "居中对齐"
-            }
-          ]
-        },
-        {
-          "rawText": "右对齐",
-          "fullContent": "右对齐",
-          "inlineStyles": [
-            {
-              "bold": false,
-              "italic": false,
-              "strike": false,
-              "code": false,
-              "underline": false,
-              "superscript": false,
-              "subscript": false,
-              "content": "右对齐"
-            }
-          ]
-        }
-      ],
-      "alignments": [
-        "left",
-        "center",
-        "right"
-      ],
-      "rows": [
-        [
+      "raw": "### 复杂混合样式\n",
+      "depth": 3,
+      "text": "复杂混合样式",
+      "tokens": [
           {
-            "rawText": "内容",
-            "fullContent": "内容",
-            "inlineStyles": [
-              {
-                "bold": false,
-                "italic": false,
-                "strike": false,
-                "code": false,
-                "underline": false,
-                "superscript": false,
-                "subscript": false,
-                "content": "内容"
-              }
-            ]
-          },
-          {
-            "rawText": "内容",
-            "fullContent": "内容",
-            "inlineStyles": [
-              {
-                "bold": false,
-                "italic": false,
-                "strike": false,
-                "code": false,
-                "underline": false,
-                "superscript": false,
-                "subscript": false,
-                "content": "内容"
-              }
-            ]
-          },
-          {
-            "rawText": "内容",
-            "fullContent": "内容",
-            "inlineStyles": [
-              {
-                "bold": false,
-                "italic": false,
-                "strike": false,
-                "code": false,
-                "underline": false,
-                "superscript": false,
-                "subscript": false,
-                "content": "内容"
-              }
-            ]
+              "type": "text",
+              "raw": "复杂混合样式",
+              "text": "复杂混合样式",
+              "escaped": false
           }
-        ],
-        [
+      ]
+  },
+  {
+      "type": "paragraph",
+      "raw": "这是一个段落，包含**加粗**、*斜体*、***加粗斜体***、~~删除线~~等多种样式混合出现。",
+      "text": "这是一个段落，包含**加粗**、*斜体*、***加粗斜体***、~~删除线~~等多种样式混合出现。",
+      "tokens": [
           {
-            "rawText": "文本",
-            "fullContent": "文本",
-            "inlineStyles": [
-              {
-                "bold": false,
-                "italic": false,
-                "strike": false,
-                "code": false,
-                "underline": false,
-                "superscript": false,
-                "subscript": false,
-                "content": "文本"
-              }
-            ]
+              "type": "text",
+              "raw": "这是一个段落，包含",
+              "text": "这是一个段落，包含",
+              "escaped": false
           },
           {
-            "rawText": "文本",
-            "fullContent": "文本",
-            "inlineStyles": [
-              {
-                "bold": false,
-                "italic": false,
-                "strike": false,
-                "code": false,
-                "underline": false,
-                "superscript": false,
-                "subscript": false,
-                "content": "文本"
-              }
-            ]
+              "type": "strong",
+              "raw": "**加粗**",
+              "text": "加粗",
+              "tokens": [
+                  {
+                      "type": "text",
+                      "raw": "加粗",
+                      "text": "加粗",
+                      "escaped": false
+                  }
+              ]
           },
           {
-            "rawText": "文本",
-            "fullContent": "文本",
-            "inlineStyles": [
-              {
-                "bold": false,
-                "italic": false,
-                "strike": false,
-                "code": false,
-                "underline": false,
-                "superscript": false,
-                "subscript": false,
-                "content": "文本"
-              }
-            ]
+              "type": "text",
+              "raw": "、",
+              "text": "、",
+              "escaped": false
+          },
+          {
+              "type": "em",
+              "raw": "*斜体*",
+              "text": "斜体",
+              "tokens": [
+                  {
+                      "type": "text",
+                      "raw": "斜体",
+                      "text": "斜体",
+                      "escaped": false
+                  }
+              ]
+          },
+          {
+              "type": "text",
+              "raw": "、",
+              "text": "、",
+              "escaped": false
+          },
+          {
+              "type": "em",
+              "raw": "***加粗斜体***",
+              "text": "**加粗斜体**",
+              "tokens": [
+                  {
+                      "type": "strong",
+                      "raw": "**加粗斜体**",
+                      "text": "加粗斜体",
+                      "tokens": [
+                          {
+                              "type": "text",
+                              "raw": "加粗斜体",
+                              "text": "加粗斜体",
+                              "escaped": false
+                          }
+                      ]
+                  }
+              ]
+          },
+          {
+              "type": "text",
+              "raw": "、",
+              "text": "、",
+              "escaped": false
+          },
+          {
+              "type": "del",
+              "raw": "~~删除线~~",
+              "text": "删除线",
+              "tokens": [
+                  {
+                      "type": "text",
+                      "raw": "删除线",
+                      "text": "删除线",
+                      "escaped": false
+                  }
+              ]
+          },
+          {
+              "type": "text",
+              "raw": "等多种样式混合出现。",
+              "text": "等多种样式混合出现。",
+              "escaped": false
           }
-        ]
       ]
-    },
-    {
+  },
+  {
+      "type": "space",
+      "raw": "\n\n"
+  },
+  {
       "type": "heading",
-      "rawText": "## 6. 链接和图片",
-      "level": 2,
-      "hasNumber": true,
-      "number": "6",
-      "fullContent": "链接和图片",
-      "inlineStyles": [
-        {
-          "bold": false,
-          "italic": false,
-          "strike": false,
-          "code": false,
-          "underline": false,
-          "superscript": false,
-          "subscript": false,
-          "content": "链接和图片"
-        }
+      "raw": "### 样式嵌套\n",
+      "depth": 3,
+      "text": "样式嵌套",
+      "tokens": [
+          {
+              "type": "text",
+              "raw": "样式嵌套",
+              "text": "样式嵌套",
+              "escaped": false
+          }
       ]
-    },
-    {
-      "type": "heading",
-      "rawText": "### 链接",
-      "level": 3,
-      "hasNumber": false,
-      "number": "",
-      "fullContent": "链接",
-      "inlineStyles": [
-        {
-          "bold": false,
-          "italic": false,
-          "strike": false,
-          "code": false,
-          "underline": false,
-          "superscript": false,
-          "subscript": false,
-          "content": "链接"
-        }
-      ]
-    },
-    {
-      "type": "link",
-      "text": "这是一个链接",
-      "url": "https://www.example.com",
-      "title": "",
-      "rawText": "[这是一个链接](https://www.example.com)"
-    },
-    {
-      "type": "link",
-      "text": "带有标题的链接",
-      "url": "https://www.example.com",
-      "title": "链接标题",
-      "rawText": "[带有标题的链接](https://www.example.com \"链接标题\")"
-    },
-    {
-      "type": "link",
-      "text": "https://www.example.com",
-      "url": "https://www.example.com",
-      "title": "",
-      "rawText": "<https://www.example.com> (自动链接)"
-    },
-    {
-      "type": "heading",
-      "rawText": "### 图片",
-      "level": 3,
-      "hasNumber": false,
-      "number": "",
-      "fullContent": "图片",
-      "inlineStyles": [
-        {
-          "bold": false,
-          "italic": false,
-          "strike": false,
-          "code": false,
-          "underline": false,
-          "superscript": false,
-          "subscript": false,
-          "content": "图片"
-        }
-      ]
-    },
-    {
-      "type": "image",
-      "alt": "图片描述",
-      "url": "https://picsum.photos/150/150",
-      "title": "",
-      "rawText": "![图片描述](https://picsum.photos/150/150)"
-    },
-    {
-      "type": "image",
-      "alt": "可点击的图片",
-      "url": "https://picsum.photos/150/150",
-      "title": "",
-      "rawText": "[![可点击的图片](https://picsum.photos/150/150)](https://www.example.com)"
-    },
-    {
-      "type": "heading",
-      "rawText": "## 7. 水平线",
-      "level": 2,
-      "hasNumber": true,
-      "number": "7",
-      "fullContent": "水平线",
-      "inlineStyles": [
-        {
-          "bold": false,
-          "italic": false,
-          "strike": false,
-          "code": false,
-          "underline": false,
-          "superscript": false,
-          "subscript": false,
-          "content": "水平线"
-        }
-      ]
-    },
-    {
-      "type": "horizontal_rule",
-      "rawText": "---"
-    },
-    {
-      "type": "heading",
-      "rawText": "## 8. 任务列表",
-      "level": 2,
-      "hasNumber": true,
-      "number": "8",
-      "fullContent": "任务列表",
-      "inlineStyles": [
-        {
-          "bold": false,
-          "italic": false,
-          "strike": false,
-          "code": false,
-          "underline": false,
-          "superscript": false,
-          "subscript": false,
-          "content": "任务列表"
-        }
-      ]
-    },
-    {
-      "type": "list",
-      "listType": "unordered",
-      "items": [
-        {
-          "type": "listItem",
-          "rawText": "- [x] 已完成任务",
-          "fullContent": "[x] 已完成任务",
-          "level": 0,
-          "inlineStyles": [
-            {
-              "bold": false,
-              "italic": false,
-              "strike": false,
-              "code": false,
-              "underline": false,
-              "superscript": false,
-              "subscript": false,
-              "content": "[x] 已完成任务"
-            }
-          ],
-          "blocks": []
-        },
-        {
-          "type": "listItem",
-          "rawText": "- [ ] 未完成任务",
-          "fullContent": "[ ] 未完成任务",
-          "level": 0,
-          "inlineStyles": [
-            {
-              "bold": false,
-              "italic": false,
-              "strike": false,
-              "code": false,
-              "underline": false,
-              "superscript": false,
-              "subscript": false,
-              "content": "[ ] 未完成任务"
-            }
-          ],
-          "blocks": []
-        },
-        {
-          "type": "listItem",
-          "rawText": "- [ ] 待办任务",
-          "fullContent": "[ ] 待办任务",
-          "level": 0,
-          "inlineStyles": [
-            {
-              "bold": false,
-              "italic": false,
-              "strike": false,
-              "code": false,
-              "underline": false,
-              "superscript": false,
-              "subscript": false,
-              "content": "[ ] 待办任务"
-            }
-          ],
-          "blocks": []
-        }
-      ]
-    },
-    {
-      "type": "heading",
-      "rawText": "## 9. 脚注",
-      "level": 2,
-      "hasNumber": true,
-      "number": "9",
-      "fullContent": "脚注",
-      "inlineStyles": [
-        {
-          "bold": false,
-          "italic": false,
-          "strike": false,
-          "code": false,
-          "underline": false,
-          "superscript": false,
-          "subscript": false,
-          "content": "脚注"
-        }
-      ]
-    },
-    {
+  },
+  {
       "type": "paragraph",
-      "rawText": "这是一个带脚注的文本[^1]",
-      "hasNumber": false,
-      "number": "",
-      "fullContent": "这是一个带脚注的文本[^1]",
-      "inlineStyles": [
-        {
-          "bold": false,
-          "italic": false,
-          "strike": false,
-          "code": false,
-          "underline": false,
-          "superscript": false,
-          "subscript": false,
-          "content": "这是一个带脚注的文本[^1]"
-        }
+      "raw": "这是一个段落，包含**加粗中的*斜体***、***加粗斜体中的~~删除线~~***等嵌套样式。",
+      "text": "这是一个段落，包含**加粗中的*斜体***、***加粗斜体中的~~删除线~~***等嵌套样式。",
+      "tokens": [
+          {
+              "type": "text",
+              "raw": "这是一个段落，包含",
+              "text": "这是一个段落，包含",
+              "escaped": false
+          },
+          {
+              "type": "strong",
+              "raw": "**加粗中的*斜体***",
+              "text": "加粗中的*斜体*",
+              "tokens": [
+                  {
+                      "type": "text",
+                      "raw": "加粗中的",
+                      "text": "加粗中的",
+                      "escaped": false
+                  },
+                  {
+                      "type": "em",
+                      "raw": "*斜体*",
+                      "text": "斜体",
+                      "tokens": [
+                          {
+                              "type": "text",
+                              "raw": "斜体",
+                              "text": "斜体",
+                              "escaped": false
+                          }
+                      ]
+                  }
+              ]
+          },
+          {
+              "type": "text",
+              "raw": "、",
+              "text": "、",
+              "escaped": false
+          },
+          {
+              "type": "em",
+              "raw": "***加粗斜体中的~~删除线~~***",
+              "text": "**加粗斜体中的~~删除线~~**",
+              "tokens": [
+                  {
+                      "type": "strong",
+                      "raw": "**加粗斜体中的~~删除线~~**",
+                      "text": "加粗斜体中的~~删除线~~",
+                      "tokens": [
+                          {
+                              "type": "text",
+                              "raw": "加粗斜体中的",
+                              "text": "加粗斜体中的",
+                              "escaped": false
+                          },
+                          {
+                              "type": "del",
+                              "raw": "~~删除线~~",
+                              "text": "删除线",
+                              "tokens": [
+                                  {
+                                      "type": "text",
+                                      "raw": "删除线",
+                                      "text": "删除线",
+                                      "escaped": false
+                                  }
+                              ]
+                          }
+                      ]
+                  }
+              ]
+          },
+          {
+              "type": "text",
+              "raw": "等嵌套样式。",
+              "text": "等嵌套样式。",
+              "escaped": false
+          }
       ]
-    },
-    {
-      "type": "paragraph",
-      "rawText": "这是另一个脚注[^note]",
-      "hasNumber": false,
-      "number": "",
-      "fullContent": "这是另一个脚注[^note]",
-      "inlineStyles": [
-        {
-          "bold": false,
-          "italic": false,
-          "strike": false,
-          "code": false,
-          "underline": false,
-          "superscript": false,
-          "subscript": false,
-          "content": "这是另一个脚注[^note]"
-        }
-      ]
-    },
-    {
-      "type": "paragraph",
-      "rawText": "[^1]: 这是脚注内容",
-      "hasNumber": false,
-      "number": "",
-      "fullContent": "[^1]: 这是脚注内容",
-      "inlineStyles": [
-        {
-          "bold": false,
-          "italic": false,
-          "strike": false,
-          "code": false,
-          "underline": false,
-          "superscript": false,
-          "subscript": false,
-          "content": "[^1]: 这是脚注内容"
-        }
-      ]
-    },
-    {
-      "type": "paragraph",
-      "rawText": "[^note]: 这是一个有标签的脚注",
-      "hasNumber": false,
-      "number": "",
-      "fullContent": "[^note]: 这是一个有标签的脚注",
-      "inlineStyles": [
-        {
-          "bold": false,
-          "italic": false,
-          "strike": false,
-          "code": false,
-          "underline": false,
-          "superscript": false,
-          "subscript": false,
-          "content": "[^note]: 这是一个有标签的脚注"
-        }
-      ]
-    },
-    {
-      "type": "heading",
-      "rawText": "## 10. 数学公式",
-      "level": 2,
-      "hasNumber": true,
-      "number": "10",
-      "fullContent": "数学公式",
-      "inlineStyles": [
-        {
-          "bold": false,
-          "italic": false,
-          "strike": false,
-          "code": false,
-          "underline": false,
-          "superscript": false,
-          "subscript": false,
-          "content": "数学公式"
-        }
-      ]
-    },
-    {
-      "type": "paragraph",
-      "rawText": "行内公式：$E=mc^2$",
-      "hasNumber": false,
-      "number": "",
-      "fullContent": "行内公式：$E=mc^2$",
-      "inlineStyles": [
-        {
-          "bold": false,
-          "italic": false,
-          "strike": false,
-          "code": false,
-          "underline": false,
-          "superscript": false,
-          "subscript": false,
-          "content": "行内公式：$E=mc^2$"
-        }
-      ]
-    },
-    {
-      "type": "paragraph",
-      "rawText": "块级公式：",
-      "hasNumber": false,
-      "number": "",
-      "fullContent": "块级公式：",
-      "inlineStyles": [
-        {
-          "bold": false,
-          "italic": false,
-          "strike": false,
-          "code": false,
-          "underline": false,
-          "superscript": false,
-          "subscript": false,
-          "content": "块级公式："
-        }
-      ]
-    },
-    {
-      "type": "paragraph",
-      "rawText": "$$",
-      "hasNumber": false,
-      "number": "",
-      "fullContent": "$$",
-      "inlineStyles": [
-        {
-          "bold": false,
-          "italic": false,
-          "strike": false,
-          "code": false,
-          "underline": false,
-          "superscript": false,
-          "subscript": false,
-          "content": "$$"
-        }
-      ]
-    },
-    {
-      "type": "paragraph",
-      "rawText": "\\frac{n!}{k!(n-k)!} = \\binom{n}{k}",
-      "hasNumber": false,
-      "number": "",
-      "fullContent": "\\frac{n!}{k!(n-k)!} = \\binom{n}{k}",
-      "inlineStyles": [
-        {
-          "bold": false,
-          "italic": false,
-          "strike": false,
-          "code": false,
-          "underline": false,
-          "superscript": false,
-          "subscript": false,
-          "content": "\\frac{n!}{k!(n-k)!} = \\binom{n}{k}"
-        }
-      ]
-    },
-    {
-      "type": "paragraph",
-      "rawText": "$$",
-      "hasNumber": false,
-      "number": "",
-      "fullContent": "$$",
-      "inlineStyles": [
-        {
-          "bold": false,
-          "italic": false,
-          "strike": false,
-          "code": false,
-          "underline": false,
-          "superscript": false,
-          "subscript": false,
-          "content": "$$"
-        }
-      ]
-    },
-    {
-      "type": "heading",
-      "rawText": "## 11. 警告框",
-      "level": 2,
-      "hasNumber": true,
-      "number": "11",
-      "fullContent": "警告框",
-      "inlineStyles": [
-        {
-          "bold": false,
-          "italic": false,
-          "strike": false,
-          "code": false,
-          "underline": false,
-          "superscript": false,
-          "subscript": false,
-          "content": "警告框"
-        }
-      ]
-    },
-    {
-      "type": "blockquote",
-      "rawText": "> [!NOTE]",
-      "level": 1,
-      "fullContent": "[!NOTE]",
-      "inlineStyles": [
-        {
-          "bold": false,
-          "italic": false,
-          "strike": false,
-          "code": false,
-          "underline": false,
-          "superscript": false,
-          "subscript": false,
-          "content": "[!NOTE]"
-        }
-      ]
-    },
-    {
-      "type": "blockquote",
-      "rawText": "> 这是一个注释警告框",
-      "level": 1,
-      "fullContent": "这是一个注释警告框",
-      "inlineStyles": [
-        {
-          "bold": false,
-          "italic": false,
-          "strike": false,
-          "code": false,
-          "underline": false,
-          "superscript": false,
-          "subscript": false,
-          "content": "这是一个注释警告框"
-        }
-      ]
-    },
-    {
-      "type": "blockquote",
-      "rawText": "> [!WARNING]",
-      "level": 1,
-      "fullContent": "[!WARNING]",
-      "inlineStyles": [
-        {
-          "bold": false,
-          "italic": false,
-          "strike": false,
-          "code": false,
-          "underline": false,
-          "superscript": false,
-          "subscript": false,
-          "content": "[!WARNING]"
-        }
-      ]
-    },
-    {
-      "type": "blockquote",
-      "rawText": "> 这是一个警告提示框",
-      "level": 1,
-      "fullContent": "这是一个警告提示框",
-      "inlineStyles": [
-        {
-          "bold": false,
-          "italic": false,
-          "strike": false,
-          "code": false,
-          "underline": false,
-          "superscript": false,
-          "subscript": false,
-          "content": "这是一个警告提示框"
-        }
-      ]
-    },
-    {
-      "type": "blockquote",
-      "rawText": "> [!TIP]",
-      "level": 1,
-      "fullContent": "[!TIP]",
-      "inlineStyles": [
-        {
-          "bold": false,
-          "italic": false,
-          "strike": false,
-          "code": false,
-          "underline": false,
-          "superscript": false,
-          "subscript": false,
-          "content": "[!TIP]"
-        }
-      ]
-    },
-    {
-      "type": "blockquote",
-      "rawText": "> 这是一个提示信息框",
-      "level": 1,
-      "fullContent": "这是一个提示信息框",
-      "inlineStyles": [
-        {
-          "bold": false,
-          "italic": false,
-          "strike": false,
-          "code": false,
-          "underline": false,
-          "superscript": false,
-          "subscript": false,
-          "content": "这是一个提示信息框"
-        }
-      ]
-    },
-    {
-      "type": "heading",
-      "rawText": "## 12. 隐藏内容/折叠区域",
-      "level": 2,
-      "hasNumber": true,
-      "number": "12",
-      "fullContent": "隐藏内容/折叠区域",
-      "inlineStyles": [
-        {
-          "bold": false,
-          "italic": false,
-          "strike": false,
-          "code": false,
-          "underline": false,
-          "superscript": false,
-          "subscript": false,
-          "content": "隐藏内容/折叠区域"
-        }
-      ]
-    },
-    {
-      "type": "paragraph",
-      "rawText": "<details>",
-      "hasNumber": false,
-      "number": "",
-      "fullContent": "details>",
-      "inlineStyles": [
-        {
-          "bold": false,
-          "italic": false,
-          "strike": false,
-          "code": false,
-          "underline": false,
-          "superscript": false,
-          "subscript": false,
-          "content": "details>"
-        }
-      ]
-    },
-    {
-      "type": "paragraph",
-      "rawText": "<summary>点击展开详细内容</summary>",
-      "hasNumber": false,
-      "number": "",
-      "fullContent": "summary>点击展开详细内容/summary>",
-      "inlineStyles": [
-        {
-          "bold": false,
-          "italic": false,
-          "strike": false,
-          "code": false,
-          "underline": false,
-          "superscript": false,
-          "subscript": false,
-          "content": "summary>点击展开详细内容"
-        },
-        {
-          "bold": false,
-          "italic": false,
-          "strike": false,
-          "code": false,
-          "underline": false,
-          "superscript": false,
-          "subscript": false,
-          "content": "/summary>"
-        }
-      ]
-    },
-    {
-      "type": "paragraph",
-      "rawText": "这是折叠区域内的内容，可以包含任何Markdown格式。",
-      "hasNumber": false,
-      "number": "",
-      "fullContent": "这是折叠区域内的内容，可以包含任何Markdown格式。",
-      "inlineStyles": [
-        {
-          "bold": false,
-          "italic": false,
-          "strike": false,
-          "code": false,
-          "underline": false,
-          "superscript": false,
-          "subscript": false,
-          "content": "这是折叠区域内的内容，可以包含任何Markdown格式。"
-        }
-      ]
-    },
-    {
-      "type": "list",
-      "listType": "unordered",
-      "items": [
-        {
-          "type": "listItem",
-          "rawText": "- 列表项",
-          "fullContent": "列表项",
-          "level": 0,
-          "inlineStyles": [
-            {
-              "bold": false,
-              "italic": false,
-              "strike": false,
-              "code": false,
-              "underline": false,
-              "superscript": false,
-              "subscript": false,
-              "content": "列表项"
-            }
-          ],
-          "blocks": []
-        },
-        {
-          "type": "listItem",
-          "rawText": "- 另一个列表项",
-          "fullContent": "另一个列表项",
-          "level": 0,
-          "inlineStyles": [
-            {
-              "bold": false,
-              "italic": false,
-              "strike": false,
-              "code": false,
-              "underline": false,
-              "superscript": false,
-              "subscript": false,
-              "content": "另一个列表项"
-            }
-          ],
-          "blocks": []
-        }
-      ]
-    },
-    {
-      "type": "paragraph",
-      "rawText": "</details>",
-      "hasNumber": false,
-      "number": "",
-      "fullContent": "/details>",
-      "inlineStyles": [
-        {
-          "bold": false,
-          "italic": false,
-          "strike": false,
-          "code": false,
-          "underline": false,
-          "superscript": false,
-          "subscript": false,
-          "content": "/details>"
-        }
-      ]
-    },
-    {
-      "type": "heading",
-      "rawText": "## 13. HTML内联元素",
-      "level": 2,
-      "hasNumber": true,
-      "number": "13",
-      "fullContent": "HTML内联元素",
-      "inlineStyles": [
-        {
-          "bold": false,
-          "italic": false,
-          "strike": false,
-          "code": false,
-          "underline": false,
-          "superscript": false,
-          "subscript": false,
-          "content": "HTML内联元素"
-        }
-      ]
-    },
-    {
-      "type": "paragraph",
-      "rawText": "这是一个 <span style=\"color:red\">红色文本</span> 使用HTML标签",
-      "hasNumber": false,
-      "number": "",
-      "fullContent": "这是一个 span style=\"color:red\">红色文本/span> 使用HTML标签",
-      "inlineStyles": [
-        {
-          "bold": false,
-          "italic": false,
-          "strike": false,
-          "code": false,
-          "underline": false,
-          "superscript": false,
-          "subscript": false,
-          "content": "这是一个 "
-        },
-        {
-          "bold": false,
-          "italic": false,
-          "strike": false,
-          "code": false,
-          "underline": false,
-          "superscript": false,
-          "subscript": false,
-          "content": "span style=\"color:red\">红色文本"
-        },
-        {
-          "bold": false,
-          "italic": false,
-          "strike": false,
-          "code": false,
-          "underline": false,
-          "superscript": false,
-          "subscript": false,
-          "content": "/span> 使用HTML标签"
-        }
-      ]
-    },
-    {
-      "type": "paragraph",
-      "rawText": "<div align=\"center\">",
-      "hasNumber": false,
-      "number": "",
-      "fullContent": "div align=\"center\">",
-      "inlineStyles": [
-        {
-          "bold": false,
-          "italic": false,
-          "strike": false,
-          "code": false,
-          "underline": false,
-          "superscript": false,
-          "subscript": false,
-          "content": "div align=\"center\">"
-        }
-      ]
-    },
-    {
-      "type": "paragraph",
-      "rawText": "居中的内容块",
-      "hasNumber": false,
-      "number": "",
-      "fullContent": "居中的内容块",
-      "inlineStyles": [
-        {
-          "bold": false,
-          "italic": false,
-          "strike": false,
-          "code": false,
-          "underline": false,
-          "superscript": false,
-          "subscript": false,
-          "content": "居中的内容块"
-        }
-      ]
-    },
-    {
-      "type": "paragraph",
-      "rawText": "</div>",
-      "hasNumber": false,
-      "number": "",
-      "fullContent": "/div>",
-      "inlineStyles": [
-        {
-          "bold": false,
-          "italic": false,
-          "strike": false,
-          "code": false,
-          "underline": false,
-          "superscript": false,
-          "subscript": false,
-          "content": "/div>"
-        }
-      ]
-    },
-    {
-      "type": "heading",
-      "rawText": "## 14. Emoji表情符号",
-      "level": 2,
-      "hasNumber": true,
-      "number": "14",
-      "fullContent": "Emoji表情符号",
-      "inlineStyles": [
-        {
-          "bold": false,
-          "italic": false,
-          "strike": false,
-          "code": false,
-          "underline": false,
-          "superscript": false,
-          "subscript": false,
-          "content": "Emoji表情符号"
-        }
-      ]
-    },
-    {
-      "type": "paragraph",
-      "rawText": ":smile: :heart: :thumbsup: :rocket:",
-      "hasNumber": false,
-      "number": "",
-      "fullContent": ":smile: :heart: :thumbsup: :rocket:",
-      "inlineStyles": [
-        {
-          "bold": false,
-          "italic": false,
-          "strike": false,
-          "code": false,
-          "underline": false,
-          "superscript": false,
-          "subscript": false,
-          "content": ":smile: :heart: :thumbsup: :rocket:"
-        }
-      ]
-    },
-    {
-      "type": "heading",
-      "rawText": "## 15. 转义字符",
-      "level": 2,
-      "hasNumber": true,
-      "number": "15",
-      "fullContent": "转义字符",
-      "inlineStyles": [
-        {
-          "bold": false,
-          "italic": false,
-          "strike": false,
-          "code": false,
-          "underline": false,
-          "superscript": false,
-          "subscript": false,
-          "content": "转义字符"
-        }
-      ]
-    },
-    {
-      "type": "paragraph",
-      "rawText": "\\* 这不是斜体 \\*",
-      "hasNumber": false,
-      "number": "",
-      "fullContent": "\\ 这不是斜体 \\",
-      "inlineStyles": [
-        {
-          "bold": false,
-          "italic": false,
-          "strike": false,
-          "code": false,
-          "underline": false,
-          "superscript": false,
-          "subscript": false,
-          "content": "\\"
-        },
-        {
-          "bold": false,
-          "italic": true,
-          "strike": false,
-          "code": false,
-          "underline": false,
-          "superscript": false,
-          "subscript": false,
-          "content": " 这不是斜体 \\"
-        }
-      ]
-    },
-    {
-      "type": "paragraph",
-      "rawText": "\\`这不是代码\\`",
-      "hasNumber": false,
-      "number": "",
-      "fullContent": "\\这不是代码\\",
-      "inlineStyles": [
-        {
-          "bold": false,
-          "italic": false,
-          "strike": false,
-          "code": false,
-          "underline": false,
-          "superscript": false,
-          "subscript": false,
-          "content": "\\"
-        },
-        {
-          "bold": false,
-          "italic": false,
-          "strike": false,
-          "code": true,
-          "underline": false,
-          "superscript": false,
-          "subscript": false,
-          "content": "这不是代码\\"
-        }
-      ]
-    },
-    {
-      "type": "heading",
-      "rawText": "## 16. 目录参考(TOC)",
-      "level": 2,
-      "hasNumber": true,
-      "number": "16",
-      "fullContent": "目录参考(TOC)",
-      "inlineStyles": [
-        {
-          "bold": false,
-          "italic": false,
-          "strike": false,
-          "code": false,
-          "underline": false,
-          "superscript": false,
-          "subscript": false,
-          "content": "目录参考(TOC)"
-        }
-      ]
-    },
-    {
-      "type": "link",
-      "text": "回到顶部",
-      "url": "#markdown测试文档-gfm版本",
-      "title": "",
-      "rawText": "[回到顶部](#markdown测试文档-gfm版本)"
-    }
-  ]
-}
+  }
+]

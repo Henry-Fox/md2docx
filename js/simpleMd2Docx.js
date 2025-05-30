@@ -1,9 +1,23 @@
 // 引入需要的库
-import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, Table, TableRow, TableCell, WidthType, BorderStyle, LineRuleType, LevelFormat } from "docx";
+import {
+  Document,
+  Packer,
+  Paragraph,
+  TextRun,
+  HeadingLevel,
+  AlignmentType,
+  Table,
+  TableRow,
+  TableCell,
+  WidthType,
+  BorderStyle,
+  LineRuleType,
+  LevelFormat,
+} from "docx";
 import { saveAs } from "file-saver";
-import { Md2Json } from './md2json.js';
-import runTest from './json2docx.js';
-import { marked } from 'marked';
+import { Md2Json } from "./md2json.js";
+import runTest from "./json2docx.js";
+import { marked } from "marked";
 
 /**
  * 简化版的Markdown到Docx转换器
@@ -32,7 +46,7 @@ class SimpleMd2Docx {
 
       return true;
     } catch (error) {
-      console.error('转换过程中出错:', error);
+      console.error("转换过程中出错:", error);
       throw error;
     }
   }
@@ -46,32 +60,220 @@ class SimpleMd2Docx {
     try {
       console.log("开始直接转换Markdown到Word文档...");
 
-      // 使用marked解析Markdown
+      // 保存当前markdown内容
+      this.currentMarkdown = markdown;
+
+      // 配置marked选项
+      // marked.setOptions({
+      //   gfm: true,  // 启用GitHub风格的Markdown
+      //   breaks: true,  // 启用换行符转换
+      //   headerIds: true,  // 为标题添加id
+      //   mangle: false,  // 不转义标题中的特殊字符
+      //   pedantic: true,  // 严格遵循markdown规范
+      //   smartLists: true,  // 使用更智能的列表行为
+      //   smartypants: false,  // 不使用更智能的标点符号
+      //   xhtml: false  // 不使用xhtml
+      // });
+
+      // 使用marked解析Markdown，得到token队列
       const tokens = marked.lexer(markdown);
       console.log("Markdown解析结果:", tokens);
 
       // 创建一个数组用于收集所有段落
       const paragraphs = [];
 
-      // 处理所有图片
-      console.log("开始处理图片...");
-      const imageInfos = await this.processImages(tokens);
-      console.log(`图片处理完成，共处理 ${imageInfos.length} 张图片`);
-
-      // 处理每个token
+      // 遍历token队列，生成对应的docx段落
       for (const token of tokens) {
-        const result = await this.processMarkedToken(token);
-        if (Array.isArray(result)) {
-          paragraphs.push(...result);
-        } else if (result) {
-          paragraphs.push(result);
+        switch (token.type) {
+          case "heading":
+            paragraphs.push(this.createHeadingFromMarked(token));
+            break;
+          case "paragraph":
+            paragraphs.push(this.createParagraphFromMarked(token));
+            break;
+          case "code":
+            paragraphs.push(this.createCodeBlockFromMarked(token));
+            break;
+          case "list":
+            paragraphs.push(...this.createListFromMarked(token));
+            break;
+          case "table":
+            paragraphs.push(this.createTableFromMarked(token));
+            break;
+          case "blockquote":
+            paragraphs.push(this.createBlockquoteFromMarked(token));
+            break;
+          case "hr":
+            paragraphs.push(this.createHorizontalRule());
+            break;
+          case "image":
+            paragraphs.push(this.createImageFromMarked(token));
+            break;
+          case "space":
+            paragraphs.push(this.createSpaceFromMarked());
+            break;
+          default:
+            console.warn(`未支持的token类型: ${token.type}`);
+            break;
         }
       }
 
-      // 转换字符到twip的辅助函数
-      function convertCharesToTwip(inches) {
-        return Math.round(inches * 180);
-      }
+      // 创建一个numbering配置
+      const numberingConfig = [
+        {
+          reference: "my-heading-style",
+          levels: [
+            {
+              level: 0, // 对应Markdown的##（depth:2）
+              format: LevelFormat.DECIMAL,
+              text: "%1.",
+              alignment: AlignmentType.START,
+              start: 1,
+              style: {
+                run: {
+                  size: 32,
+                  font: "黑体",
+                  color: "000000",
+                  bold: true,
+                },
+                paragraph: {
+                  alignment: AlignmentType.START,
+                  indent: {
+                    left: 0,
+                    firstLine: 0,
+                  },
+                },
+              },
+            },
+            {
+              level: 1, // 对应Markdown的###（depth:3）
+              format: LevelFormat.DECIMAL,
+              text: "%2.",
+              alignment: AlignmentType.START,
+              style: {
+                paragraph: {
+                  indent: {
+                    left: 0,
+                    firstLine: 0,
+                  },
+                },
+              },
+            },
+            {
+              level: 2, // 对应Markdown的####（depth:4）
+              format: LevelFormat.LOWER_LETTER,
+              text: "%3)",
+              alignment: AlignmentType.START,
+              style: {
+                paragraph: {
+                  indent: {
+                    left: 0,
+                    firstLine: 0,
+                  },
+                },
+              },
+            },
+            {
+              level: 3, // 对应Markdown的#####（depth:5）
+              format: LevelFormat.UPPER_LETTER,
+              text: "%4)",
+              alignment: AlignmentType.START,
+              style: {
+                paragraph: {
+                  indent: {
+                    left: 0,
+                    firstLine: 0,
+                  },
+                },
+              },
+            },
+            {
+              level: 4, // 对应Markdown的######（depth:6）
+              format: LevelFormat.UPPER_LETTER,
+              text: "%5)",
+              alignment: AlignmentType.START,
+              style: {
+                paragraph: {
+                  indent: {
+                    left: 0,
+                    firstLine: 0,
+                  },
+                },
+              },
+            },
+          ],
+        },
+        {
+          reference: "my-paragraph-style",
+          levels: [
+            {
+              level: 0,
+              format: LevelFormat.DECIMAL,
+              text: "%1.",
+              alignment: AlignmentType.START,
+              style: {
+                run: {
+                  size: 24,
+                  font: "仿宋",
+                  color: "000000",
+                },
+                paragraph: {
+                  alignment: AlignmentType.JUSTIFIED,
+                  indent: {
+                    left: 0,
+                    hanging: 0,
+                  },
+                  spacing: {
+                    before: 0,
+                    after: 0,
+                    line: 600,
+                    lineRule: LineRuleType.EXACT,
+                  },
+                },
+              },
+            },
+          ],
+        },
+        {
+          reference: "my-Unordered-list",
+          levels: [
+            {
+              level: 0,
+              format: LevelFormat.JUSTIFIED,
+              text: "\u25CF",
+              alignment: AlignmentType.LEFT,
+              style: {
+                paragraph: {
+                  indent: {
+                    left: 0, // 左缩进0
+                    hanging: 0, // 悬挂缩进0
+                    firstLine: 480, // 首行缩进2个汉字宽度（12磅 × 2 = 24磅 = 480 twip）
+                  },
+                },
+              },
+            },
+          ],
+        },
+        {
+          reference: "my-task-list",
+          levels: [
+            {
+              level: 0,
+              format: LevelFormat.BULLET,
+              text: "\u25A0", // 使用方块作为任务列表的标记
+              alignment: AlignmentType.LEFT,
+              style: {
+                paragraph: {
+                  indent: {
+                    left: 0,
+                    hanging: 0,
+                  },
+                },
+              },
+            },
+          ],
+        },
+      ];
 
       // 创建文档
       const doc = new Document({
@@ -106,13 +308,13 @@ class SimpleMd2Docx {
               paragraph: {
                 alignment: AlignmentType.CENTER, // 居中对齐
                 spacing: {
-                  before: 480, // 段前24磅
-                  after: 480, // 段后24磅
+                  before: 480, // 段前24磅（约合480 twip）
+                  after: 480, // 段前24磅（约合480 twip）
                 },
-                lineSpacing: { before: 560, lineRule: LineRuleType.EXACT }, //行距设置为固定值28磅
+                lineSpacing: { before: 560, lineRule: LineRuleType.EXACT }, //行距设置为固定值28磅，约合560 twip
                 indent: {
-                  left: convertCharesToTwip(0),
-                  firstLine: convertCharesToTwip(0),
+                  left: 0, // 左缩进0
+                  firstLine: 0, // 首行缩进
                 },
               },
             },
@@ -126,19 +328,19 @@ class SimpleMd2Docx {
               paragraph: {
                 alignment: AlignmentType.START, // 居左对齐
                 spacing: {
-                  before: 240, // 段前12磅
-                  after: 120, // 段后6磅
+                  before: 240, // 段前12磅（约合240 twip）
+                  after: 120, // 段后6磅（约合120 twip）
                 },
-                lineSpacing: { before: 440, lineRule: LineRuleType.EXACT }, //行距设置为固定值22磅
+                lineSpacing: { before: 440, lineRule: LineRuleType.EXACT }, //行距设置为固定值22磅，约合440 twip
                 indent: {
-                  left: convertCharesToTwip(0),
-                  firstLine: convertCharesToTwip(0),
+                  left: 0, // 左缩进0
+                  firstLine: 0, // 首行缩进
                 },
               },
             },
             heading2: {
               run: {
-                size: 32, //三号字→16磅
+                size: 32, //三号字→16磅（与一级标题同字号，通过字体区分层级）
                 font: "楷体", // 楷体
                 color: "000000", // 黑色
                 bold: true, // 加粗
@@ -146,13 +348,13 @@ class SimpleMd2Docx {
               paragraph: {
                 alignment: AlignmentType.START, // 居左对齐
                 spacing: {
-                  before: 120, // 段前6磅
-                  after: 60, // 段后3磅
+                  before: 120, // 段前6磅（约合120 twip）
+                  after: 60, // 段后3磅（约合60 twip）
                 },
-                lineSpacing: { before: 360, lineRule: LineRuleType.EXACT }, //行距设置为固定值18磅
+                lineSpacing: { before: 360, lineRule: LineRuleType.EXACT }, //行距设置为固定值18磅，约合360 twip
                 indent: {
-                  left: convertCharesToTwip(0),
-                  firstLine: convertCharesToTwip(0),
+                  left: 0, // 左缩进0
+                  firstLine: 0, // 首行缩进
                 },
               },
             },
@@ -166,13 +368,13 @@ class SimpleMd2Docx {
               paragraph: {
                 alignment: AlignmentType.START, // 居左对齐
                 spacing: {
-                  before: 60, // 段前3磅
-                  after: 60, // 段后3磅
+                  before: 60, // 段前3磅（约合60 twip）
+                  after: 60, // 段后3磅（约合60 twip）
                 },
-                lineSpacing: { before: 320, lineRule: LineRuleType.EXACT }, //行距设置为固定值16磅
+                lineSpacing: { before: 320, lineRule: LineRuleType.EXACT }, //行距设置为固定值16磅，约合320 twip
                 indent: {
-                  left: convertCharesToTwip(0),
-                  firstLine: convertCharesToTwip(0),
+                  left: 0, // 左缩进0
+                  firstLine: 0, // 首行缩进
                 },
               },
             },
@@ -186,13 +388,13 @@ class SimpleMd2Docx {
               paragraph: {
                 alignment: AlignmentType.START, // 居左对齐
                 spacing: {
-                  before: 30, // 段前1.5磅
-                  after: 30, // 段后1.5磅
+                  before: 30, // 段前1.5磅（约合30 twip）
+                  after: 30, // 段后1.5磅（约合30 twip）
                 },
-                lineSpacing: { before: 280, lineRule: LineRuleType.EXACT }, //行距设置为固定值14磅
+                lineSpacing: { before: 280, lineRule: LineRuleType.EXACT }, //行距设置为固定值14磅，约合280 twip
                 indent: {
-                  left: convertCharesToTwip(0),
-                  firstLine: convertCharesToTwip(0),
+                  left: 0, // 左缩进0
+                  firstLine: 0, // 首行缩进
                 },
               },
             },
@@ -207,189 +409,54 @@ class SimpleMd2Docx {
                 alignment: AlignmentType.START, // 居左对齐
                 spacing: {
                   before: 0, // 无段前间距
-                  after: 0, // 无段后间距
+                  after: 0, // 无段前间距
                 },
-                lineSpacing: { before: 240, lineRule: LineRuleType.EXACT }, //行距设置为固定值12磅
+                lineSpacing: { before: 240, lineRule: LineRuleType.EXACT }, //行距设置为固定值12磅，约合240 twip
                 indent: {
-                  left: convertCharesToTwip(0),
-                  firstLine: convertCharesToTwip(0),
+                  left: 0, // 左缩进0
+                  firstLine: 0, // 首行缩进
                 },
+              },
+            },
+          },
+          footnote: {
+            run: {
+              size: 20, // 10磅
+              font: "仿宋",
+              color: "000000",
+            },
+            paragraph: {
+              alignment: AlignmentType.JUSTIFIED,
+              spacing: {
+                before: 120,
+                after: 120,
+                line: 400,
+              },
+              indent: {
+                left: 720, // 36磅左缩进
+                hanging: 360, // 18磅悬挂缩进
               },
             },
           },
         },
         numbering: {
-          config: [
-            {
-              reference: "my-heading-style",
-              levels: [
-                {
-                  level: 2,
-                  format: LevelFormat.CHINESE_COUNTING,
-                  text: "%3、",
-                  alignment: AlignmentType.START,
-                  start: 1,
-                  style: {
-                    run: {
-                      size: 32,
-                      font: "黑体",
-                      color: "000000",
-                      bold: true,
-                    },
-                    paragraph: {
-                      alignment: AlignmentType.START,
-                      indent: {
-                        left: convertCharesToTwip(0),
-                        firstLine: convertCharesToTwip(0),
-                      },
-                    },
-                  },
-                },
-                {
-                  level: 3,
-                  format: LevelFormat.DECIMAL,
-                  text: "%4.",
-                  alignment: AlignmentType.START,
-                  style: {
-                    paragraph: {
-                      indent: {
-                        left: convertCharesToTwip(0),
-                        firstLine: convertCharesToTwip(0),
-                      },
-                    },
-                  },
-                },
-                {
-                  level: 4,
-                  format: LevelFormat.LOWER_LETTER,
-                  text: "%5)",
-                  alignment: AlignmentType.START,
-                  style: {
-                    paragraph: {
-                      indent: {
-                        left: convertCharesToTwip(0),
-                        firstLine: convertCharesToTwip(0),
-                      },
-                    },
-                  },
-                },
-                {
-                  level: 5,
-                  format: LevelFormat.UPPER_LETTER,
-                  text: "%6)",
-                  alignment: AlignmentType.START,
-                  style: {
-                    paragraph: {
-                      indent: {
-                        left: convertCharesToTwip(0),
-                        firstLine: convertCharesToTwip(0),
-                      },
-                    },
-                  },
-                },
-                {
-                  level: 6,
-                  format: LevelFormat.UPPER_LETTER,
-                  text: "%7)",
-                  alignment: AlignmentType.START,
-                  style: {
-                    paragraph: {
-                      indent: {
-                        left: convertCharesToTwip(0),
-                        firstLine: convertCharesToTwip(0),
-                      },
-                    },
-                  },
-                },
-              ],
-            },
-            {
-              reference: "my-paragraph-style",
-              levels: [
-                {
-                  level: 0,
-                  format: LevelFormat.DECIMAL,
-                  text: "%1.",
-                  alignment: AlignmentType.START,
-                  style: {
-                    run: {
-                      size: 24,
-                      font: "仿宋",
-                      color: "000000",
-                    },
-                    paragraph: {
-                      alignment: AlignmentType.JUSTIFIED,
-                      indent: {
-                        left: convertCharesToTwip(0),
-                        hanging: convertCharesToTwip(0),
-                      },
-                      spacing: {
-                        before: 0,
-                        after: 0,
-                        line: 600,
-                        lineRule: LineRuleType.EXACT,
-                      },
-                    },
-                  },
-                },
-              ],
-            },
-            {
-              reference: "my-Unordered-list",
-              levels: [
-                {
-                  level: 0,
-                  format: LevelFormat.JUSTIFIED,
-                  text: "\u25CF",
-                  alignment: AlignmentType.LEFT,
-                  style: {
-                    paragraph: {
-                      indent: {
-                        left: convertCharesToTwip(0),
-                        hanging: convertCharesToTwip(0),
-                        firstLine: 480,
-                      },
-                    },
-                  },
-                },
-              ],
-            },
-            {
-              reference: "my-task-list",
-              levels: [
-                {
-                  level: 0,
-                  format: LevelFormat.BULLET,
-                  text: "\u25A0",
-                  alignment: AlignmentType.LEFT,
-                  style: {
-                    paragraph: {
-                      indent: {
-                        left: convertCharesToTwip(0),
-                        hanging: convertCharesToTwip(0),
-                      },
-                    },
-                  },
-                },
-              ],
-            },
-          ],
+          config: numberingConfig,
         },
         sections: [
           {
             properties: {
               page: {
                 size: {
-                  width: 12240, // A4宽度
-                  height: 15840, // A4高度
+                  width: 12240, // A4宽度（595pt × 20 = 11900twip，考虑四舍五入设为12240）
+                  height: 15840, // A4高度（842pt × 20 = 16840twip，考虑装订边距设为15840）
                 },
-                orientation: "portrait",
+                orientation: "portrait", // 纵向（默认）
                 margin: {
-                  top: 1440,
-                  bottom: 1440,
-                  left: 1800,
-                  right: 1800,
-                  gutter: 0,
+                  top: 1440, // 上边距2.54cm（1440twip）
+                  bottom: 1440, // 下边距2.54cm（1440twip）
+                  left: 1800, // 左边距3.18cm（1800twip）
+                  right: 1800, // 右边距3.18cm（1800twip）
+                  gutter: 0, // 装订线间距
                 },
               },
             },
@@ -404,7 +471,7 @@ class SimpleMd2Docx {
 
       return true;
     } catch (error) {
-      console.error('直接转换过程中出错:', error);
+      console.error("直接转换过程中出错:", error);
       throw error;
     }
   }
@@ -416,23 +483,31 @@ class SimpleMd2Docx {
    */
   async processMarkedToken(token) {
     switch (token.type) {
-      case 'heading':
+      case "heading":
+        // 检查是否真的是标题（不应该包含换行符）
+        if (token.text.includes("\n")) {
+          // 如果包含换行符，说明是段落而不是标题
+          return this.createParagraphFromMarked({
+            type: "paragraph",
+            text: token.text,
+          });
+        }
         return this.createHeadingFromMarked(token);
-      case 'paragraph':
+      case "paragraph":
         return this.createParagraphFromMarked(token);
-      case 'code':
+      case "code":
         return this.createCodeBlockFromMarked(token);
-      case 'list':
+      case "list":
         return this.createListFromMarked(token);
-      case 'table':
+      case "table":
         return this.createTableFromMarked(token);
-      case 'blockquote':
+      case "blockquote":
         return this.createBlockquoteFromMarked(token);
-      case 'hr':
+      case "hr":
         return this.createHorizontalRule();
-      case 'image':
+      case "image":
         return this.createImageFromMarked(token);
-      case 'space':
+      case "space":
         return this.createSpaceFromMarked();
       default:
         console.warn(`未支持的token类型: ${token.type}`);
@@ -442,9 +517,10 @@ class SimpleMd2Docx {
 
   // 创建空行
   createSpaceFromMarked() {
+    //返回一个空段落
     return new Paragraph({
-      text: '',
-      alignment: AlignmentType.START
+      text: "",
+      alignment: AlignmentType.START,
     });
   }
 
@@ -455,66 +531,11 @@ class SimpleMd2Docx {
    */
   createHeadingFromMarked(token) {
     const level = token.depth;
-
-    // 使用正则表达式匹配序号和文本内容
-    const match = token.text.match(/^(\d+)\.(.*)/);
+    const match = token.text.match(/^\d+\./);
     const hasNumber = match !== null;
-    const number = hasNumber ? match[1] : null;
-    const content = hasNumber ? match[2].trim() : token.text;
+    const content = hasNumber ? token.text.replace(/^\d+\.\s*/, "") : token.text;
 
-    // 准备TextRun数组
-    const textRuns = [];
-
-    // 根据标题级别设置不同的字体样式
-    let fontSize, fontFamily, isBold;
-
-    switch (level) {
-      case 1: // 标题
-        fontSize = 44; // 2号
-        fontFamily = "黑体";
-        isBold = true;
-        break;
-      case 2: // 一级标题
-        fontSize = 32; // 三号
-        fontFamily = "黑体";
-        isBold = true;
-        break;
-      case 3: // 二级标题
-        fontSize = 32; // 16磅
-        fontFamily = "楷体";
-        isBold = true;
-        break;
-      case 4: // 三级标题
-        fontSize = 28; // 14磅
-        fontFamily = "仿宋";
-        isBold = true;
-        break;
-      case 5: // 四级标题
-        fontSize = 24; // 12磅
-        fontFamily = "仿宋";
-        isBold = true;
-        break;
-      case 6: // 五级标题
-        fontSize = 21; // 10.5磅
-        fontFamily = "仿宋";
-        isBold = true;
-        break;
-      default:
-        fontSize = 32;
-        fontFamily = "黑体";
-        isBold = true;
-    }
-
-    textRuns.push(
-      new TextRun({
-        text: content,
-        size: fontSize,
-        font: fontFamily,
-        bold: isBold,
-      })
-    );
-
-    // 设置标题级别
+    // 设置标题样式
     let headingLevel;
     switch (level) {
       case 1: headingLevel = HeadingLevel.TITLE; break;
@@ -526,23 +547,61 @@ class SimpleMd2Docx {
       default: headingLevel = HeadingLevel.TITLE;
     }
 
-    // 判断是否需要编号
-    if (hasNumber) {
+    const textRuns = [
+      new TextRun({
+        text: content,
+        bold: true,
+      })
+    ];
+
+    if (level === 1) {
+      // 一级标题永远不用编号
+      return new Paragraph({
+        heading: headingLevel,
+        children: textRuns,
+      });
+    } else if (hasNumber) {
+      // 二级及以下标题，有序号前缀时加自动编号
       return new Paragraph({
         numbering: {
           reference: "my-heading-style",
-          level: level,
+          level: level - 2, // Markdown的##对应Word的level:0
         },
         heading: headingLevel,
         children: textRuns,
       });
     } else {
+      // 二级及以下标题，无序号前缀时只用样式
       return new Paragraph({
         heading: headingLevel,
         children: textRuns,
-        style: `heading${level}`,
       });
     }
+  }
+
+  /**
+   * 递归处理 marked tokens，生成 docx 的 TextRun 数组
+   * @param {Array} tokens - marked 的 tokens
+   * @param {Object} style - 当前叠加的样式
+   * @returns {Array} TextRun[]
+   */
+  parseTokens(tokens, style = {}) {
+    let runs = [];
+    for (const t of tokens) {
+      if (t.type === 'text') {
+        runs.push(new TextRun({ text: t.text, ...style }));
+      } else if (t.type === 'strong') {
+        runs = runs.concat(this.parseTokens(t.tokens || [], { ...style, bold: true }));
+      } else if (t.type === 'em') {
+        runs = runs.concat(this.parseTokens(t.tokens || [], { ...style, italics: true }));
+      } else if (t.type === 'del') {
+        runs = runs.concat(this.parseTokens(t.tokens || [], { ...style, strike: true }));
+      } else {
+        // 其他类型直接递归
+        runs = runs.concat(this.parseTokens(t.tokens || [], style));
+      }
+    }
+    return runs;
   }
 
   /**
@@ -554,18 +613,34 @@ class SimpleMd2Docx {
     // 检查是否包含序号
     const hasNumber = /^\d+\.\s/.test(token.text);
     // 如果有序号，去掉序号部分
-    const cleanText = hasNumber ? token.text.replace(/^\d+\.\s*/, '') : token.text;
+    const cleanText = hasNumber
+      ? token.text.replace(/^\d+\.\s*/, "")
+      : token.text;
+
+    let textRuns = [];
+    if (token.tokens) {
+      textRuns = this.parseTokens(token.tokens);
+    } else {
+      textRuns = [
+        new TextRun({
+          text: cleanText,
+          bold: false,
+          italics: false,
+          strike: false,
+        })
+      ];
+    }
 
     const paragraph = new Paragraph({
-      text: cleanText,
-      alignment: AlignmentType.JUSTIFIED
+      children: textRuns,
+      alignment: AlignmentType.JUSTIFIED,
     });
 
     // 如果有序号，添加编号
     if (hasNumber) {
       paragraph.numbering = {
         reference: "my-paragraph-style",
-        level: 0
+        level: 0,
       };
     }
 
@@ -582,8 +657,8 @@ class SimpleMd2Docx {
       text: token.text,
       alignment: AlignmentType.LEFT,
       indent: {
-        left: 720
-      }
+        left: 720,
+      },
     });
   }
 
@@ -594,14 +669,39 @@ class SimpleMd2Docx {
    */
   createListFromMarked(token) {
     const paragraphs = [];
+
+    // 递归处理列表项
+    const processListItem = (item, level = 0) => {
+      // 创建当前列表项
+      const paragraph = new Paragraph({
+        numbering: {
+          reference: token.ordered ? "my-paragraph-style" : "my-Unordered-list",
+          level: level,
+        },
+        children: item.tokens ? this.parseTokens(item.tokens) : [
+          new TextRun({
+            text: item.text,
+            size: 24,
+            font: "仿宋",
+            color: "000000",
+          })
+        ],
+      });
+      paragraphs.push(paragraph);
+
+      // 递归处理子列表
+      if (item.items && item.items.length > 0) {
+        item.items.forEach(subItem => {
+          processListItem(subItem, level + 1);
+        });
+      }
+    };
+
+    // 处理所有顶级列表项
     token.items.forEach(item => {
-      paragraphs.push(new Paragraph({
-        text: item.text,
-        bullet: {
-          level: 0
-        }
-      }));
+      processListItem(item);
     });
+
     return paragraphs;
   }
 
@@ -615,18 +715,24 @@ class SimpleMd2Docx {
 
     // 添加表头
     const headerRow = new TableRow({
-      children: token.header.map(cell => new TableCell({
-        children: [new Paragraph({ text: cell.text })]
-      }))
+      children: token.header.map(
+        (cell) =>
+          new TableCell({
+            children: [new Paragraph({ text: cell.text })],
+          })
+      ),
     });
     rows.push(headerRow);
 
     // 添加数据行
-    token.rows.forEach(row => {
+    token.rows.forEach((row) => {
       const tableRow = new TableRow({
-        children: row.map(cell => new TableCell({
-          children: [new Paragraph({ text: cell.text })]
-        }))
+        children: row.map(
+          (cell) =>
+            new TableCell({
+              children: [new Paragraph({ text: cell.text })],
+            })
+        ),
       });
       rows.push(tableRow);
     });
@@ -635,8 +741,8 @@ class SimpleMd2Docx {
       rows: rows,
       width: {
         size: 100,
-        type: WidthType.PERCENTAGE
-      }
+        type: WidthType.PERCENTAGE,
+      },
     });
   }
 
@@ -649,15 +755,15 @@ class SimpleMd2Docx {
     return new Paragraph({
       text: token.text,
       indent: {
-        left: 720
+        left: 720,
       },
       border: {
         left: {
           color: "CCCCCC",
           size: 4,
-          style: BorderStyle.SINGLE
-        }
-      }
+          style: BorderStyle.SINGLE,
+        },
+      },
     });
   }
 
@@ -667,8 +773,18 @@ class SimpleMd2Docx {
    */
   createHorizontalRule() {
     return new Paragraph({
-      text: "──────────────────────────────────────",
-      alignment: AlignmentType.CENTER
+      spacing: {
+        before: 200, // 段前10磅
+        after: 200, // 段后10磅
+      },
+      border: {
+        bottom: {
+          color: "#CCCCCC", // 灰色
+          space: 1, // 间距
+          style: BorderStyle.SINGLE, // 单线
+          size: 6, // 线宽
+        },
+      },
     });
   }
 
@@ -680,7 +796,7 @@ class SimpleMd2Docx {
   createImageFromMarked(token) {
     return new Paragraph({
       text: `[图片: ${token.text}]`,
-      alignment: AlignmentType.CENTER
+      alignment: AlignmentType.CENTER,
     });
   }
 
@@ -692,12 +808,12 @@ class SimpleMd2Docx {
   async processImages(tokens) {
     const imageInfos = [];
     for (const token of tokens) {
-      if (token.type === 'image') {
+      if (token.type === "image") {
         try {
           const imageData = await this.loadImage(token.href);
           imageInfos.push({
             ...token,
-            ...imageData
+            ...imageData,
           });
         } catch (error) {
           console.error(`处理图片失败: ${token.href}`, error);
@@ -726,13 +842,13 @@ class SimpleMd2Docx {
           const ctx = canvas.getContext("2d");
           ctx.drawImage(img, 0, 0);
 
-          const blob = await new Promise(resolve => canvas.toBlob(resolve));
+          const blob = await new Promise((resolve) => canvas.toBlob(resolve));
           const buffer = await blob.arrayBuffer();
 
           resolve({
             buffer,
             width: img.naturalWidth,
-            height: img.naturalHeight
+            height: img.naturalHeight,
           });
         } catch (error) {
           reject(error);
@@ -786,9 +902,9 @@ class SimpleMd2Docx {
           children: [
             new TextRun({
               text: `[未支持的元素: ${element.type}]`,
-              color: "999999"
-            })
-          ]
+              color: "999999",
+            }),
+          ],
         });
     }
   }
@@ -806,52 +922,72 @@ class SimpleMd2Docx {
 
     // 将Markdown的level转换为docx的HeadingLevel
     switch (level) {
-      case 1: headingLevel = HeadingLevel.HEADING_1; break;
-      case 2: headingLevel = HeadingLevel.HEADING_2; break;
-      case 3: headingLevel = HeadingLevel.HEADING_3; break;
-      case 4: headingLevel = HeadingLevel.HEADING_4; break;
-      case 5: headingLevel = HeadingLevel.HEADING_5; break;
-      case 6: headingLevel = HeadingLevel.HEADING_6; break;
-      default: headingLevel = HeadingLevel.HEADING_1;
+      case 1:
+        headingLevel = HeadingLevel.HEADING_1;
+        break;
+      case 2:
+        headingLevel = HeadingLevel.HEADING_2;
+        break;
+      case 3:
+        headingLevel = HeadingLevel.HEADING_3;
+        break;
+      case 4:
+        headingLevel = HeadingLevel.HEADING_4;
+        break;
+      case 5:
+        headingLevel = HeadingLevel.HEADING_5;
+        break;
+      case 6:
+        headingLevel = HeadingLevel.HEADING_6;
+        break;
+      default:
+        headingLevel = HeadingLevel.HEADING_1;
     }
 
     // 处理内联样式
-    if (element.inlineStyles && Array.isArray(element.inlineStyles) && element.inlineStyles.length > 0) {
+    if (
+      element.inlineStyles &&
+      Array.isArray(element.inlineStyles) &&
+      element.inlineStyles.length > 0
+    ) {
       const children = [];
 
-      element.inlineStyles.forEach(style => {
+      element.inlineStyles.forEach((style) => {
         if (style.content) {
-          children.push(new TextRun({
-            text: style.content,
-            bold: style.bold === true,
-            italic: style.italic === true,
-            strike: style.strike === true,
-            underline: style.underline === true ? {} : undefined,
-            superScript: style.superscript === true,
-            subScript: style.subscript === true
-          }));
+          children.push(
+            new TextRun({
+              text: style.content,
+              bold: style.bold === true,
+              italic: style.italic === true,
+              strike: style.strike === true,
+              underline: style.underline === true ? {} : undefined,
+              superScript: style.superscript === true,
+              subScript: style.subscript === true,
+            })
+          );
         }
       });
 
       if (children.length > 0) {
         return new Paragraph({
           heading: headingLevel,
-          children
+          children,
         });
       }
     }
 
     // 提取标题文本（如果没有可用的内联样式）
-    const titleText = element.fullContent || element.rawText || element.text || '';
+    const titleText =
+      element.fullContent || element.rawText || element.text || "";
     // 去掉Markdown的#符号
-    const cleanTitle = titleText.replace(/^#+\s+/, '');
+    const cleanTitle = titleText.replace(/^#+\s+/, "");
 
     console.log(`创建标题: '${cleanTitle}', 级别: ${level}`);
 
     // 创建标题段落
     return new Paragraph({
       text: cleanTitle,
-      heading: headingLevel
+      heading: headingLevel,
     });
   }
 
@@ -864,20 +1000,26 @@ class SimpleMd2Docx {
     console.log("创建段落:", element);
 
     // 如果有内联样式
-    if (element.inlineStyles && Array.isArray(element.inlineStyles) && element.inlineStyles.length > 0) {
+    if (
+      element.inlineStyles &&
+      Array.isArray(element.inlineStyles) &&
+      element.inlineStyles.length > 0
+    ) {
       const children = [];
 
-      element.inlineStyles.forEach(style => {
+      element.inlineStyles.forEach((style) => {
         if (style.content) {
-          children.push(new TextRun({
-            text: style.content,
-            bold: style.bold === true,
-            italic: style.italic === true,
-            strike: style.strike === true,
-            underline: style.underline === true ? {} : undefined,
-            superScript: style.superscript === true,
-            subScript: style.subscript === true
-          }));
+          children.push(
+            new TextRun({
+              text: style.content,
+              bold: style.bold === true,
+              italic: style.italic === true,
+              strike: style.strike === true,
+              underline: style.underline === true ? {} : undefined,
+              superScript: style.superscript === true,
+              subScript: style.subscript === true,
+            })
+          );
         }
       });
 
@@ -892,7 +1034,7 @@ class SimpleMd2Docx {
     }
 
     // 简单段落，使用任何可用的文本属性
-    const text = element.rawText || element.text || '';
+    const text = element.rawText || element.text || "";
     return new Paragraph({ text });
   }
 
@@ -904,19 +1046,19 @@ class SimpleMd2Docx {
   createCodeBlock(element) {
     console.log("创建代码块:", element);
 
-    const code = element.fullContent || element.content || element.text || '';
-    const language = element.language || '';
+    const code = element.fullContent || element.content || element.text || "";
+    const language = element.language || "";
 
     return new Paragraph({
       children: [
         new TextRun({
-          text: `${language ? `[${language}] ` : ''}${code}`,
-          font: "Courier New"
-        })
+          text: `${language ? `[${language}] ` : ""}${code}`,
+          font: "Courier New",
+        }),
       ],
       indent: {
-        left: 720 // 缩进量，720 = 0.5英寸
-      }
+        left: 720, // 缩进量，720 = 0.5英寸
+      },
     });
   }
 
@@ -934,19 +1076,25 @@ class SimpleMd2Docx {
 
     // 对每个列表项创建一个段落
     items.forEach((item, index) => {
-      const prefix = isOrdered ? `${index + 1}. ` : '• ';
-      const itemText = item.fullContent || item.text || '';
+      const prefix = isOrdered ? `${index + 1}. ` : "• ";
+      const itemText = item.fullContent || item.text || "";
 
-      result.push(new Paragraph({
-        text: `${prefix}${itemText}`,
-        indent: {
-          left: 720 // 缩进量
-        }
-      }));
+      result.push(
+        new Paragraph({
+          text: `${prefix}${itemText}`,
+          indent: {
+            left: 720, // 缩进量
+          },
+        })
+      );
 
       // 处理嵌套列表
-      if (item.children && Array.isArray(item.children) && item.children.length > 0) {
-        item.children.forEach(child => {
+      if (
+        item.children &&
+        Array.isArray(item.children) &&
+        item.children.length > 0
+      ) {
+        item.children.forEach((child) => {
           const nestedItems = this.processElement(child);
           if (Array.isArray(nestedItems)) {
             result.push(...nestedItems);
@@ -969,7 +1117,11 @@ class SimpleMd2Docx {
     console.log("创建表格:", element);
 
     // 检查表格数据
-    if (!element.data || !Array.isArray(element.data) || element.data.length === 0) {
+    if (
+      !element.data ||
+      !Array.isArray(element.data) ||
+      element.data.length === 0
+    ) {
       return new Paragraph({ text: "[空表格]" });
     }
 
@@ -983,11 +1135,13 @@ class SimpleMd2Docx {
 
       const cells = [];
       rowData.forEach((cellData, cellIndex) => {
-        const cellText = cellData.fullContent || cellData.text || '';
+        const cellText = cellData.fullContent || cellData.text || "";
 
-        cells.push(new TableCell({
-          children: [new Paragraph({ text: cellText })]
-        }));
+        cells.push(
+          new TableCell({
+            children: [new Paragraph({ text: cellText })],
+          })
+        );
       });
 
       if (cells.length > 0) {
@@ -1004,8 +1158,8 @@ class SimpleMd2Docx {
       rows: rows,
       width: {
         size: 100,
-        type: WidthType.PERCENTAGE
-      }
+        type: WidthType.PERCENTAGE,
+      },
     });
   }
 
@@ -1023,12 +1177,12 @@ class SimpleMd2Docx {
     return new Paragraph({
       children: [
         new TextRun({
-          text: `[图片: ${altText}]${url ? ` ${url}` : ''}`,
+          text: `[图片: ${altText}]${url ? ` ${url}` : ""}`,
           italic: true,
-          color: "0000FF"
-        })
+          color: "0000FF",
+        }),
       ],
-      alignment: AlignmentType.CENTER
+      alignment: AlignmentType.CENTER,
     });
   }
 
@@ -1040,24 +1194,24 @@ class SimpleMd2Docx {
   createBlockquote(element) {
     console.log("创建引用块:", element);
 
-    const text = element.fullContent || element.text || '';
+    const text = element.fullContent || element.text || "";
 
     return new Paragraph({
       text: text,
       indent: {
-        left: 720 // 缩进量
+        left: 720, // 缩进量
       },
       border: {
         left: {
           color: "CCCCCC",
           size: 4,
-          style: BorderStyle.SINGLE
-        }
+          style: BorderStyle.SINGLE,
+        },
       },
       spacing: {
         before: 240, // 前间距
-        after: 240   // 后间距
-      }
+        after: 240, // 后间距
+      },
     });
   }
 
@@ -1078,22 +1232,22 @@ class SimpleMd2Docx {
                     text: "文档生成失败",
                     bold: true,
                     color: "FF0000",
-                    size: 36 // 18pt
-                  })
+                    size: 36, // 18pt
+                  }),
                 ],
-                alignment: AlignmentType.CENTER
+                alignment: AlignmentType.CENTER,
               }),
               new Paragraph({
                 text: errorMessage,
-                alignment: AlignmentType.CENTER
+                alignment: AlignmentType.CENTER,
               }),
               new Paragraph({
                 text: `生成时间: ${new Date().toLocaleString()}`,
-                alignment: AlignmentType.CENTER
-              })
-            ]
-          }
-        ]
+                alignment: AlignmentType.CENTER,
+              }),
+            ],
+          },
+        ],
       });
 
       return await Packer.toBlob(doc);
@@ -1106,11 +1260,11 @@ class SimpleMd2Docx {
           {
             children: [
               new Paragraph({
-                text: `错误: ${errorMessage}`
-              })
-            ]
-          }
-        ]
+                text: `错误: ${errorMessage}`,
+              }),
+            ],
+          },
+        ],
       });
 
       return await Packer.toBlob(minimalDoc);

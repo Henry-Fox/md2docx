@@ -311,6 +311,14 @@ export default async function runTest(jsonData) {
     //根据标题级别设置不同的字体样式
     let fontSize, fontFamily, isBold;
 
+    // 将阿拉伯数字转换为中文数字
+    function toChineseNumber(num) {
+      const chineseNumbers = ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十'];
+      if (num <= 10) return chineseNumbers[num - 1];
+      if (num < 20) return '十' + (num % 10 === 0 ? '' : chineseNumbers[num % 10 - 1]);
+      if (num < 100) return chineseNumbers[Math.floor(num / 10) - 1] + '十' + (num % 10 === 0 ? '' : chineseNumbers[num % 10 - 1]);
+      return num.toString();
+    }
 
     switch (level) {
       case 1: // 标题
@@ -348,11 +356,17 @@ export default async function runTest(jsonData) {
         fontFamily = "黑体";
         isBold = true;
     }
+
     //遍历inlineStyles
     inlineStyles.forEach((word) => {
+      // 如果是带序号的标题，去掉序号部分
+      let content = word.content;
+      if (hasNumber) {
+        content = content.replace(/^\d+\.\s*/, '');
+      }
       textRuns.push(
         new TextRun({
-          text: word.content,
+          text: content,
           size: fontSize,
           font: fontFamily,
           bold: isBold,
@@ -417,8 +431,8 @@ export default async function runTest(jsonData) {
               italics: style.italics,
               strike: style.strike,
               underline: style.underline,
-              superScript: style.superScript,
-              subScript: style.subScript,
+              superScript: style.superscript,
+              subScript: style.subscript,
               size: 24, // 小四号→12磅
               font: "仿宋", // 仿宋
               color: "000000", // 黑色
@@ -435,8 +449,8 @@ export default async function runTest(jsonData) {
               italics: style.italics,
               strike: style.strike,
               underline: style.underline,
-              superScript: style.superScript,
-              subScript: style.subScript,
+              superScript: style.superscript,
+              subScript: style.subscript,
               size: 24, // 小四号→12磅
               font: "仿宋", // 仿宋
               color: "000000", // 黑色
@@ -447,13 +461,13 @@ export default async function runTest(jsonData) {
   }
 
   //list的识别方法
-  function listRecognition(hasNumber, inlineStyles, level) {
+  function listRecognition(listItem) {
     return new Paragraph({
       numbering: {
-        reference: hasNumber ? "my-paragraph-style" : "my-Unordered-list",
-        level: level,
+        reference: "my-Unordered-list",
+        level: 0,
       },
-      children: inlineStyles.map(
+      children: listItem.inlineStyles.map(
         (style) =>
           new TextRun({
             text: style.content,
@@ -461,8 +475,8 @@ export default async function runTest(jsonData) {
             italics: style.italics,
             strike: style.strike,
             underline: style.underline,
-            superScript: style.superScript,
-            subScript: style.subScript,
+            superScript: style.superscript,
+            subScript: style.subscript,
             size: 24,
             font: "仿宋",
             color: "000000",
@@ -494,8 +508,8 @@ export default async function runTest(jsonData) {
               italics: style.italics,
               strike: style.strike,
               underline: style.underline,
-              superScript: style.superScript,
-              subScript: style.subScript,
+              superScript: style.superscript,
+              subScript: style.subscript,
               size: 24,
               font: "仿宋",
               color: "000000",
@@ -594,6 +608,10 @@ export default async function runTest(jsonData) {
 
   // 添加表格处理函数
   function tableRecognition(headers, alignments, rows) {
+    // 如果没有提供alignments，创建一个默认的对齐方式数组
+    const defaultAlignments = headers.map(() => "left");
+    const tableAlignments = alignments || defaultAlignments;
+
     // 创建表头行
     const headerRow = new TableRow({
       children: headers.map((header, index) => {
@@ -604,11 +622,11 @@ export default async function runTest(jsonData) {
           },
           children: [
             new Paragraph({
-              alignment: getAlignmentType(alignments[index]),
+              alignment: getAlignmentType(tableAlignments[index]),
               indent: { firstLine: 0 },
               children: [
                 new TextRun({
-                  text: header.fullContent,
+                  text: header.text || header.fullContent || '',
                   bold: true,
                   size: 24,
                   font: "仿宋",
@@ -632,11 +650,11 @@ export default async function runTest(jsonData) {
             },
             children: [
               new Paragraph({
-                alignment: getAlignmentType(alignments[index]),
+                alignment: getAlignmentType(tableAlignments[index]),
                 indent: { firstLine: 0 },
                 children: [
                   new TextRun({
-                    text: cell.fullContent,
+                    text: cell.text || cell.fullContent || '',
                     size: 24,
                     font: "仿宋",
                     color: "000000",
@@ -785,8 +803,8 @@ export default async function runTest(jsonData) {
             italics: style.italics,
             strike: style.strike,
             underline: style.underline,
-            superScript: style.superScript,
-            subScript: style.subScript,
+            superScript: style.superscript,
+            subScript: style.subscript,
             size: 24,
             font: "仿宋",
             color: "000000"
@@ -855,12 +873,10 @@ export default async function runTest(jsonData) {
     //处理列表
     if (child.type === "list") {
       //使用list的识别方法
-      const listParagraph = listRecognition(
-        child.hasNumber,
-        child.inlineStyles,
-        child.level
-      );
-      paragraphs.push(listParagraph);
+      child.items.forEach(item => {
+        const listParagraph = listRecognition(item);
+        paragraphs.push(listParagraph);
+      });
     }
     //处理任务列表
     if (child.type === "task") {
