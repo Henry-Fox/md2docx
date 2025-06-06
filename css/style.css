@@ -1093,3 +1093,28 @@ textarea:disabled {
     font-size: 16px;
 }
 
+.language-switcher {
+  display: flex;
+  gap: 8px;
+  margin-left: 16px;
+}
+
+.language-btn {
+  padding: 4px 8px;
+  border: 1px solid #ccc;
+  background: white;
+  cursor: pointer;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.language-btn:hover {
+  background: #f0f0f0;
+}
+
+.language-btn.active {
+  background: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+

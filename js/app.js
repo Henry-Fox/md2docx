@@ -1,6 +1,30 @@
 import { marked } from 'marked';
 import SimpleMd2Docx from './simpleMd2Docx.js';
 import { Md2Json } from './md2json.js';
+import { initLanguageSwitcher, updateContent, t, tWithVars } from '../src/js/i18n.js';
+
+// 等待DOM加载完成
+document.addEventListener('DOMContentLoaded', () => {
+  // 初始化语言切换器
+  initLanguageSwitcher();
+
+  // 初始化页面内容
+  updateContent();
+
+  // 自定义文件选择按钮逻辑
+  const customFileBtn = document.getElementById('custom-file-btn');
+  const fileInput = document.getElementById('file-input');
+  const fileNameLabel = document.getElementById('file-name-label');
+  if (customFileBtn && fileInput && fileNameLabel) {
+    customFileBtn.onclick = function() {
+      fileInput.click();
+    };
+    fileInput.onchange = function(e) {
+      const fileName = e.target.files[0] ? e.target.files[0].name : fileNameLabel.textContent;
+      fileNameLabel.textContent = fileName;
+    };
+  }
+});
 
 /**
  * @class App
@@ -54,38 +78,30 @@ class App {
    */
   initEventListeners() {
     // 文件选择
-    if (this.fileInput) {
-      this.fileInput.addEventListener('change', (e) => this.handleFileSelect(e));
-    }
+    this.fileInput.addEventListener('change', (e) => this.handleFileSelect(e));
 
-    // 拖放功能
-    if (this.markdownInput && this.dragArea) {
-      this.markdownInput.addEventListener('dragenter', () => this.dragArea.classList.add('active'));
-      this.markdownInput.addEventListener('dragleave', () => this.dragArea.classList.remove('active'));
-      this.markdownInput.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        this.dragArea.classList.add('active');
-      });
-      this.markdownInput.addEventListener('drop', (e) => {
-        e.preventDefault();
-        this.dragArea.classList.remove('active');
-        this.handleFileDrop(e);
-      });
-      this.markdownInput.addEventListener('input', this.debounce(() => this.updatePreview(), 300));
-    }
+    // 拖放区域
+    this.dragArea.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      this.dragArea.classList.add('active');
+    });
 
-    // 按钮操作
-    if (this.clearBtn) this.clearBtn.addEventListener('click', () => this.clearMarkdown());
-    if (this.convertBtn) {
-      this.convertBtn.textContent = '转换为DOCX'; // 修改按钮文字
-      this.convertBtn.addEventListener('click', () => this.simpleConvertToDocx());
-    }
-    if (this.resetStylesBtn) this.resetStylesBtn.addEventListener('click', () => this.resetStyles());
-    if (this.saveStylesBtn) this.saveStylesBtn.addEventListener('click', () => this.saveStyles());
-    if (this.directConvertBtn) {
-      this.directConvertBtn.textContent = '直接转换为DOCX'; // 修改按钮文字
-      this.directConvertBtn.addEventListener('click', () => this.directConvertToDocx());
-    }
+    this.dragArea.addEventListener('dragleave', () => {
+      this.dragArea.classList.remove('active');
+    });
+
+    this.dragArea.addEventListener('drop', (e) => this.handleFileDrop(e));
+
+    // 清空按钮
+    this.clearBtn.addEventListener('click', () => this.clearMarkdown());
+
+    // 直接转换按钮
+    this.directConvertBtn.addEventListener('click', () => this.directConvertToDocx());
+
+    // 输入框内容变化时更新预览
+    this.markdownInput.addEventListener('input', () => {
+      this.updatePreview();
+    });
   }
 
   /**
@@ -116,7 +132,7 @@ class App {
    */
   readFile(file) {
     if (file.type !== 'text/markdown' && file.type !== 'text/plain' && !file.name.endsWith('.md')) {
-      alert('请选择Markdown文件！');
+      this.showMessage(t('fileTypeError'), 'error');
       return;
     }
 
@@ -147,7 +163,7 @@ class App {
 
     // 检查Markdown内容是否为空
     if (!markdownContent.trim()) {
-      this.showMessage('请先输入或上传Markdown内容', 'error');
+      this.showMessage(t('pleaseInputOrUpload'), 'error');
       return;
     }
 
@@ -161,7 +177,7 @@ class App {
     }
 
     // 显示转换中消息
-    this.showMessage('正在转换文档，请稍候...', 'info');
+    this.showMessage(t('converting'), 'info');
 
     // 预加载图片
     this.preloadImages(markdownContent)
@@ -174,11 +190,11 @@ class App {
         // 下载文件
         this.downloadBlob(blob, fileName);
 
-        this.showMessage(`文档已成功生成：${fileName}`, 'success');
+        this.showMessage(tWithVars('downloadSuccess', {fileName}), 'success');
       })
       .catch(error => {
         console.error('转换文档时出错:', error);
-        this.showMessage(`转换文档失败: ${error.message}`, 'error');
+        this.showMessage(tWithVars('convertFail', {msg: error.message}), 'error');
       });
   }
 
@@ -227,8 +243,7 @@ class App {
         return [];
       }
 
-      console.log(`开始处理${images.length}张图片`);
-      this.showMessage(`正在处理${images.length}张图片...`, 'info');
+      this.showMessage(tWithVars('processingImages', {count: images.length}), 'info');
 
       // 图片信息数组
       const imageInfos = [];
@@ -271,11 +286,10 @@ class App {
         }
       }));
 
-      console.log(`完成处理 ${imageInfos.length}/${images.length} 张图片`);
       return imageInfos;
     } catch (error) {
       console.error('处理图片时发生错误:', error);
-      this.showMessage(`处理图片失败: ${error.message}`, 'error');
+      this.showMessage(tWithVars('processImageFail', {msg: error.message}), 'error');
       return [];
     }
   }
@@ -454,19 +468,8 @@ class App {
    */
   loadDefaultExample() {
     try {
-      // 设置新的默认Markdown示例
-      const defaultMarkdown = `# Markdown测试文档
-
-## 1. 基础文本格式
-
-这是普通段落文本。
-
-**这是加粗文本**
-*这是斜体文本*
-***这是加粗斜体文本***`;
-
       if (this.markdownInput) {
-        this.markdownInput.value = defaultMarkdown;
+        this.markdownInput.value = '';
         this.updatePreview();
       }
     } catch (error) {
@@ -1408,7 +1411,7 @@ E = mc^2
 
     const markdown = this.markdownInput.value;
     if (!markdown) {
-      this.previewContainer.innerHTML = '<div class="preview-placeholder">转换后的预览将显示在这里</div>';
+      this.previewContainer.innerHTML = `<div class="preview-placeholder">${t('previewPlaceholder')}</div>`;
       return;
     }
 
@@ -1692,20 +1695,20 @@ E = mc^2
 
       // 检查Markdown内容是否为空
       if (!markdownContent.trim()) {
-        this.showMessage('请先输入或上传Markdown内容', 'error');
+        this.showMessage(t('pleaseInputOrUpload'), 'error');
         return;
       }
 
-      this.showMessage('正在转换文档，请稍候...', 'info');
+      this.showMessage(t('converting'), 'info');
 
       // 创建SimpleMd2Docx实例并执行转换
       const simpleMd2Docx = new SimpleMd2Docx();
       await simpleMd2Docx.convertToDocx(markdownContent);
 
-          this.showMessage('文档已成功生成', 'success');
+          this.showMessage(t('convertSimpleSuccess'), 'success');
     } catch (error) {
       console.error('转换失败:', error);
-      this.showMessage(`转换失败: ${error.message}`, 'error');
+      this.showMessage(tWithVars('convertSimpleFail', {msg: error.message}), 'error');
     }
   }
 
@@ -1713,26 +1716,20 @@ E = mc^2
    * 直接转换为Docx的处理函数
    */
   async directConvertToDocx() {
+    const markdown = this.markdownInput.value;
+    if (!markdown.trim()) {
+      this.showMessage(t('emptyInput'), 'warning');
+      return;
+    }
+
     try {
-      // 获取Markdown内容
-      const markdownContent = this.markdownInput.value;
-
-      // 检查Markdown内容是否为空
-      if (!markdownContent.trim()) {
-        this.showMessage('请先输入或上传Markdown内容', 'error');
-        return;
-      }
-
-      this.showMessage('正在转换文档，请稍候...', 'info');
-
-      // 创建SimpleMd2Docx实例并执行转换
+      this.showMessage(t('convertingSimple'), 'info');
       const simpleMd2Docx = new SimpleMd2Docx();
-      await simpleMd2Docx.convertToDocxDirect(markdownContent);
-
-      this.showMessage('文档已成功生成', 'success');
+      await simpleMd2Docx.convertToDocxDirect(markdown);
+      this.showMessage(t('convertSimpleSuccess'), 'success');
     } catch (error) {
-      console.error('直接转换失败:', error);
-      this.showMessage(`直接转换失败: ${error.message}`, 'error');
+      console.error('转换失败:', error);
+      this.showMessage(tWithVars('convertSimpleFail', {msg: error.message}), 'error');
     }
   }
 }
@@ -1741,6 +1738,3 @@ E = mc^2
 document.addEventListener('DOMContentLoaded', () => {
   new App();
 });
-
-
-

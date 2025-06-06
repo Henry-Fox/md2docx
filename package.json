@@ -24,9 +24,11 @@
   "dependencies": {
     "docx": "^9.5.0",
     "file-saver": "^2.0.5",
+    "i18next": "^25.2.1",
     "marked": "^15.0.11",
     "marked-extended-tables": "^2.0.1",
     "marked-gfm-heading-id": "^4.1.1",
-    "marked-mangle": "^1.1.10"
+    "marked-mangle": "^1.1.10",
+    "react-i18next": "^15.5.2"
   }
 }
