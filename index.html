@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Markdown转Word转换器</title>
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="./css/style.css">
   <meta name="description" content="">
 
   <meta property="og:title" content="">
@@ -14,32 +14,109 @@
   <meta property="og:image" content="">
   <meta property="og:image:alt" content="">
 
-  <link rel="icon" href="/favicon.ico" sizes="any">
-  <link rel="icon" href="/icon.svg" type="image/svg+xml">
-  <link rel="apple-touch-icon" href="icon.png">
+  <link rel="icon" href="./favicon.ico" sizes="any">
+  <link rel="icon" href="./icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="./icon.png">
 
-  <link rel="manifest" href="site.webmanifest">
+  <link rel="manifest" href="./site.webmanifest">
   <meta name="theme-color" content="#fafafa">
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+    }
+    .container {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 5px 20px;
+      height: 50px;
+      box-sizing: border-box;
+    }
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      height: 100%;
+    }
+    .donate-section {
+      display: flex;
+      align-items: center;
+      height: 100%;
+    }
+    .donate-qr {
+      width: 50px;
+      height: 50px;
+      cursor: pointer;
+      transition: transform 0.3s;
+    }
+    .donate-qr:hover {
+      transform: scale(1.1);
+    }
+    .donate-text {
+      font-size: 14px;
+      color: #666;
+      white-space: nowrap;
+    }
+    .topbar-title {
+      margin: 0;
+    }
+    .topbar-title h1 {
+      margin: 0;
+      font-size: 24px;
+    }
+    .language-select {
+      height: 32px;
+    }
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    .workspace {
+      flex: 1;
+      display: flex;
+      gap: 20px;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+    footer {
+      padding: 10px 20px;
+      text-align: center;
+      font-size: 14px;
+      color: #666;
+    }
+  </style>
 </head>
 
 <body>
   <div class="container">
     <header>
-    <div class="top-bar">
-      <div class="topbar-title">
-        <h1>Markdown转Word转换器</h1>
+      <div class="top-bar">
+        <div class="topbar-title">
+          <h1>Markdown转Word转换器</h1>
+        </div>
+        <div class="topbar-right">
+          <span id="donate-text" class="donate-text" data-i18n="donate.blessing">祝打赏的人获得好运气</span>
+          <div class="donate-section">
+            <img src="./img/donate-qr.png" alt="打赏二维码" class="donate-qr" title="扫码打赏">
+          </div>
+          <select id="language-select" class="language-select">
+            <option value="zh">中文</option>
+            <option value="en">English</option>
+            <option value="fr">Français</option>
+            <option value="es">Español</option>
+            <option value="ru">Русский</option>
+            <option value="ar">العربية</option>
+          </select>
+        </div>
       </div>
-      <div class="topbar-actions">
-        <select id="language-select" class="language-select">
-          <option value="zh">中文</option>
-          <option value="en">English</option>
-          <option value="fr">Français</option>
-          <option value="es">Español</option>
-          <option value="ru">Русский</option>
-          <option value="ar">العربية</option>
-        </select>
-      </div>
-    </div>
     </header>
 
     <main>
@@ -87,7 +164,48 @@
     </footer>
   </div>
 
-  <script src="js/app.js" type="module"></script>
+  <script src="./js/app.js" type="module"></script>
+  <script>
+    // 多语言文本
+    const i18n = {
+      zh: {
+        'donate.blessing': '祝打赏的人获得好运气'
+      },
+      en: {
+        'donate.blessing': 'May good luck be with those who support us'
+      },
+      fr: {
+        'donate.blessing': 'Que la chance soit avec ceux qui nous soutiennent'
+      },
+      es: {
+        'donate.blessing': 'Que la buena suerte esté con quienes nos apoyan'
+      },
+      ru: {
+        'donate.blessing': 'Пусть удача сопутствует тем, кто нас поддерживает'
+      },
+      ar: {
+        'donate.blessing': 'نتمنى الحظ السعيد لمن يدعمنا'
+      }
+    };
+
+    // 更新文本
+    function updateText() {
+      const lang = document.getElementById('language-select').value;
+      const elements = document.querySelectorAll('[data-i18n]');
+      elements.forEach(element => {
+        const key = element.getAttribute('data-i18n');
+        if (i18n[lang] && i18n[lang][key]) {
+          element.textContent = i18n[lang][key];
+        }
+      });
+    }
+
+    // 监听语言切换
+    document.getElementById('language-select').addEventListener('change', updateText);
+
+    // 初始化文本
+    updateText();
+  </script>
 </body>
 
 </html>
