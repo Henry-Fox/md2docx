@@ -1,7 +1,8 @@
 {
   "name": "md2docx",
-  "version": "0.0.1",
-  "description": "",
+  "version": "1.0.0",
+  "description": "A web-based tool for converting Markdown to Word documents",
+  "main": "index.js",
   "private": true,
   "keywords": [
     ""
@@ -11,7 +12,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "webpack serve --open --config webpack.config.dev.js",
-    "build": "webpack --config webpack.config.prod.js"
+    "build": "webpack --config webpack.config.prod.js",
+    "prepare-release": "node scripts/prepare-release.js",
+    "release": "npm run prepare-release && cd release && zip -r ../md2docx-v1.0.0.zip ."
   },
   "devDependencies": {
     "copy-webpack-plugin": "^11.0.0",
