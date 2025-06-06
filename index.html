@@ -92,6 +92,60 @@
       font-size: 14px;
       color: #666;
     }
+
+    /* 模态框样式 */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.7);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+    .modal.active {
+      display: flex;
+    }
+    .modal-content {
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      text-align: center;
+      position: relative;
+      max-width: 90%;
+      max-height: 90%;
+    }
+    .modal-qr {
+      width: 300px;
+      height: 300px;
+      margin: 10px 0;
+    }
+    .modal-close {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      font-size: 24px;
+      color: #666;
+      cursor: pointer;
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      transition: background-color 0.3s;
+    }
+    .modal-close:hover {
+      background-color: #f0f0f0;
+    }
+    .modal-text {
+      margin-top: 10px;
+      color: #666;
+      font-size: 14px;
+    }
   </style>
 </head>
 
@@ -105,7 +159,7 @@
         <div class="topbar-right">
           <span id="donate-text" class="donate-text" data-i18n="donate.blessing">祝打赏的人获得好运气</span>
           <div class="donate-section">
-            <img src="./img/donate-qr.png" alt="打赏二维码" class="donate-qr" title="扫码打赏">
+            <img src="./img/donate-qr.png" alt="打赏二维码" class="donate-qr" title="扫码打赏" id="donate-qr">
           </div>
           <select id="language-select" class="language-select">
             <option value="zh">中文</option>
@@ -164,6 +218,15 @@
     </footer>
   </div>
 
+  <!-- 二维码模态框 -->
+  <div class="modal" id="qr-modal">
+    <div class="modal-content">
+      <div class="modal-close" id="modal-close">&times;</div>
+      <img src="./img/donate-qr.png" alt="打赏二维码" class="modal-qr">
+      <div class="modal-text" id="modal-text" data-i18n="donate.blessing">祝打赏的人获得好运气</div>
+    </div>
+  </div>
+
   <script src="./js/app.js" type="module"></script>
   <script>
     // 多语言文本
@@ -205,6 +268,35 @@
 
     // 初始化文本
     updateText();
+
+    // 二维码模态框功能
+    const qrModal = document.getElementById('qr-modal');
+    const donateQr = document.getElementById('donate-qr');
+    const modalClose = document.getElementById('modal-close');
+
+    // 点击二维码显示模态框
+    donateQr.addEventListener('click', () => {
+      qrModal.classList.add('active');
+    });
+
+    // 点击关闭按钮关闭模态框
+    modalClose.addEventListener('click', () => {
+      qrModal.classList.remove('active');
+    });
+
+    // 点击模态框背景关闭模态框
+    qrModal.addEventListener('click', (e) => {
+      if (e.target === qrModal) {
+        qrModal.classList.remove('active');
+      }
+    });
+
+    // 按ESC键关闭模态框
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && qrModal.classList.contains('active')) {
+        qrModal.classList.remove('active');
+      }
+    });
   </script>
 </body>
 
