@@ -12,16 +12,58 @@ A simple and efficient web-based tool for converting Markdown files to Word docu
 - Multiple language support
 - Pure frontend implementation
 - No server required
+- Support for various Markdown elements:
+  - Headings (H1-H6)
+  - Text styles (bold, italic, strikethrough)
+  - Lists (ordered, unordered, task lists)
+  - Blockquotes
+  - Code blocks with syntax highlighting
+  - Tables with alignment
+  - Links and images
+  - Horizontal rules
+  - And more...
 
 ### Usage
-1. Open the webpage
-2. Input Markdown text or upload a Markdown file
-3. Click "Convert to DOCX" to download the converted file
+
+#### Easiest Way (Recommended)
+1. Download the latest release from [Releases](https://github.com/Henry-Fox/md2docx/releases)
+2. Extract the downloaded file
+3. Open `index.html` in a modern browser
+
+#### Development Version
+1. Clone the repository:
+```bash
+git clone https://github.com/Henry-Fox/md2docx.git
+```
+2. Install dependencies:
+```bash
+npm install
+```
+3. Build the project:
+```bash
+npm run build
+```
+4. Open `dist/index.html` in a modern browser
+
+#### Development with Live Server
+1. Clone the repository
+2. Install dependencies
+3. Run development server:
+```bash
+npm start
+```
 
 ### Technologies
-- docx.js
-- marked.js
+- marked.js (Markdown parsing)
+- docx.js (Word document generation)
 - Pure HTML/CSS/JavaScript
+
+### Support the Project
+If you find this tool helpful, consider buying me a coffee! Your support helps me continue improving this project.
+
+![Support QR Code](./img/support-qr.png)
+
+Thank you for your support! Your generosity helps make this project better for everyone. 🙏
 
 ## 中文
 
@@ -33,39 +75,58 @@ A simple and efficient web-based tool for converting Markdown files to Word docu
 - 多语言支持
 - 纯前端实现
 - 无需服务器
+- 支持多种 Markdown 元素：
+  - 标题（H1-H6）
+  - 文本样式（粗体、斜体、删除线）
+  - 列表（有序、无序、任务列表）
+  - 引用块
+  - 代码块（支持语法高亮）
+  - 表格（支持对齐方式）
+  - 链接和图片
+  - 水平线
+  - 更多...
 
 ### 使用方法
 
-#### 在线使用
-1. 访问 [在线版本](https://henry-fox.github.io/md2docx/)
-2. 直接在浏览器中使用所有功能
-
-#### 本地使用
-1. 下载最新版本的发布包（[Releases](https://github.com/Henry-Fox/md2docx/releases)）
+#### 最简单的方式（推荐）
+1. 从 [Releases](https://github.com/Henry-Fox/md2docx/releases) 下载最新版本
 2. 解压下载的文件
-3. 用浏览器打开 `index.html` 文件即可使用
+3. 用现代浏览器打开 `index.html`
 
-#### 开发版本使用
-如果您想使用最新的开发版本：
+#### 开发版本
 1. 克隆仓库：
 ```bash
 git clone https://github.com/Henry-Fox/md2docx.git
 ```
-2. 进入项目目录：
+2. 安装依赖：
 ```bash
-cd md2docx
+npm install
 ```
-3. 用浏览器打开 `index.html` 文件
+3. 构建项目：
+```bash
+npm run build
+```
+4. 用现代浏览器打开 `dist/index.html`
 
-### 使用步骤
-1. 打开网页
-2. 输入 Markdown 文本或上传 Markdown 文件
-3. 点击"转换为 DOCX"下载转换后的文件
+#### 开发环境运行
+1. 克隆仓库
+2. 安装依赖
+3. 运行开发服务器：
+```bash
+npm start
+```
 
 ### 技术栈
-- docx.js
-- marked.js
+- marked.js（Markdown 解析）
+- docx.js（Word 文档生成）
 - 纯 HTML/CSS/JavaScript
+
+### 支持项目
+如果您觉得这个工具对您有帮助，欢迎请我喝杯咖啡！您的支持是我继续改进这个项目的动力。
+
+![支持二维码](./img/support-qr.png)
+
+感谢您的支持！您的慷慨帮助让这个项目变得更好。🙏
 
 ## Français
 
