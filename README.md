@@ -138,16 +138,58 @@ Un outil web simple et efficace pour convertir des fichiers Markdown en document
 - Support multilingue
 - Implémentation frontend pure
 - Pas de serveur requis
+- Support de divers éléments Markdown :
+  - Titres (H1-H6)
+  - Styles de texte (gras, italique, barré)
+  - Listes (ordonnées, non ordonnées, listes de tâches)
+  - Citations
+  - Blocs de code avec coloration syntaxique
+  - Tableaux avec alignement
+  - Liens et images
+  - Lignes horizontales
+  - Et plus encore...
 
 ### Utilisation
-1. Ouvrez la page web
-2. Saisissez du texte Markdown ou téléchargez un fichier Markdown
-3. Cliquez sur "Convertir en DOCX" pour télécharger le fichier converti
+
+#### Méthode la plus simple (Recommandée)
+1. Téléchargez la dernière version depuis [Releases](https://github.com/Henry-Fox/md2docx/releases)
+2. Extrayez le fichier téléchargé
+3. Ouvrez `index.html` dans un navigateur moderne
+
+#### Version de développement
+1. Clonez le dépôt :
+```bash
+git clone https://github.com/Henry-Fox/md2docx.git
+```
+2. Installez les dépendances :
+```bash
+npm install
+```
+3. Construisez le projet :
+```bash
+npm run build
+```
+4. Ouvrez `dist/index.html` dans un navigateur moderne
+
+#### Développement avec Live Server
+1. Clonez le dépôt
+2. Installez les dépendances
+3. Lancez le serveur de développement :
+```bash
+npm start
+```
 
 ### Technologies
-- docx.js
-- marked.js
+- marked.js (analyse Markdown)
+- docx.js (génération de documents Word)
 - HTML/CSS/JavaScript pur
+
+### Soutenez le Projet
+Si vous trouvez cet outil utile, envisagez de m'offrir un café ! Votre soutien m'aide à continuer à améliorer ce projet.
+
+![Code QR de Soutien](./img/support-qr.png)
+
+Merci pour votre soutien ! Votre générosité aide à rendre ce projet meilleur pour tous. 🙏
 
 ## Español
 
@@ -159,16 +201,58 @@ Una herramienta web simple y eficiente para convertir archivos Markdown a docume
 - Soporte multilingüe
 - Implementación frontend pura
 - No requiere servidor
+- Soporte para varios elementos Markdown:
+  - Encabezados (H1-H6)
+  - Estilos de texto (negrita, cursiva, tachado)
+  - Listas (ordenadas, no ordenadas, listas de tareas)
+  - Citas
+  - Bloques de código con resaltado de sintaxis
+  - Tablas con alineación
+  - Enlaces e imágenes
+  - Líneas horizontales
+  - Y más...
 
 ### Uso
-1. Abra la página web
-2. Ingrese texto Markdown o cargue un archivo Markdown
-3. Haga clic en "Convertir a DOCX" para descargar el archivo convertido
+
+#### Forma más fácil (Recomendada)
+1. Descargue la última versión desde [Releases](https://github.com/Henry-Fox/md2docx/releases)
+2. Extraiga el archivo descargado
+3. Abra `index.html` en un navegador moderno
+
+#### Versión de desarrollo
+1. Clone el repositorio:
+```bash
+git clone https://github.com/Henry-Fox/md2docx.git
+```
+2. Instale las dependencias:
+```bash
+npm install
+```
+3. Construya el proyecto:
+```bash
+npm run build
+```
+4. Abra `dist/index.html` en un navegador moderno
+
+#### Desarrollo con Live Server
+1. Clone el repositorio
+2. Instale las dependencias
+3. Ejecute el servidor de desarrollo:
+```bash
+npm start
+```
 
 ### Tecnologías
-- docx.js
-- marked.js
+- marked.js (análisis de Markdown)
+- docx.js (generación de documentos Word)
 - HTML/CSS/JavaScript puro
+
+### Apoya el Proyecto
+Si encuentra útil esta herramienta, ¡considere invitarme un café! Su apoyo me ayuda a seguir mejorando este proyecto.
+
+![Código QR de Apoyo](./img/support-qr.png)
+
+¡Gracias por su apoyo! Su generosidad ayuda a hacer este proyecto mejor para todos. 🙏
 
 ## Русский
 
@@ -180,16 +264,58 @@ Una herramienta web simple y eficiente para convertir archivos Markdown a docume
 - Многоязычная поддержка
 - Чистая фронтенд-реализация
 - Не требует сервера
+- Поддержка различных элементов Markdown:
+  - Заголовки (H1-H6)
+  - Стили текста (жирный, курсив, зачеркнутый)
+  - Списки (нумерованные, маркированные, списки задач)
+  - Цитаты
+  - Блоки кода с подсветкой синтаксиса
+  - Таблицы с выравниванием
+  - Ссылки и изображения
+  - Горизонтальные линии
+  - И многое другое...
 
 ### Использование
-1. Откройте веб-страницу
-2. Введите текст Markdown или загрузите файл Markdown
-3. Нажмите "Конвертировать в DOCX" для загрузки преобразованного файла
+
+#### Самый простой способ (Рекомендуется)
+1. Скачайте последнюю версию из [Releases](https://github.com/Henry-Fox/md2docx/releases)
+2. Распакуйте скачанный файл
+3. Откройте `index.html` в современном браузере
+
+#### Версия для разработки
+1. Клонируйте репозиторий:
+```bash
+git clone https://github.com/Henry-Fox/md2docx.git
+```
+2. Установите зависимости:
+```bash
+npm install
+```
+3. Соберите проект:
+```bash
+npm run build
+```
+4. Откройте `dist/index.html` в современном браузере
+
+#### Разработка с Live Server
+1. Клонируйте репозиторий
+2. Установите зависимости
+3. Запустите сервер разработки:
+```bash
+npm start
+```
 
 ### Технологии
-- docx.js
-- marked.js
+- marked.js (парсинг Markdown)
+- docx.js (генерация документов Word)
 - Чистый HTML/CSS/JavaScript
+
+### Поддержка Проекта
+Если вы находите этот инструмент полезным, рассмотрите возможность купить мне кофе! Ваша поддержка помогает мне продолжать улучшать этот проект.
+
+![QR-код поддержки](./img/support-qr.png)
+
+Спасибо за вашу поддержку! Ваша щедрость помогает сделать этот проект лучше для всех. 🙏
 
 ## العربية
 
@@ -201,132 +327,58 @@ Una herramienta web simple y eficiente para convertir archivos Markdown a docume
 - دعم متعدد اللغات
 - تنفيذ واجهة أمامية خالصة
 - لا يتطلب خادم
+- دعم عناصر Markdown المختلفة:
+  - العناوين (H1-H6)
+  - أنماط النص (عريض، مائل، مشطوب)
+  - القوائم (مرقمة، غير مرقمة، قوائم المهام)
+  - الاقتباسات
+  - كتل الكود مع تمييز بناء الجملة
+  - الجداول مع المحاذاة
+  - الروابط والصور
+  - الخطوط الأفقية
+  - والمزيد...
 
 ### الاستخدام
-1. افتح صفحة الويب
-2. أدخل نص Markdown أو قم بتحميل ملف Markdown
-3. انقر على "تحويل إلى DOCX" لتنزيل الملف المحول
+
+#### أسهل طريقة (موصى بها)
+1. قم بتنزيل أحدث إصدار من [Releases](https://github.com/Henry-Fox/md2docx/releases)
+2. استخرج الملف الذي تم تنزيله
+3. افتح `index.html` في متصفح حديث
+
+#### إصدار التطوير
+1. استنسخ المستودع:
+```bash
+git clone https://github.com/Henry-Fox/md2docx.git
+```
+2. قم بتثبيت التبعيات:
+```bash
+npm install
+```
+3. قم ببناء المشروع:
+```bash
+npm run build
+```
+4. افتح `dist/index.html` في متصفح حديث
+
+#### التطوير مع Live Server
+1. استنسخ المستودع
+2. قم بتثبيت التبعيات
+3. قم بتشغيل خادم التطوير:
+```bash
+npm start
+```
 
 ### التقنيات
-- docx.js
-- marked.js
+- marked.js (تحليل Markdown)
+- docx.js (إنشاء مستندات Word)
 - HTML/CSS/JavaScript خالص
 
-## 项目介绍
+### دعم المشروع
+إذا وجدت هذه الأداة مفيدة، فكر في شراء فنجان قهوة! دعمك يساعدني على الاستمرار في تحسين هذا المشروع.
 
-Md2Docx 是一个用于将 Markdown 文档转换为 Word 文档的工具。它采用两步转换的方式：
-1. 首先将 Markdown 解析为结构化的 JSON
-2. 然后基于 JSON 生成 Word 文档
+![رمز QR للدعم](./img/support-qr.png)
 
-这种方式使得转换过程更加灵活和可维护，同时也便于后续扩展其他格式的支持。
-
-## 功能特性
-
-### 已实现功能
-- [x] Markdown 转 JSON
-  - 支持基本文本格式（粗体、斜体、删除线等）
-  - 支持标题（H1-H6）
-  - 支持列表（有序、无序）
-  - 支持引用块
-  - 支持代码块（带语言标识）
-  - 支持表格（带对齐方式）
-  - 支持链接和图片
-  - 支持水平线
-  - 支持脚注
-  - 支持嵌套的图片链接
-
-### 计划功能
-- [ ] JSON 转 DOCX
-  - 实现基本文本格式转换
-  - 实现表格转换
-  - 实现图片插入
-  - 实现链接处理
-  - 实现脚注转换
-  - 实现样式定制
-
-## 技术栈
-
-- JavaScript/Node.js
-- docx.js（计划使用）
-
-## 使用方法
-
-### 安装
-
-```bash
-npm install md2docx
-```
-
-### 基本使用
-
-```javascript
-import { Md2Json } from './js/md2json.js';
-
-// 创建解析器实例
-const parser = new Md2Json();
-
-// 解析 Markdown 文本
-const json = parser.convert(markdownText);
-
-// 输出 JSON
-console.log(JSON.stringify(json, null, 2));
-```
-
-### JSON 结构示例
-
-```json
-{
-  "type": "document",
-  "children": [
-    {
-      "type": "heading",
-      "level": 1,
-      "rawText": "# 标题",
-      "fullContent": "标题",
-      "inlineStyles": [...]
-    },
-    {
-      "type": "paragraph",
-      "rawText": "这是一个**加粗**的段落",
-      "fullContent": "这是一个加粗的段落",
-      "inlineStyles": [...]
-    }
-  ]
-}
-```
-
-## 开发计划
-
-1. ✅ Markdown 转 JSON（已完成）
-   - [x] 基本文本格式解析
-   - [x] 复杂结构解析（表格、列表等）
-   - [x] 样式信息提取
-   - [x] 特殊元素处理（脚注、图片链接等）
-
-2. 🔄 JSON 转 DOCX（进行中）
-   - [ ] 基础文档结构生成
-   - [ ] 文本样式应用
-   - [ ] 表格生成
-   - [ ] 图片处理
-   - [ ] 链接处理
-   - [ ] 脚注转换
-   - [ ] 样式定制支持
-
-3. 📝 后续计划
-   - [ ] 命令行工具支持
-   - [ ] 批量转换功能
-   - [ ] 自定义样式模板
-   - [ ] 其他格式支持（如 PDF）
-
-## 贡献指南
-
-欢迎提交 Issue 和 Pull Request！
-
-1. Fork 本仓库
-2. 创建特性分支 (`git checkout -b feature/AmazingFeature`)
-3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
-4. 推送到分支 (`git push origin feature/AmazingFeature`)
-5. 开启 Pull Request
+شكراً لدعمك! سخاؤك يساعد في جعل هذا المشروع أفضل للجميع. 🙏
 
 ## 许可证
 
