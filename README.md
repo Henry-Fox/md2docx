@@ -61,7 +61,7 @@ npm start
 ### Support the Project
 If you find this tool helpful, consider buying me a coffee! Your support helps me continue improving this project.
 
-![Donate QR Code](./donate-qr.png)
+![Donate QR Code](./img/donate-qr.png)
 
 Thank you for your support! Your generosity helps make this project better for everyone. 🙏
 
@@ -124,7 +124,7 @@ npm start
 ### 支持项目
 如果您觉得这个工具对您有帮助，欢迎请我喝杯咖啡！您的支持是我继续改进这个项目的动力。
 
-![打赏二维码](./donate-qr.png)
+![打赏二维码](./img/donate-qr.png)
 
 感谢您的支持！您的慷慨帮助让这个项目变得更好。🙏
 
@@ -187,7 +187,7 @@ npm start
 ### Soutenez le Projet
 Si vous trouvez cet outil utile, envisagez de m'offrir un café ! Votre soutien m'aide à continuer à améliorer ce projet.
 
-![Code QR de Donation](./donate-qr.png)
+![Code QR de Donation](./img/donate-qr.png)
 
 Merci pour votre soutien ! Votre générosité aide à rendre ce projet meilleur pour tous. 🙏
 
@@ -250,7 +250,7 @@ npm start
 ### Apoya el Proyecto
 Si encuentra útil esta herramienta, ¡considere invitarme un café! Su apoyo me ayuda a seguir mejorando este proyecto.
 
-![Código QR de Donación](./donate-qr.png)
+![Código QR de Donación](./img/donate-qr.png)
 
 ¡Gracias por su apoyo! Su generosidad ayuda a hacer este proyecto mejor para todos. 🙏
 
@@ -313,7 +313,7 @@ npm start
 ### Поддержка Проекта
 Если вы находите этот инструмент полезным, рассмотрите возможность купить мне кофе! Ваша поддержка помогает мне продолжать улучшать этот проект.
 
-![QR-код для пожертвования](./donate-qr.png)
+![QR-код для пожертвования](./img/donate-qr.png)
 
 Спасибо за вашу поддержку! Ваша щедрость помогает сделать этот проект лучше для всех. 🙏
 
@@ -376,7 +376,7 @@ npm start
 ### دعم المشروع
 إذا وجدت هذه الأداة مفيدة، فكر في شراء فنجان قهوة! دعمك يساعدني على الاستمرار في تحسين هذا المشروع.
 
-![رمز QR للتبرع](./donate-qr.png)
+![رمز QR للتبرع](./img/donate-qr.png)
 
 شكراً لدعمك! سخاؤك يساعد في جعل هذا المشروع أفضل للجميع. 🙏
 
