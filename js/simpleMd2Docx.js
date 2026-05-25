@@ -29,6 +29,7 @@ import { saveAs } from "file-saver";
 import { Md2Json } from "./md2json.js";
 import { marked } from "marked";
 import runTest from "./json2docx.js";
+import { templateManager } from "./templateManager.js";
 
 /**
  * 简化版的Markdown到Docx转换器
@@ -37,6 +38,11 @@ class SimpleMd2Docx {
   constructor() {
     console.log("SimpleMd2Docx 初始化");
     this.md2json = new Md2Json();
+    this.docxStyles = null; // set via setTemplate() before converting
+  }
+
+  setTemplate(template) {
+    this.docxStyles = templateManager.toDocxStyles(template);
   }
 
   /**
@@ -362,167 +368,97 @@ class SimpleMd2Docx {
         },
       ];
       console.log("开始创建文档...");
+
+      // Resolve styles — fall back to a sensible default if no template was set
+      const S = this.docxStyles || templateManager.toDocxStyles(templateManager.getActive());
+
+      function _align(a) {
+        const m = { left: AlignmentType.LEFT, center: AlignmentType.CENTER, right: AlignmentType.RIGHT, justified: AlignmentType.JUSTIFIED };
+        return m[a] || AlignmentType.JUSTIFIED;
+      }
+
       // 创建文档
       const doc = new Document({
         styles: {
           default: {
             document: {
               run: {
-                size: 24, // 小四号→12磅
-                font: "仿宋", // 仿宋
-                color: "000000", // 黑色
+                size:  S.body.fontSize,
+                font:  S.body.font,
+                color: "000000",
               },
               paragraph: {
-                alignment: AlignmentType.JUSTIFIED, // 两端对齐
-                spacing: {
-                  before: 0,
-                  after: 0,
-                  line: 600, // 30磅 = 600 twip
-                  lineRule: LineRuleType.EXACT,
-                },
-                indent: {
-                  firstLine: 480, // 首行缩进2个汉字宽度（12磅 × 2 = 24磅 = 480 twip）
-                },
+                alignment: _align(S.body.alignment),
+                spacing: { before: 0, after: 0, line: S.body.lineSpacing, lineRule: LineRuleType.EXACT },
+                indent: { firstLine: S.body.firstLineIndent },
               },
             },
             title: {
               run: {
-                size: 44, // 二号字→22磅
-                font: "黑体", // 黑体
-                color: "000000", // 黑色
-                bold: true, // 加粗
+                size:  S.title.fontSize,
+                font:  S.title.font,
+                color: S.title.color,
+                bold:  S.title.bold,
               },
               paragraph: {
-                alignment: AlignmentType.CENTER, // 居中对齐
-                spacing: {
-                  before: 480, // 段前24磅（约合480 twip）
-                  after: 480, // 段前24磅（约合480 twip）
-                },
-                lineSpacing: { before: 560, lineRule: LineRuleType.EXACT }, //行距设置为固定值28磅，约合560 twip
-                indent: {
-                  left: 0, // 左缩进0
-                  firstLine: 0, // 首行缩进
-                },
+                alignment: _align(S.title.alignment),
+                spacing: { before: 480, after: 480 },
+                lineSpacing: { before: Math.round(S.title.fontSize * 1.3), lineRule: LineRuleType.EXACT },
+                indent: { left: 0, firstLine: 0 },
               },
             },
             heading1: {
-              run: {
-                size: 32, // 三号字→16磅
-                font: "黑体", // 黑体
-                color: "000000", // 黑色
-                bold: true, // 加粗
-              },
+              run: { size: S.h1.fontSize, font: S.h1.font, color: S.h1.color, bold: S.h1.bold },
               paragraph: {
-                alignment: AlignmentType.START, // 居左对齐
-                spacing: {
-                  before: 240, // 段前12磅（约合240 twip）
-                  after: 120, // 段后6磅（约合120 twip）
-                },
-                lineSpacing: { before: 440, lineRule: LineRuleType.EXACT }, //行距设置为固定值22磅，约合440 twip
-                indent: {
-                  left: 0, // 左缩进0
-                  firstLine: 0, // 首行缩进
-                },
+                alignment: _align(S.h1.alignment),
+                spacing: { before: 240, after: 120 },
+                lineSpacing: { before: Math.round(S.h1.fontSize * 1.4), lineRule: LineRuleType.EXACT },
+                indent: { left: 0, firstLine: 0 },
               },
             },
             heading2: {
-              run: {
-                size: 32, //三号字→16磅（与一级标题同字号，通过字体区分层级）
-                font: "楷体", // 楷体
-                color: "000000", // 黑色
-                bold: true, // 加粗
-              },
+              run: { size: S.h2.fontSize, font: S.h2.font, color: S.h2.color, bold: S.h2.bold },
               paragraph: {
-                alignment: AlignmentType.START, // 居左对齐
-                spacing: {
-                  before: 120, // 段前6磅（约合120 twip）
-                  after: 60, // 段后3磅（约合60 twip）
-                },
-                lineSpacing: { before: 360, lineRule: LineRuleType.EXACT }, //行距设置为固定值18磅，约合360 twip
-                indent: {
-                  left: 0, // 左缩进0
-                  firstLine: 0, // 首行缩进
-                },
+                alignment: _align(S.h2.alignment),
+                spacing: { before: 120, after: 60 },
+                lineSpacing: { before: Math.round(S.h2.fontSize * 1.35), lineRule: LineRuleType.EXACT },
+                indent: { left: 0, firstLine: 0 },
               },
             },
             heading3: {
-              run: {
-                size: 28, // 四号字→14磅
-                font: "仿宋", // 仿宋
-                color: "000000", // 黑色
-                bold: true, // 加粗
-              },
+              run: { size: S.h3.fontSize, font: S.h3.font, color: S.h3.color, bold: S.h3.bold },
               paragraph: {
-                alignment: AlignmentType.START, // 居左对齐
-                spacing: {
-                  before: 60, // 段前3磅（约合60 twip）
-                  after: 60, // 段后3磅（约合60 twip）
-                },
-                lineSpacing: { before: 320, lineRule: LineRuleType.EXACT }, //行距设置为固定值16磅，约合320 twip
-                indent: {
-                  left: 0, // 左缩进0
-                  firstLine: 0, // 首行缩进
-                },
+                alignment: _align(S.h3.alignment),
+                spacing: { before: 60, after: 60 },
+                lineSpacing: { before: Math.round(S.h3.fontSize * 1.3), lineRule: LineRuleType.EXACT },
+                indent: { left: 0, firstLine: 0 },
               },
             },
             heading4: {
-              run: {
-                size: 24, // 小四号→12磅
-                font: "仿宋", // 仿宋
-                color: "000000", // 黑色
-                bold: true, // 加粗
-              },
+              run: { size: S.h4.fontSize, font: S.h4.font, color: S.h4.color, bold: S.h4.bold },
               paragraph: {
-                alignment: AlignmentType.START, // 居左对齐
-                spacing: {
-                  before: 30, // 段前1.5磅（约合30 twip）
-                  after: 30, // 段后1.5磅（约合30 twip）
-                },
-                lineSpacing: { before: 280, lineRule: LineRuleType.EXACT }, //行距设置为固定值14磅，约合280 twip
-                indent: {
-                  left: 0, // 左缩进0
-                  firstLine: 0, // 首行缩进
-                },
+                alignment: _align(S.h4.alignment),
+                spacing: { before: 30, after: 30 },
+                lineSpacing: { before: Math.round(S.h4.fontSize * 1.3), lineRule: LineRuleType.EXACT },
+                indent: { left: 0, firstLine: 0 },
               },
             },
             heading5: {
-              run: {
-                size: 21, // 小五号→10.5磅
-                font: "仿宋", // 仿宋
-                color: "000000", // 黑色
-                bold: true, // 加粗
-              },
+              run: { size: S.h5.fontSize, font: S.h5.font, color: S.h5.color, bold: S.h5.bold },
               paragraph: {
-                alignment: AlignmentType.START, // 居左对齐
-                spacing: {
-                  before: 0, // 无段前间距
-                  after: 0, // 无段前间距
-                },
-                lineSpacing: { before: 240, lineRule: LineRuleType.EXACT }, //行距设置为固定值12磅，约合240 twip
-                indent: {
-                  left: 0, // 左缩进0
-                  firstLine: 0, // 首行缩进
-                },
+                alignment: _align(S.h5.alignment),
+                spacing: { before: 0, after: 0 },
+                lineSpacing: { before: Math.round(S.h5.fontSize * 1.3), lineRule: LineRuleType.EXACT },
+                indent: { left: 0, firstLine: 0 },
               },
             },
           },
           footnote: {
-            run: {
-              size: 20, // 10磅
-              font: "仿宋",
-              color: "000000",
-            },
+            run: { size: Math.round(S.body.fontSize * 0.83), font: S.body.font, color: "000000" },
             paragraph: {
               alignment: AlignmentType.JUSTIFIED,
-              spacing: {
-                before: 120,
-                after: 120,
-                line: 400,
-              },
-              indent: {
-                left: 720, // 36磅左缩进
-                hanging: 360, // 18磅悬挂缩进
-              },
+              spacing: { before: 120, after: 120, line: 400 },
+              indent: { left: 720, hanging: 360 },
             },
           },
         },
@@ -533,18 +469,9 @@ class SimpleMd2Docx {
           {
             properties: {
               page: {
-                size: {
-                  width: 12240, // A4宽度（595pt × 20 = 11900twip，考虑四舍五入设为12240）
-                  height: 15840, // A4高度（842pt × 20 = 16840twip，考虑装订边距设为15840）
-                },
-                orientation: "portrait", // 纵向（默认）
-                margin: {
-                  top: 1440, // 上边距2.54cm（1440twip）
-                  bottom: 1440, // 下边距2.54cm（1440twip）
-                  left: 1800, // 左边距3.18cm（1800twip）
-                  right: 1800, // 右边距3.18cm（1800twip）
-                  gutter: 0, // 装订线间距
-                },
+                size: { width: S.pageWidth, height: S.pageHeight },
+                orientation: "portrait",
+                margin: { ...S.pageMargin, gutter: 0 },
               },
             },
             children: paragraphs,
@@ -1314,8 +1241,8 @@ class SimpleMd2Docx {
         children: [
           new TextRun({
             text: token.text,
-            size: 24,
-            font: "仿宋",
+            size: this.docxStyles ? this.docxStyles.body.fontSize : 24,
+            font: this.docxStyles ? this.docxStyles.body.font : "仿宋_GB2312",
             color: "0F4761",
             italics: true,
           }),

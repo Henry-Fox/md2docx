@@ -242,7 +242,7 @@ export default async function runTest(jsonData) {
           style: {
             run: {
               size: 24, // 小四号→12磅
-              font: "仿宋", // 仿宋
+              font: "仿宋_GB2312", // 仿宋
               color: "000000", // 黑色
             },
             paragraph: {
@@ -323,7 +323,7 @@ export default async function runTest(jsonData) {
     switch (level) {
       case 1: // 标题
         fontSize = 44; // 2号
-        fontFamily = "黑体";
+        fontFamily = "Arial Black"; // 换成系统自带字体测试
         isBold = true;
         break;
       case 2: // 一级标题
@@ -382,15 +382,15 @@ export default async function runTest(jsonData) {
           reference: "my-heading-style",
           level: level,
         },
-        heading: setHeading(level),
+        // 不使用内置heading，防止覆盖自定义字体
         children: textRuns,
       });
     } else {
       //无标题编号
       return new Paragraph({
-        heading: setHeading(level),
+        // 不使用内置heading，防止覆盖自定义字体
         children: textRuns,
-        style: `heading${level}`,
+        // style: `heading${level}`,
       });
     }
   }
@@ -434,7 +434,7 @@ export default async function runTest(jsonData) {
               superScript: style.superscript,
               subScript: style.subscript,
               size: 24, // 小四号→12磅
-              font: "仿宋", // 仿宋
+              font: "仿宋_GB2312", // 仿宋
               color: "000000", // 黑色
             })
         ),
@@ -452,7 +452,7 @@ export default async function runTest(jsonData) {
               superScript: style.superscript,
               subScript: style.subscript,
               size: 24, // 小四号→12磅
-              font: "仿宋", // 仿宋
+              font: "仿宋_GB2312", // 仿宋
               color: "000000", // 黑色
             })
         ),
@@ -478,7 +478,7 @@ export default async function runTest(jsonData) {
             superScript: style.superscript,
             subScript: style.subscript,
             size: 24,
-            font: "仿宋",
+            font: "仿宋_GB2312",
             color: "000000",
           })
       ),
@@ -511,7 +511,7 @@ export default async function runTest(jsonData) {
               superScript: style.superscript,
               subScript: style.subscript,
               size: 24,
-              font: "仿宋",
+              font: "仿宋_GB2312",
               color: "000000",
             })
         ),
@@ -541,7 +541,7 @@ export default async function runTest(jsonData) {
           new TextRun({
             text: style.content,
             size: 24,
-            font: "仿宋",
+            font: "仿宋_GB2312",
             color: "0F4761",
             italics: true,
           })
@@ -629,7 +629,7 @@ export default async function runTest(jsonData) {
                   text: header.text || header.fullContent || '',
                   bold: true,
                   size: 24,
-                  font: "仿宋",
+                  font: "仿宋_GB2312",
                   color: "000000",
                 }),
               ],
@@ -656,7 +656,7 @@ export default async function runTest(jsonData) {
                   new TextRun({
                     text: cell.text || cell.fullContent || '',
                     size: 24,
-                    font: "仿宋",
+                    font: "仿宋_GB2312",
                     color: "000000",
                   }),
                 ],
@@ -806,7 +806,7 @@ export default async function runTest(jsonData) {
             superScript: style.superscript,
             subScript: style.subscript,
             size: 24,
-            font: "仿宋",
+            font: "仿宋_GB2312",
             color: "000000"
           })
         ),
@@ -835,7 +835,7 @@ export default async function runTest(jsonData) {
         new TextRun({
           text: footnote.footnoteContent,
           size: 20,
-          font: "仿宋",
+          font: "仿宋_GB2312",
           color: "000000"
         })
       ],
@@ -986,7 +986,7 @@ export default async function runTest(jsonData) {
         document: {
           run: {
             size: 24, // 小四号→12磅
-            font: "仿宋", // 仿宋
+            font: "仿宋_GB2312", // 仿宋
             color: "000000", // 黑色
           },
           paragraph: {
@@ -1005,7 +1005,7 @@ export default async function runTest(jsonData) {
         title: {
           run: {
             size: 44, // 二号字→22磅
-            font: "黑体", // 黑体
+            font: "方正小标宋_GBK", // 方正小标宋_GBK
             color: "000000", // 黑色
             bold: true, // 加粗
           },
@@ -1045,7 +1045,7 @@ export default async function runTest(jsonData) {
         heading2: {
           run: {
             size: 32, //三号字→16磅（与一级标题同字号，通过字体区分层级）
-            font: "楷体", // 楷体
+            font: "楷体_GB2312", // 楷体
             color: "000000", // 黑色
             bold: true, // 加粗
           },
@@ -1065,7 +1065,7 @@ export default async function runTest(jsonData) {
         heading3: {
           run: {
             size: 28, // 四号字→14磅
-            font: "仿宋", // 仿宋
+            font: "仿宋_GB2312", // 仿宋
             color: "000000", // 黑色
             bold: true, // 加粗
           },
@@ -1085,7 +1085,7 @@ export default async function runTest(jsonData) {
         heading4: {
           run: {
             size: 24, // 小四号→12磅
-            font: "仿宋", // 仿宋
+            font: "仿宋_GB2312", // 仿宋
             color: "000000", // 黑色
             bold: true, // 加粗
           },
@@ -1105,7 +1105,7 @@ export default async function runTest(jsonData) {
         heading5: {
           run: {
             size: 21, // 小五号→10.5磅
-            font: "仿宋", // 仿宋
+            font: "仿宋_GB2312", // 仿宋
             color: "000000", // 黑色
             bold: true, // 加粗
           },
@@ -1126,7 +1126,7 @@ export default async function runTest(jsonData) {
       footnote: {
         run: {
           size: 20, // 10磅
-          font: "仿宋",
+          font: "仿宋_GB2312",
           color: "000000"
         },
         paragraph: {
