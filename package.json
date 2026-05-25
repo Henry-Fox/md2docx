@@ -1,6 +1,6 @@
 {
   "name": "md2docx",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "A web-based tool for converting Markdown to Word documents",
   "main": "index.js",
   "private": true,
