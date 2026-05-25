@@ -1,0 +1,50 @@
+# Include your project-specific ignores in this file
+# Read about how to use .gitignore: https://help.github.com/articles/ignoring-files
+# Useful .gitignore templates: https://github.com/github/gitignore
+
+# Dependencies
+node_modules/
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build
+dist/
+build/
+*.log
+
+# Release artifacts
+release/
+*.zip
+
+# Claude Code local settings (machine-specific)
+.claude/settings.local.json
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+dist
+.cache
+.editorconfig
+.gitattributes
+.gitignore
+.idea/.gitignore
+.idea/MarsCodeWorkspaceAppSettings.xml
+.idea/Md2Docx.iml
+.idea/modules.xml
+img/.gitkeep
+js/vendor/.gitkeep
+.cursor/gmf_text_types.md
+.idea/vcs.xml
