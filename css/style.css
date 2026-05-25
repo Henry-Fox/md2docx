@@ -954,35 +954,44 @@ select.tpl-input { appearance: none; background-image: url("data:image/svg+xml,%
   outline: none;
 }
 .tpl-heading-row select { appearance: none; padding-right: 4px; }
-.tpl-heading-row input[type="checkbox"] {
-  appearance: none;
-  -webkit-appearance: none;
+/* Bold toggle pill — uses label wrapper so ::after works in all browsers */
+.bold-pill-wrap {
+  display: block;
+  width: 36px;
+  margin: 0 auto;
+  cursor: pointer;
+}
+.bold-pill-wrap input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+.bold-pill-wrap .bold-pill {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 36px;
   height: 20px;
   background: var(--surface-highest);
   border: 1px solid var(--outline-var);
   border-radius: var(--radius-sm);
-  cursor: pointer;
-  position: relative;
-  display: block;
-  margin: 0 auto;
-  transition: background 0.15s;
-}
-.tpl-heading-row input[type="checkbox"]::after {
-  content: 'OFF';
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   font-size: 8px;
   font-weight: 800;
   letter-spacing: 0.04em;
   color: var(--on-surface-dim);
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  user-select: none;
 }
-.tpl-heading-row input[type="checkbox"]:checked { background: var(--primary); border-color: var(--primary); }
-.tpl-heading-row input[type="checkbox"]:checked::after { content: 'ON'; color: white; }
-.tpl-heading-row input[type="checkbox"]:disabled { opacity: 0.55; cursor: not-allowed; }
+.bold-pill-wrap .bold-pill::after { content: 'OFF'; }
+.bold-pill-wrap input[type="checkbox"]:checked + .bold-pill {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: white;
+}
+.bold-pill-wrap input[type="checkbox"]:checked + .bold-pill::after { content: 'ON'; }
+.bold-pill-wrap input[type="checkbox"]:disabled + .bold-pill { opacity: 0.55; cursor: not-allowed; }
 .tpl-heading-row input:disabled,
 .tpl-heading-row select:disabled { opacity: 0.65; background: var(--surface-highest); cursor: not-allowed; }
 

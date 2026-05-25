@@ -427,7 +427,7 @@ class App {
           <span>${label}</span>
           <select id="tpl-${lvl}-font">${fontOpts}</select>
           <input  id="tpl-${lvl}-size"  type="number" value="${h.fontSize}" min="6" max="80" step="0.5">
-          <input  id="tpl-${lvl}-bold"  type="checkbox"${h.bold ? ' checked' : ''}>
+          <label class="bold-pill-wrap"><input id="tpl-${lvl}-bold" type="checkbox"${h.bold ? ' checked' : ''}><span class="bold-pill"></span></label>
           <select id="tpl-${lvl}-align">${alignOpts}</select>`;
         rowsContainer.appendChild(row);
       });
