@@ -360,20 +360,10 @@ class App {
         this._openTemplateEditor(e.currentTarget.dataset.id);
       }));
       container.querySelectorAll('.tpl-del-btn').forEach(btn => btn.addEventListener('click', e => {
-        const b = e.currentTarget;
-        if (b.dataset.confirming === '1') {
-          templateManager.delete(b.dataset.id);
+        if (confirm('确定要删除这个模板吗？')) {
+          templateManager.delete(e.currentTarget.dataset.id);
           this._renderTemplateList();
           this._hideTemplateEditor();
-        } else {
-          b.dataset.confirming = '1';
-          b.textContent = '确认删除？';
-          setTimeout(() => {
-            if (b.dataset.confirming === '1') {
-              b.dataset.confirming = '';
-              b.textContent = '删除';
-            }
-          }, 3000);
         }
       }));
     };
