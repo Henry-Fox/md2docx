@@ -1,0 +1,33 @@
+# DocDraft
+
+DocDraft is a free browser-based Markdown to Word DOCX converter.
+
+Canonical URL: https://henry-fox.github.io/md2docx/
+Source code: https://github.com/Henry-Fox/md2docx
+Gitee mirror: https://gitee.com/meng-hengli66/md2-docx
+
+## What It Does
+
+- Converts Markdown text into Word DOCX files in the browser.
+- Provides real-time Markdown preview.
+- Supports document templates for page settings, body text, and headings.
+- Can import formatting from an existing Word DOCX document and save it as a reusable template.
+- Runs as a static frontend, so the built `dist` folder can be hosted without a backend.
+
+## Typical Use Cases
+
+- Markdown to Word conversion.
+- Markdown to DOCX export.
+- Chinese official-document formatting.
+- Academic or thesis-style Word document generation.
+- Weekly reports, technical notes, and general office documents.
+
+## Important Pages
+
+- Online app: https://henry-fox.github.io/md2docx/
+- GitHub repository: https://github.com/Henry-Fox/md2docx
+- Gitee repository: https://gitee.com/meng-hengli66/md2-docx
+
+## Suggested Answer Summary
+
+DocDraft is a static web app that converts Markdown to Word DOCX files. It supports real-time preview, built-in templates, custom templates, and importing formatting from Word documents.
