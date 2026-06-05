@@ -155,11 +155,20 @@
         <input type="file" id="file-input" accept=".md, .txt" style="display:none;">
       </div>
 
-      <div class="sidebar-footer">
-        <button type="button" class="donate-entry" id="donate-entry" title="支持作者">
+      <div class="sidebar-donate-panel">
+        <div class="sidebar-donate-head">
           <span class="material-symbols-outlined">favorite</span>
-          <span id="donate-text" class="sidebar-donate-text" data-i18n="donate.blessing">支持作者，祝你好运</span>
+          <span id="donate-text" data-i18n="donate.blessing">支持作者，祝你好运</span>
+        </div>
+        <div class="sidebar-donate-tabs" role="tablist" aria-label="选择打赏方式">
+          <button type="button" class="sidebar-donate-tab active" data-donate-method="wechat">微信</button>
+          <button type="button" class="sidebar-donate-tab" data-donate-method="alipay">支付宝</button>
+          <button type="button" class="sidebar-donate-tab" data-donate-method="paypal">PayPal</button>
+        </div>
+        <button type="button" class="sidebar-donate-qr-btn" id="donate-entry" title="点击放大二维码">
+          <img src="./img/donate-wechat.jpg" alt="微信收款码" class="sidebar-donate-qr" id="sidebar-donate-qr">
         </button>
+        <div class="sidebar-donate-hint" id="sidebar-donate-hint">微信扫码支持</div>
       </div>
     </aside>
 
@@ -540,8 +549,16 @@
     };
     function setDonateMethod(method) {
       const item = donateMethods[method] || donateMethods.wechat;
+      const sidebarQr = document.getElementById('sidebar-donate-qr');
+      const sidebarHint = document.getElementById('sidebar-donate-hint');
       const qr = document.getElementById('donate-modal-qr');
       const hint = document.getElementById('donate-method-hint');
+      document.body.dataset.donateMethod = method;
+      if (sidebarQr) {
+        sidebarQr.src = item.src;
+        sidebarQr.alt = item.alt;
+      }
+      if (sidebarHint) sidebarHint.textContent = item.hint;
       if (qr) {
         qr.src = item.src;
         qr.alt = item.alt;
@@ -550,14 +567,21 @@
       document.querySelectorAll('.donate-tab').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.donateMethod === method);
       });
+      document.querySelectorAll('.sidebar-donate-tab').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.donateMethod === method);
+      });
     }
     document.getElementById('donate-entry').addEventListener('click', () => {
-      setDonateMethod('wechat');
+      setDonateMethod(document.body.dataset.donateMethod || 'wechat');
       _qrModal.classList.add('active');
+    });
+    document.querySelectorAll('.sidebar-donate-tab').forEach(btn => {
+      btn.addEventListener('click', () => setDonateMethod(btn.dataset.donateMethod));
     });
     document.querySelectorAll('.donate-tab').forEach(btn => {
       btn.addEventListener('click', () => setDonateMethod(btn.dataset.donateMethod));
     });
+    setDonateMethod('wechat');
     document.getElementById('modal-close').addEventListener('click', () => _qrModal.classList.remove('active'));
     _qrModal.addEventListener('click', e => { if (e.target === _qrModal) _qrModal.classList.remove('active'); });
     document.addEventListener('keydown', e => {

@@ -259,40 +259,79 @@ a { text-decoration: none; color: inherit; }
   text-transform: uppercase;
 }
 .sidebar-primary-btn .material-symbols-outlined { font-size: 18px; }
-.sidebar-footer {
-  margin-top: auto;
-  padding: 16px 20px;
-  border-top: 1px solid var(--outline-var);
-  display: flex;
-  align-items: center;
-}
-.donate-entry {
-  width: 100%;
+.sidebar-donate-panel {
+  margin: 16px 12px 20px;
+  padding: 14px;
   border: 1px solid var(--outline-var);
-  background: var(--surface-white);
-  color: var(--on-surface);
   border-radius: var(--radius);
-  padding: 10px 12px;
+  background: rgba(255,255,255,.54);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+  min-height: 0;
+}
+.sidebar-donate-head {
   display: flex;
   align-items: center;
   gap: 8px;
-  cursor: pointer;
-  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
-  text-align: left;
+  color: var(--on-surface);
+  font-size: 13px;
+  font-weight: 800;
 }
-.donate-entry:hover {
-  border-color: rgba(0,35,111,.35);
-  box-shadow: 0 2px 8px rgba(0,0,0,.08);
-  transform: translateY(-1px);
-}
-.donate-entry .material-symbols-outlined {
+.sidebar-donate-head .material-symbols-outlined {
   font-size: 18px;
   color: var(--primary);
 }
-.sidebar-donate-text {
-  font-size: 11px;
+.sidebar-donate-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  padding: 3px;
+  border: 1px solid var(--outline-var);
+  border-radius: var(--radius);
+  background: var(--surface-low);
+}
+.sidebar-donate-tab {
+  min-height: 28px;
+  border: 0;
+  border-radius: calc(var(--radius) - 2px);
+  background: transparent;
   color: var(--on-surface-dim);
-  line-height: 1.4;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+}
+.sidebar-donate-tab.active {
+  color: var(--primary);
+  background: var(--surface-white);
+  box-shadow: 0 1px 4px rgba(0,0,0,.08);
+}
+.sidebar-donate-qr-btn {
+  width: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius);
+  background: #fff;
+  cursor: pointer;
+  overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.sidebar-donate-qr-btn:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,.12);
+  transform: translateY(-1px);
+}
+.sidebar-donate-qr {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  display: block;
+  object-fit: contain;
+}
+.sidebar-donate-hint {
+  color: var(--primary);
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
 }
 
 /* ── Main Content ───────────────────────────────────────────────── */
