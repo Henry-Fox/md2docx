@@ -2,6 +2,16 @@
 
 [English](#english) | [中文](#中文) | [Français](#français) | [Español](#español) | [Русский](#русский) | [العربية](#العربية)
 
+## Support / 支持作者
+
+If this tool helps you, you can support the project through WeChat, Alipay, or PayPal.
+
+如果这个工具对你有帮助，可以通过微信、支付宝或 PayPal 支持作者。
+
+| WeChat / 微信 | Alipay / 支付宝 | PayPal |
+| --- | --- | --- |
+| ![WeChat donation QR](./img/donate-wechat.jpg) | ![Alipay donation QR](./img/donate-alipay.jpg) | ![PayPal donation QR](./img/donate-qr.png) |
+
 ## English
 
 A simple and efficient web-based tool for converting Markdown files to Word documents (DOCX format).
@@ -61,7 +71,9 @@ npm start
 ### Support the Project
 If you find this tool helpful, consider buying me a coffee! Your support helps me continue improving this project.
 
-![Donate QR Code](./img/donate-qr.png)
+| WeChat | Alipay | PayPal |
+| --- | --- | --- |
+| ![WeChat donation QR](./img/donate-wechat.jpg) | ![Alipay donation QR](./img/donate-alipay.jpg) | ![PayPal donation QR](./img/donate-qr.png) |
 
 Thank you for your support! Your generosity helps make this project better for everyone. 🙏
 

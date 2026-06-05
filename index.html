@@ -21,6 +21,14 @@
       <span class="brand-name">DocDraft</span>
     </div>
     <div class="app-header-actions">
+      <a class="header-link-btn" href="https://github.com/Henry-Fox/md2docx" target="_blank" rel="noopener noreferrer">
+        <span class="material-symbols-outlined">code</span>
+        GitHub
+      </a>
+      <a class="header-link-btn" href="https://gitee.com/meng-hengli66/md2-docx" target="_blank" rel="noopener noreferrer">
+        <span class="material-symbols-outlined">hub</span>
+        Gitee
+      </a>
       <select id="language-select" class="lang-select">
         <option value="zh">中文</option>
         <option value="en">English</option>
@@ -71,8 +79,10 @@
       </div>
 
       <div class="sidebar-footer">
-        <img src="./img/donate-qr.png" alt="打赏" class="donate-qr" id="donate-qr" title="扫码支持">
-        <span id="donate-text" class="sidebar-donate-text" data-i18n="donate.blessing">祝打赏的人获得好运气</span>
+        <button type="button" class="donate-entry" id="donate-entry" title="支持作者">
+          <span class="material-symbols-outlined">favorite</span>
+          <span id="donate-text" class="sidebar-donate-text" data-i18n="donate.blessing">支持作者，祝你好运</span>
+        </button>
       </div>
     </aside>
 
@@ -385,15 +395,22 @@
       <button class="modal-close-btn qr-close-btn" id="modal-close">
         <span class="material-symbols-outlined">close</span>
       </button>
-      <img src="./img/donate-qr.png" alt="打赏二维码" class="modal-qr">
-      <div class="modal-text" id="modal-text" data-i18n="donate.blessing">祝打赏的人获得好运气</div>
+      <div class="donate-modal-title">支持作者</div>
+      <div class="donate-tabs" role="tablist" aria-label="选择打赏方式">
+        <button type="button" class="donate-tab active" data-donate-method="wechat">微信</button>
+        <button type="button" class="donate-tab" data-donate-method="alipay">支付宝</button>
+        <button type="button" class="donate-tab" data-donate-method="paypal">PayPal</button>
+      </div>
+      <img src="./img/donate-wechat.jpg" alt="微信收款码" class="modal-qr" id="donate-modal-qr">
+      <div class="modal-text" id="modal-text" data-i18n="donate.blessing">支持作者，祝你好运</div>
+      <div class="donate-method-hint" id="donate-method-hint">微信扫码支持</div>
     </div>
   </div>
 
   <script>
     // i18n
     const i18n = {
-      zh: { 'donate.blessing': '祝打赏的人获得好运气' },
+      zh: { 'donate.blessing': '支持作者，祝你好运' },
       en: { 'donate.blessing': 'May good luck be with those who support us' },
       fr: { 'donate.blessing': 'Que la chance soit avec ceux qui nous soutiennent' },
       es: { 'donate.blessing': 'Que la buena suerte esté con quienes nos apoyan' },
@@ -412,7 +429,31 @@
 
     // QR modal
     const _qrModal = document.getElementById('qr-modal');
-    document.getElementById('donate-qr').addEventListener('click', () => _qrModal.classList.add('active'));
+    const donateMethods = {
+      wechat: { label: '微信', src: './img/donate-wechat.jpg', alt: '微信收款码', hint: '微信扫码支持' },
+      alipay: { label: '支付宝', src: './img/donate-alipay.jpg', alt: '支付宝收款码', hint: '支付宝扫码支持' },
+      paypal: { label: 'PayPal', src: './img/donate-qr.png', alt: 'PayPal 打赏二维码', hint: 'PayPal 扫码支持' },
+    };
+    function setDonateMethod(method) {
+      const item = donateMethods[method] || donateMethods.wechat;
+      const qr = document.getElementById('donate-modal-qr');
+      const hint = document.getElementById('donate-method-hint');
+      if (qr) {
+        qr.src = item.src;
+        qr.alt = item.alt;
+      }
+      if (hint) hint.textContent = item.hint;
+      document.querySelectorAll('.donate-tab').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.donateMethod === method);
+      });
+    }
+    document.getElementById('donate-entry').addEventListener('click', () => {
+      setDonateMethod('wechat');
+      _qrModal.classList.add('active');
+    });
+    document.querySelectorAll('.donate-tab').forEach(btn => {
+      btn.addEventListener('click', () => setDonateMethod(btn.dataset.donateMethod));
+    });
     document.getElementById('modal-close').addEventListener('click', () => _qrModal.classList.remove('active'));
     _qrModal.addEventListener('click', e => { if (e.target === _qrModal) _qrModal.classList.remove('active'); });
     document.addEventListener('keydown', e => {
