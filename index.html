@@ -3,7 +3,21 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DocDraft — Markdown 转 Word</title>
+  <title>Markdown 转 Word 工具 - 在线导出 DOCX | DocDraft</title>
+  <meta name="description" content="DocDraft 是一个在线 Markdown 转 Word 工具，支持 DOCX 导出、实时预览、模板管理、从 Word 文档导入格式，并可用于公文、论文和通用文档排版。">
+  <meta name="keywords" content="Markdown转Word, Markdown转DOCX, Markdown导出Word, 在线DOCX转换, Word模板导入, 公文格式, Markdown排版工具">
+  <meta name="author" content="Henry Fox">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://henry-fox.github.io/md2docx/">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://henry-fox.github.io/md2docx/">
+  <meta property="og:title" content="DocDraft - Markdown 转 Word / DOCX 在线工具">
+  <meta property="og:description" content="在线将 Markdown 转换为 Word DOCX，支持模板、格式导入、实时预览和离线静态部署。">
+  <meta property="og:image" content="https://henry-fox.github.io/md2docx/icon.png">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="DocDraft - Markdown 转 Word / DOCX 在线工具">
+  <meta name="twitter:description" content="在线将 Markdown 转换为 Word DOCX，支持模板、格式导入和实时预览。">
+  <meta name="theme-color" content="#00236F">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@600;700&family=Hanken+Grotesk:wght@400;600;700&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
@@ -12,6 +26,69 @@
   <link rel="icon" href="./favicon.ico" sizes="any">
   <link rel="icon" href="./icon.svg" type="image/svg+xml">
   <link rel="manifest" href="./site.webmanifest">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "DocDraft",
+    "alternateName": "Md2Docx",
+    "applicationCategory": "ProductivityApplication",
+    "operatingSystem": "Web",
+    "url": "https://henry-fox.github.io/md2docx/",
+    "codeRepository": "https://github.com/Henry-Fox/md2docx",
+    "description": "DocDraft is a browser-based Markdown to Word DOCX converter with real-time preview, template management, and Word format import.",
+    "inLanguage": ["zh-CN", "en", "fr", "es", "ru", "ar"],
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    },
+    "featureList": [
+      "Markdown to DOCX conversion",
+      "Real-time Markdown preview",
+      "Template management",
+      "Import formatting from Word documents",
+      "Static offline-friendly frontend"
+    ],
+    "creator": {
+      "@type": "Person",
+      "name": "Henry Fox",
+      "url": "https://github.com/Henry-Fox"
+    }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Markdown 怎么转换成 Word DOCX？",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "在 DocDraft 中粘贴或打开 Markdown 文本，选择模板后点击导出 DOCX，即可在浏览器中生成 Word 文档。"
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "这个工具是否支持 Word 模板格式？",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "支持。DocDraft 可以从 .docx 文档中提取页面、正文和标题等格式，并将其保存为自定义模板。"
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "DocDraft 是否需要服务器？",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "不需要。DocDraft 是纯前端工具，打包后的 dist/index.html 和静态资源可以独立部署或本地使用。"
+        }
+      }
+    ]
+  }
+  </script>
 </head>
 <body>
 
@@ -150,6 +227,33 @@
 
     </div><!-- main-content -->
   </div><!-- app-shell -->
+
+  <section class="seo-content" aria-labelledby="seo-title">
+    <div class="seo-content-inner">
+      <h1 id="seo-title">Markdown 转 Word DOCX 在线工具</h1>
+      <p>DocDraft 可以在浏览器中将 Markdown 文档转换为 Word DOCX 文件，适合公文、论文、技术文档、周报和通用办公文档排版。</p>
+      <h2>核心能力</h2>
+      <ul>
+        <li>支持 Markdown 实时预览，并导出为 DOCX。</li>
+        <li>支持模板管理，可配置页面、正文、标题、字号、字体和行距。</li>
+        <li>支持从 Word 文档导入格式，快速生成可复用模板。</li>
+        <li>纯前端运行，构建后可以作为静态 HTML 独立部署。</li>
+      </ul>
+      <h2>常见问题</h2>
+      <details>
+        <summary>Markdown 怎么转成 Word？</summary>
+        <p>将 Markdown 内容粘贴到编辑器，选择合适模板，然后点击导出 DOCX。</p>
+      </details>
+      <details>
+        <summary>是否支持公文或论文格式？</summary>
+        <p>支持。你可以使用内置模板，也可以从已有 Word 文档导入格式生成自己的模板。</p>
+      </details>
+      <details>
+        <summary>是否可以离线使用？</summary>
+        <p>可以。运行 npm run build 后，dist 目录中的文件可作为静态网站部署或本地使用。</p>
+      </details>
+    </div>
+  </section>
 
   <!-- Template Management Modal -->
   <div class="modal" id="template-modal">

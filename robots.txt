@@ -3,3 +3,5 @@
 # Allow crawling of all content
 User-agent: *
 Disallow:
+
+Sitemap: https://henry-fox.github.io/md2docx/sitemap.xml

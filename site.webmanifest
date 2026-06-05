@@ -1,12 +1,22 @@
 {
-  "short_name": "",
-  "name": "",
-  "icons": [{
-    "src": "icon.png",
-    "type": "image/png",
-    "sizes": "192x192"
-  }],
-  "start_url": "/?utm_source=homescreen",
-  "background_color": "#fafafa",
-  "theme_color": "#fafafa"
+  "short_name": "DocDraft",
+  "name": "DocDraft - Markdown to Word DOCX Converter",
+  "description": "Convert Markdown documents to Word DOCX in the browser with templates, preview, and Word format import.",
+  "icons": [
+    {
+      "src": "icon.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "icon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any"
+    }
+  ],
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#F8FAFF",
+  "theme_color": "#00236F"
 }

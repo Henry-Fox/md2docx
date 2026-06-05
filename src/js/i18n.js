@@ -27,7 +27,7 @@ const resources = {
     convertSimpleFail: "Conversion failed: {{msg}}"
   },
   zh: {
-    title: "Markdown转Word转换器",
+    title: "Markdown 转 Word 工具 - 在线导出 DOCX | DocDraft",
     markdownContent: "Markdown内容",
     preview: "预览",
     clear: "清空",
