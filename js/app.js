@@ -257,6 +257,7 @@ class App {
         this._showToast('⏳ 正在提取格式…');
         const tpl = await parseDocxStyles(file);
         templateManager.save(tpl);
+        templateManager.setActive(tpl.id);
         this._renderTemplateList();
         this._renderTemplateSelector();
         this._openTemplateEditor(tpl.id);

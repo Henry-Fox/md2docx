@@ -204,6 +204,7 @@ class TemplateManager {
     const ps      = PAGE_SIZES[page.size] || PAGE_SIZES.A4;
     const portrait = page.orientation !== 'landscape';
     return {
+      pageOrientation: page.orientation || 'portrait',
       pageWidth:  portrait ? ps.width  : ps.height,
       pageHeight: portrait ? ps.height : ps.width,
       pageMargin: {

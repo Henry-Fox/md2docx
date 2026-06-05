@@ -53,6 +53,26 @@ function extractPPr(pPr) {
   return r;
 }
 
+function directText(el) {
+  return Array.from(el.getElementsByTagNameNS(W, 't')).map(t => t.textContent || '').join('').trim();
+}
+
+function mode(values) {
+  const counts = new Map();
+  for (const value of values.filter(v => v !== undefined && v !== null && v !== '')) {
+    counts.set(value, (counts.get(value) || 0) + 1);
+  }
+  let best = null;
+  for (const [value, count] of counts) {
+    if (!best || count > best.count) best = { value, count };
+  }
+  return best ? best.value : undefined;
+}
+
+function firstDefined(...values) {
+  return values.find(v => v !== undefined && v !== null && v !== '');
+}
+
 // Follow basedOn chain and merge properties (child overrides parent)
 function resolveStyle(styleMap, id, depth = 0) {
   if (depth > 6 || !id || !styleMap[id]) return {};
@@ -96,6 +116,37 @@ export async function parseDocxStyles(file) {
 
   // Resolve a candidate id: try direct id first, then name lookup
   const resolve = (id) => styleMap[id] ? id : (nameToId[id.toLowerCase()] || id);
+  const resolveList = (candidates) => candidates.map(resolve);
+  const paragraphStyle = (p) => {
+    const pPr = wc(p, 'pPr');
+    const pStyle = wc(pPr, 'pStyle');
+    const styleId = pStyle ? wa(pStyle, 'val') : null;
+    const base = styleId ? resolveStyle(styleMap, styleId) : {};
+    const run = wc(p, 'r');
+    return { ...base, ...extractPPr(pPr), ...extractRPr(run ? wc(run, 'rPr') : null) };
+  };
+  const sampleParagraph = (candidates) => {
+    const ids = new Set(resolveList(candidates));
+    for (const p of docDoc.getElementsByTagNameNS(W, 'p')) {
+      const pPr = wc(p, 'pPr');
+      const pStyle = wc(pPr, 'pStyle');
+      const styleId = pStyle ? wa(pStyle, 'val') : null;
+      if (styleId && ids.has(styleId)) return paragraphStyle(p);
+    }
+    return {};
+  };
+  const paragraphs = Array.from(docDoc.getElementsByTagNameNS(W, 'p'))
+    .map((p, index) => ({ index, text: directText(p), style: paragraphStyle(p) }))
+    .filter(p => p.text);
+  function toHeading(raw, fallbackSize, fallbackAlign = 'left') {
+    return {
+    font:      raw.font      || body.font,
+    fontSize:  raw.fontSize  || fallbackSize,
+    bold:      raw.bold      !== undefined ? raw.bold : true,
+    alignment: raw.alignment || fallbackAlign,
+    color:     '000000',
+    };
+  }
 
   // Page settings from last sectPr (body-level)
   const sectPrs = docDoc.getElementsByTagNameNS(W, 'sectPr');
@@ -119,31 +170,70 @@ export async function parseDocxStyles(file) {
 
   // Body style from Normal
   const bodyRaw  = resolveStyle(styleMap, resolve('Normal'));
-  const bodySize = bodyRaw.fontSize || 12;
+  const bodySamples = paragraphs.filter(p =>
+    p.style.fontSize &&
+    !p.style.bold &&
+    p.style.alignment !== 'center' &&
+    p.text.length >= 12
+  );
+  const bodySample = bodySamples.length ? {
+    font: mode(bodySamples.map(p => p.style.font)),
+    fontSize: mode(bodySamples.map(p => p.style.fontSize)),
+    lineSpacing: mode(bodySamples.map(p => p.style.lineSpacing)),
+    firstLineTwips: mode(bodySamples.map(p => p.style.firstLineTwips)),
+    alignment: mode(bodySamples.map(p => p.style.alignment)),
+  } : {};
+  const bodySize = firstDefined(bodySample.fontSize, bodyRaw.fontSize, 12);
   const body = {
     font:            bodyRaw.font        || '宋体',
     fontSize:        bodySize,
-    lineSpacing:     bodyRaw.lineSpacing || 24,
-    firstLineIndent: bodyRaw.firstLineTwips
-      ? Math.max(0, Math.round(bodyRaw.firstLineTwips / (bodySize * 20)))
+    lineSpacing:     firstDefined(bodySample.lineSpacing, bodyRaw.lineSpacing, 24),
+    firstLineIndent: firstDefined(bodySample.firstLineTwips, bodyRaw.firstLineTwips)
+      ? Math.max(0, Math.round(firstDefined(bodySample.firstLineTwips, bodyRaw.firstLineTwips) / (bodySize * 20)))
       : 2,
-    alignment:       bodyRaw.alignment  || 'justified',
+    alignment:       firstDefined(bodySample.alignment, bodyRaw.alignment, 'justified'),
+  };
+  body.font = firstDefined(bodySample.font, bodyRaw.font, body.font);
+  const directTitle = paragraphs.find(p =>
+    p.index < 5 &&
+    p.style.fontSize >= Math.max(18, body.fontSize + 2) &&
+    p.style.alignment === 'center'
+  );
+  const directHeadings = paragraphs.filter(p =>
+    p.style.fontSize &&
+    p.style.bold &&
+    p.style.alignment !== 'center' &&
+    p.text.length <= 80
+  );
+  const directHeadingByRank = (rank) => {
+    const groups = [...new Set(directHeadings.map(p => `${p.style.font || ''}|${p.style.fontSize || ''}|${p.style.alignment || ''}`))];
+    const key = groups[rank];
+    if (!key) return {};
+    return directHeadings.find(p => `${p.style.font || ''}|${p.style.fontSize || ''}|${p.style.alignment || ''}` === key)?.style || {};
   };
 
   // Build a heading style, trying each candidate id in order
   const heading = (candidates, fallbackSize, fallbackAlign = 'left') => {
+    const direct = fallbackAlign === 'center'
+      ? directTitle?.style
+      : fallbackSize === 16
+        ? directHeadingByRank(0)
+        : fallbackSize === 14
+          ? directHeadingByRank(1)
+          : null;
+    if (direct && (direct.font || direct.fontSize)) {
+      return toHeading(direct, fallbackSize, fallbackAlign);
+    }
+    const sampled = sampleParagraph(candidates);
+    if (sampled.font || sampled.fontSize) {
+      return toHeading(sampled, fallbackSize, fallbackAlign);
+    }
     for (const cand of candidates) {
       const id  = resolve(cand);
       if (!styleMap[id]) continue;
       const raw = resolveStyle(styleMap, id);
       if (raw.font || raw.fontSize) {
-        return {
-          font:      raw.font      || body.font,
-          fontSize:  raw.fontSize  || fallbackSize,
-          bold:      raw.bold      !== undefined ? raw.bold : true,
-          alignment: raw.alignment || fallbackAlign,
-          color:     '000000',
-        };
+        return toHeading(raw, fallbackSize, fallbackAlign);
       }
     }
     return { font: body.font, fontSize: fallbackSize, bold: true, alignment: fallbackAlign, color: '000000' };

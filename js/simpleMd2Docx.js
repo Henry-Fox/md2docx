@@ -45,6 +45,55 @@ class SimpleMd2Docx {
     this.docxStyles = templateManager.toDocxStyles(template);
   }
 
+  getStyles() {
+    return this.docxStyles || templateManager.toDocxStyles(templateManager.getActive());
+  }
+
+  getAlignment(value, fallback = AlignmentType.JUSTIFIED) {
+    const map = {
+      left: AlignmentType.LEFT,
+      center: AlignmentType.CENTER,
+      right: AlignmentType.RIGHT,
+      justified: AlignmentType.JUSTIFIED,
+      both: AlignmentType.JUSTIFIED,
+      start: AlignmentType.START,
+    };
+    return map[value] || fallback;
+  }
+
+  getTextStyle(kind = "body", overrides = {}) {
+    const S = this.getStyles();
+    const src = S[kind] || S.body;
+    return {
+      font: src.font,
+      size: src.fontSize,
+      color: src.color || "000000",
+      bold: src.bold,
+      ...overrides,
+    };
+  }
+
+  getParagraphStyle(kind = "body", overrides = {}) {
+    const S = this.getStyles();
+    const src = S[kind] || S.body;
+    const isBody = kind === "body";
+    return {
+      alignment: this.getAlignment(src.alignment, isBody ? AlignmentType.JUSTIFIED : AlignmentType.LEFT),
+      spacing: {
+        before: 0,
+        after: 0,
+        line: isBody ? S.body.lineSpacing : Math.round(src.fontSize * 1.3 * 10),
+        lineRule: LineRuleType.EXACT,
+      },
+      indent: isBody ? { firstLine: S.body.firstLineIndent } : { left: 0, firstLine: 0 },
+      ...overrides,
+    };
+  }
+
+  getHeadingStyleKey(level) {
+    return ["title", "h1", "h2", "h3", "h4", "h5"][Math.max(1, Math.min(level, 6)) - 1];
+  }
+
   /**
    * 转换Markdown为Word文档
    * @param {string} markdown - Markdown文本
@@ -370,12 +419,7 @@ class SimpleMd2Docx {
       console.log("开始创建文档...");
 
       // Resolve styles — fall back to a sensible default if no template was set
-      const S = this.docxStyles || templateManager.toDocxStyles(templateManager.getActive());
-
-      function _align(a) {
-        const m = { left: AlignmentType.LEFT, center: AlignmentType.CENTER, right: AlignmentType.RIGHT, justified: AlignmentType.JUSTIFIED };
-        return m[a] || AlignmentType.JUSTIFIED;
-      }
+      const S = this.getStyles();
 
       // 创建文档
       const doc = new Document({
@@ -388,7 +432,7 @@ class SimpleMd2Docx {
                 color: "000000",
               },
               paragraph: {
-                alignment: _align(S.body.alignment),
+                alignment: this.getAlignment(S.body.alignment),
                 spacing: { before: 0, after: 0, line: S.body.lineSpacing, lineRule: LineRuleType.EXACT },
                 indent: { firstLine: S.body.firstLineIndent },
               },
@@ -401,7 +445,7 @@ class SimpleMd2Docx {
                 bold:  S.title.bold,
               },
               paragraph: {
-                alignment: _align(S.title.alignment),
+                alignment: this.getAlignment(S.title.alignment, AlignmentType.CENTER),
                 spacing: { before: 480, after: 480 },
                 lineSpacing: { before: Math.round(S.title.fontSize * 1.3), lineRule: LineRuleType.EXACT },
                 indent: { left: 0, firstLine: 0 },
@@ -410,7 +454,7 @@ class SimpleMd2Docx {
             heading1: {
               run: { size: S.h1.fontSize, font: S.h1.font, color: S.h1.color, bold: S.h1.bold },
               paragraph: {
-                alignment: _align(S.h1.alignment),
+                alignment: this.getAlignment(S.h1.alignment, AlignmentType.LEFT),
                 spacing: { before: 240, after: 120 },
                 lineSpacing: { before: Math.round(S.h1.fontSize * 1.4), lineRule: LineRuleType.EXACT },
                 indent: { left: 0, firstLine: 0 },
@@ -419,7 +463,7 @@ class SimpleMd2Docx {
             heading2: {
               run: { size: S.h2.fontSize, font: S.h2.font, color: S.h2.color, bold: S.h2.bold },
               paragraph: {
-                alignment: _align(S.h2.alignment),
+                alignment: this.getAlignment(S.h2.alignment, AlignmentType.LEFT),
                 spacing: { before: 120, after: 60 },
                 lineSpacing: { before: Math.round(S.h2.fontSize * 1.35), lineRule: LineRuleType.EXACT },
                 indent: { left: 0, firstLine: 0 },
@@ -428,7 +472,7 @@ class SimpleMd2Docx {
             heading3: {
               run: { size: S.h3.fontSize, font: S.h3.font, color: S.h3.color, bold: S.h3.bold },
               paragraph: {
-                alignment: _align(S.h3.alignment),
+                alignment: this.getAlignment(S.h3.alignment, AlignmentType.LEFT),
                 spacing: { before: 60, after: 60 },
                 lineSpacing: { before: Math.round(S.h3.fontSize * 1.3), lineRule: LineRuleType.EXACT },
                 indent: { left: 0, firstLine: 0 },
@@ -437,7 +481,7 @@ class SimpleMd2Docx {
             heading4: {
               run: { size: S.h4.fontSize, font: S.h4.font, color: S.h4.color, bold: S.h4.bold },
               paragraph: {
-                alignment: _align(S.h4.alignment),
+                alignment: this.getAlignment(S.h4.alignment, AlignmentType.LEFT),
                 spacing: { before: 30, after: 30 },
                 lineSpacing: { before: Math.round(S.h4.fontSize * 1.3), lineRule: LineRuleType.EXACT },
                 indent: { left: 0, firstLine: 0 },
@@ -446,7 +490,7 @@ class SimpleMd2Docx {
             heading5: {
               run: { size: S.h5.fontSize, font: S.h5.font, color: S.h5.color, bold: S.h5.bold },
               paragraph: {
-                alignment: _align(S.h5.alignment),
+                alignment: this.getAlignment(S.h5.alignment, AlignmentType.LEFT),
                 spacing: { before: 0, after: 0 },
                 lineSpacing: { before: Math.round(S.h5.fontSize * 1.3), lineRule: LineRuleType.EXACT },
                 indent: { left: 0, firstLine: 0 },
@@ -470,7 +514,7 @@ class SimpleMd2Docx {
             properties: {
               page: {
                 size: { width: S.pageWidth, height: S.pageHeight },
-                orientation: "portrait",
+                orientation: S.pageOrientation,
                 margin: { ...S.pageMargin, gutter: 0 },
               },
             },
@@ -823,6 +867,7 @@ class SimpleMd2Docx {
     const content = hasNumber
       ? token.text.replace(/^\d+\.\s*/, "")
       : token.text;
+    const styleKey = this.getHeadingStyleKey(level);
 
     // 设置标题样式
     let headingLevel;
@@ -852,7 +897,7 @@ class SimpleMd2Docx {
     const textRuns = [
       new TextRun({
         text: content,
-        bold: true,
+        ...this.getTextStyle(styleKey),
       }),
     ];
 
@@ -861,6 +906,7 @@ class SimpleMd2Docx {
       return [
         new Paragraph({
           heading: headingLevel,
+          ...this.getParagraphStyle(styleKey),
           children: textRuns,
         }),
       ];
@@ -873,6 +919,7 @@ class SimpleMd2Docx {
             level: level - 2, // Markdown的##对应Word的level:0
           },
           heading: headingLevel,
+          ...this.getParagraphStyle(styleKey),
           children: textRuns,
         }),
       ];
@@ -881,6 +928,7 @@ class SimpleMd2Docx {
       return [
         new Paragraph({
           heading: headingLevel,
+          ...this.getParagraphStyle(styleKey),
           children: textRuns,
         }),
       ];
@@ -897,12 +945,13 @@ class SimpleMd2Docx {
     let textRuns = [];
 
     if (token.tokens && token.tokens.length > 0) {
-      textRuns = await this.parseTokens(token.tokens);
+      textRuns = await this.parseTokens(token.tokens, this.getTextStyle("body"));
     } else if (token.text) {
-      textRuns = [new TextRun({ text: token.text })];
+      textRuns = [new TextRun({ text: token.text, ...this.getTextStyle("body") })];
     }
 
     return new Paragraph({
+      ...this.getParagraphStyle("body"),
       children: textRuns,
     });
   }
@@ -1009,6 +1058,7 @@ class SimpleMd2Docx {
           }
           listItems.push(
             new Paragraph({
+              ...this.getParagraphStyle("body", { indent: { left: 720, hanging: 360 } }),
               children: listItems,
             })
           );
@@ -1019,7 +1069,8 @@ class SimpleMd2Docx {
             if (token.type === "text") {
               listItems.push(
                 new Paragraph({
-                  text: token.text,
+                  children: [new TextRun({ text: token.text, ...this.getTextStyle("body") })],
+                  ...this.getParagraphStyle("body", { indent: { left: 720 * (level + 1), hanging: 360 } }),
                   numbering: {
                     reference: "my-paragraph-style",
                     level: level,
@@ -1052,10 +1103,12 @@ class SimpleMd2Docx {
               }
 
               listItems.push(new Paragraph({
+                ...this.getParagraphStyle("body", { indent: { left: 720 * (level + 1), hanging: 360 } }),
                 children:[
                   new CheckBox(ICheckboxSymbolOptions),
                   new TextRun({
                     text:token.text,
+                    ...this.getTextStyle("body"),
                   })
                 ],
                 numbering: {
@@ -1075,7 +1128,8 @@ class SimpleMd2Docx {
           for (const token of item.tokens) {
             if (token.type === "text") {
               listItems.push(new Paragraph({
-                text: token.text,
+                children: [new TextRun({ text: token.text, ...this.getTextStyle("body") })],
+                ...this.getParagraphStyle("body", { indent: { left: 720 * (level + 1), hanging: 360 } }),
                 numbering: {
                   reference: "my-Unordered-list",
                   level: level,
