@@ -1001,19 +1001,54 @@ class SimpleMd2Docx {
     return [];
   }
 
+  getTextDiagramMetrics(text) {
+    const lines = text.split("\n");
+    const maxUnits = lines.reduce((max, line) => Math.max(max, this.measureMonospaceUnits(line)), 0);
+    const looksLikeDiagram = /[┌┐└┘├┤┬┴┼─│▼▲►◄→←↑↓]/.test(text) || maxUnits > 80;
+    const usableTwips = Math.max(
+      3600,
+      this.getStyles().pageWidth - this.getStyles().pageMargin.left - this.getStyles().pageMargin.right
+    );
+    const baseIndent = looksLikeDiagram ? 0 : 360;
+    const contentTwips = Math.max(2400, usableTwips - baseIndent * 2 - 240);
+    const maxFontPt = looksLikeDiagram ? 9 : 10;
+    const minFontPt = looksLikeDiagram ? 5.5 : 8;
+    // A monospace half-width character is roughly 0.55em in Word, i.e. about
+    // 11 twips per point. CJK and box-drawing characters are measured as two
+    // half-width units above, so this estimates whether the longest line fits.
+    const estimatedPt = maxUnits > 0 ? contentTwips / (maxUnits * 11) : maxFontPt;
+    const fontPt = Math.max(minFontPt, Math.min(maxFontPt, estimatedPt));
+
+    return {
+      fontSize: Math.round(fontPt * 2),
+      lineHeight: Math.round(fontPt * 20 * 1.25),
+      indent: baseIndent,
+    };
+  }
+
+  measureMonospaceUnits(text) {
+    let units = 0;
+    for (const char of text) {
+      units += /[^\x00-\xff]/.test(char) ? 2 : 1;
+    }
+    return units;
+  }
+
   /**
    * Create a DOCX paragraph from a marked code-block token.
    */
   createCodeBlockFromMarked(token) {
     const textRuns = [];
+    const metrics = this.getTextDiagramMetrics(token.text);
+    const codeFont = "Consolas";
 
     // 如果有语言标识，添加语言标签
     if (token.lang) {
       textRuns.push(
         new TextRun({
           text: `[${token.lang}]`,
-          size: 24,
-          font: "等线",
+          size: metrics.fontSize,
+          font: codeFont,
           color: "666666", // 灰色
           bold: true,
         })
@@ -1028,8 +1063,8 @@ class SimpleMd2Docx {
       textRuns.push(
         new TextRun({
           text: line,
-          size: 24, // 12磅
-          font: "等线", // 等宽字体
+          size: metrics.fontSize,
+          font: codeFont,
           color: "000000", // 黑色
           // 如果有语言标识，第一行需要break；如果没有语言标识，第一行不需要break
           break: (token.lang && i === 0) || i > 0 ? 1 : 0,
@@ -1044,12 +1079,12 @@ class SimpleMd2Docx {
         spacing: {
           before: 120,
           after: 120,
-          line: 360, // 18磅行距
+          line: metrics.lineHeight,
           lineRule: LineRuleType.EXACT,
         },
         indent: {
-          left: 720, // 36磅左缩进
-          right: 720, // 36磅右缩进
+          left: metrics.indent,
+          right: metrics.indent,
           firstLine: 0, // 去掉首行缩进
         },
         border: {
