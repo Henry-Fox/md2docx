@@ -17,12 +17,6 @@ import {
   ExternalHyperlink,
   UnderlineType,
   ImageRun,
-  HorizontalPositionRelativeFrom,
-  HorizontalPositionAlign,
-  VerticalPositionRelativeFrom,
-  VerticalPositionAlign,
-  TextWrappingType,
-  TextWrappingSide,
   TableLayoutType,
 } from "docx";
 import { saveAs } from "file-saver";
@@ -94,6 +88,31 @@ class SimpleMd2Docx {
     return ["title", "h1", "h2", "h3", "h4", "h5"][Math.max(1, Math.min(level, 6)) - 1];
   }
 
+  getOutputFilename(markdownTokens) {
+    const fallback = "document";
+    const titleToken = markdownTokens.find((token) => token.type === "heading" && token.depth === 1);
+    const rawTitle = titleToken?.text || fallback;
+    const filename = this.sanitizeWindowsFilename(rawTitle) || fallback;
+    return `${filename}.docx`;
+  }
+
+  sanitizeWindowsFilename(value) {
+    const reservedNames = /^(con|prn|aux|nul|com[1-9]|lpt[1-9])$/i;
+    const cleaned = String(value)
+      .replace(/<[^>]*>/g, "")
+      .replace(/[`*_~#\[\]()]/g, "")
+      .replace(/[<>:"/\\|?*\x00-\x1F]/g, " ")
+      .replace(/\s+/g, " ")
+      .trim()
+      .replace(/[. ]+$/g, "");
+
+    if (!cleaned || reservedNames.test(cleaned)) {
+      return "";
+    }
+
+    return cleaned.slice(0, 120).replace(/[. ]+$/g, "");
+  }
+
   /**
    * 转换Markdown为Word文档
    * @param {string} markdown - Markdown文本
@@ -131,6 +150,7 @@ class SimpleMd2Docx {
 
       // 使用marked解析Markdown，得到token队列
       const markdownArray = marked.lexer(markdown);
+      const outputFilename = this.getOutputFilename(markdownArray);
       console.log("Markdown解析结果:", markdownArray);
 
       // 创建一个数组用于收集所有段落
@@ -526,7 +546,7 @@ class SimpleMd2Docx {
       console.log("开始生成文档...");
       // 生成并保存文档
       const blob = await Packer.toBlob(doc);
-      saveAs(blob, "document.docx");
+      saveAs(blob, outputFilename);
       console.log("文档生成完成");
 
       return true;
@@ -708,21 +728,6 @@ class SimpleMd2Docx {
           width: imageData.width,
           height: imageData.height,
         },
-        floating: {
-          // 设置图片浮动位置
-          horizontalPosition: {
-            relative: HorizontalPositionRelativeFrom.PAGE,
-            align: HorizontalPositionAlign.CENTER,
-          },
-          verticalPosition: {
-            relative: VerticalPositionRelativeFrom.LINE,
-            align: VerticalPositionAlign.CENTER,
-          },
-          wrap: {
-            type: TextWrappingType.SQUARE,
-            side: TextWrappingSide.BOTH_SIDES,
-          },
-        },
       });
       console.log("【createImageFromMarked】ImageRun创建完成");
 
@@ -860,13 +865,10 @@ class SimpleMd2Docx {
    * @param {Object} token - marked解析的标题token
    * @returns {Array} docx Paragraph对象数组
    */
-  createHeadingFromMarked(token) {
+  async createHeadingFromMarked(token) {
     const level = token.depth;
     const match = token.text.match(/^\d+\./);
     const hasNumber = match !== null;
-    const content = hasNumber
-      ? token.text.replace(/^\d+\.\s*/, "")
-      : token.text;
     const styleKey = this.getHeadingStyleKey(level);
 
     // 设置标题样式
@@ -894,12 +896,17 @@ class SimpleMd2Docx {
         headingLevel = HeadingLevel.TITLE;
     }
 
-    const textRuns = [
-      new TextRun({
-        text: content,
-        ...this.getTextStyle(styleKey),
-      }),
-    ];
+    const headingTextStyle = this.getTextStyle(styleKey);
+    const headingTokens = hasNumber
+      ? this.stripLeadingNumberFromTokens(token.tokens)
+      : token.tokens;
+    const textRuns =
+      headingTokens && headingTokens.length > 0
+        ? await this.parseTokens(headingTokens, headingTextStyle)
+        : [new TextRun({
+            text: hasNumber ? token.text.replace(/^\d+\.\s*/, "") : token.text,
+            ...headingTextStyle,
+          })];
 
     if (level === 1) {
       // 一级标题永远不用编号
@@ -957,9 +964,45 @@ class SimpleMd2Docx {
   }
 
   /**
-   * 从marked token创建代码块
-   * @param {Object} token - marked解析的代码块token
-   * @returns {Array} docx Paragraph对象数组
+   * Remove a leading manual number from heading inline tokens.
+   */
+  stripLeadingNumberFromTokens(tokens) {
+    if (!tokens || tokens.length === 0) {
+      return tokens;
+    }
+
+    const cloned = tokens.map((token) => ({ ...token }));
+    const first = cloned[0];
+
+    if (first.text) {
+      first.text = first.text.replace(/^\d+\.\s*/, "");
+    }
+
+    if (first.raw) {
+      first.raw = first.raw.replace(/^\d+\.\s*/, "");
+    }
+
+    if (first.tokens) {
+      first.tokens = this.stripLeadingNumberFromTokens(first.tokens);
+    }
+
+    return cloned;
+  }
+
+  async parseInlineRunsFromMarked(token, style = {}) {
+    if (token?.tokens && token.tokens.length > 0) {
+      return this.parseTokens(token.tokens, style);
+    }
+
+    if (token?.text) {
+      return [new TextRun({ text: token.text, ...style })];
+    }
+
+    return [];
+  }
+
+  /**
+   * Create a DOCX paragraph from a marked code-block token.
    */
   createCodeBlockFromMarked(token) {
     const textRuns = [];
@@ -1067,9 +1110,10 @@ class SimpleMd2Docx {
           //遍历item.tokens
           for (const token of item.tokens) {
             if (token.type === "text") {
+              const children = await this.parseInlineRunsFromMarked(token, this.getTextStyle("body"));
               listItems.push(
                 new Paragraph({
-                  children: [new TextRun({ text: token.text, ...this.getTextStyle("body") })],
+                  children,
                   ...this.getParagraphStyle("body", { indent: { left: 720 * (level + 1), hanging: 360 } }),
                   numbering: {
                     reference: "my-paragraph-style",
@@ -1106,10 +1150,7 @@ class SimpleMd2Docx {
                 ...this.getParagraphStyle("body", { indent: { left: 720 * (level + 1), hanging: 360 } }),
                 children:[
                   new CheckBox(ICheckboxSymbolOptions),
-                  new TextRun({
-                    text:token.text,
-                    ...this.getTextStyle("body"),
-                  })
+                  ...(await this.parseInlineRunsFromMarked(token, this.getTextStyle("body"))),
                 ],
                 numbering: {
                   reference: "my-task-list",
@@ -1127,8 +1168,9 @@ class SimpleMd2Docx {
           //遍历item.tokens
           for (const token of item.tokens) {
             if (token.type === "text") {
+              const children = await this.parseInlineRunsFromMarked(token, this.getTextStyle("body"));
               listItems.push(new Paragraph({
-                children: [new TextRun({ text: token.text, ...this.getTextStyle("body") })],
+                children,
                 ...this.getParagraphStyle("body", { indent: { left: 720 * (level + 1), hanging: 360 } }),
                 numbering: {
                   reference: "my-Unordered-list",
@@ -1161,8 +1203,8 @@ class SimpleMd2Docx {
       const headerCells = await Promise.all(
         token.header.map(async (cell, index) => {
           const children = cell.tokens
-            ? await this.parseTokens(cell.tokens)
-            : [new TextRun({ text: cell.text, bold: true })];
+            ? await this.parseTokens(cell.tokens, this.getTextStyle("body", { bold: true }))
+            : [new TextRun({ text: cell.text, ...this.getTextStyle("body", { bold: true }) })];
 
           // 获取当前列的对齐方式
           const alignment = alignments[index]
@@ -1192,8 +1234,8 @@ class SimpleMd2Docx {
       const cells = await Promise.all(
         row.map(async (cell, index) => {
           const children = cell.tokens
-            ? await this.parseTokens(cell.tokens)
-            : [new TextRun(cell.text)];
+            ? await this.parseTokens(cell.tokens, this.getTextStyle("body"))
+            : [new TextRun({ text: cell.text, ...this.getTextStyle("body") })];
 
           // 获取当前列的对齐方式
           const alignment = alignments[index]
@@ -1511,20 +1553,6 @@ class SimpleMd2Docx {
                     width: 1,
                     height: 1,
                   },
-                  floating: {
-                    horizontalPosition: {
-                      relative: HorizontalPositionRelativeFrom.PAGE,
-                      align: HorizontalPositionAlign.CENTER,
-                    },
-                    verticalPosition: {
-                      relative: VerticalPositionRelativeFrom.LINE,
-                      align: VerticalPositionAlign.CENTER,
-                    },
-                    wrap: {
-                      type: TextWrappingType.SQUARE,
-                      side: TextWrappingSide.BOTH_SIDES,
-                    },
-                  },
                 }),
                 new TextRun({
                   text: `[本地图片: ${token.text || token.href}]`,
@@ -1570,20 +1598,6 @@ class SimpleMd2Docx {
                   width: imageData.width,
                   height: imageData.height,
                 },
-                floating: {
-                  horizontalPosition: {
-                    relative: HorizontalPositionRelativeFrom.PAGE,
-                    align: HorizontalPositionAlign.CENTER,
-                  },
-                  verticalPosition: {
-                    relative: VerticalPositionRelativeFrom.LINE,
-                    align: VerticalPositionAlign.CENTER,
-                  },
-                  wrap: {
-                    type: TextWrappingType.SQUARE,
-                    side: TextWrappingSide.BOTH_SIDES,
-                  },
-                },
               }),
             ];
           } catch (error) {
@@ -1606,20 +1620,6 @@ class SimpleMd2Docx {
                 transformation: {
                   width: 1,
                   height: 1,
-                },
-                floating: {
-                  horizontalPosition: {
-                    relative: HorizontalPositionRelativeFrom.PAGE,
-                    align: HorizontalPositionAlign.CENTER,
-                  },
-                  verticalPosition: {
-                    relative: VerticalPositionRelativeFrom.LINE,
-                    align: VerticalPositionAlign.CENTER,
-                  },
-                  wrap: {
-                    type: TextWrappingType.SQUARE,
-                    side: TextWrappingSide.BOTH_SIDES,
-                  },
                 },
               }),
               new TextRun({
