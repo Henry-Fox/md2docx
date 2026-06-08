@@ -19,6 +19,7 @@ module.exports = merge(common, {
         { from: 'robots.txt', to: 'robots.txt' },
         { from: 'sitemap.xml', to: 'sitemap.xml' },
         { from: 'llms.txt', to: 'llms.txt' },
+        { from: 'googlebc44c4bc9c9c9437.html', to: 'googlebc44c4bc9c9c9437.html' },
         { from: 'img', to: 'img' },
       ],
     }),
