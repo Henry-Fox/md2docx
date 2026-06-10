@@ -236,7 +236,6 @@ function updateDonationText() {
   setText("#donate-text", r.donateBlessing);
   setText("#modal-text", r.donateBlessing);
   setText(".donate-modal-title", r.donateTitle);
-  setText('[data-donate-method="wechat"]', r.wechat);
   document.querySelectorAll('[data-donate-method="wechat"]').forEach((el) => { el.textContent = r.wechat; });
   document.querySelectorAll('[data-donate-method="alipay"]').forEach((el) => { el.textContent = r.alipay; });
   document.querySelectorAll('[data-donate-method="paypal"]').forEach((el) => { el.textContent = r.paypal; });
@@ -244,7 +243,7 @@ function updateDonationText() {
   setAttr(".donate-tabs", "aria-label", r.donateTabsLabel);
   setAttr("#donate-entry", "title", r.donateZoomTitle);
 
-  const method = document.body.dataset.donateMethod || "wechat";
+  const method = document.body.dataset.activeDonateMethod || "wechat";
   const hintMap = {
     wechat: r.wechatHint,
     alipay: r.alipayHint,
