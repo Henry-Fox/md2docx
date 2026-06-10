@@ -867,8 +867,6 @@ class SimpleMd2Docx {
    */
   async createHeadingFromMarked(token) {
     const level = token.depth;
-    const match = token.text.match(/^\d+\./);
-    const hasNumber = match !== null;
     const styleKey = this.getHeadingStyleKey(level);
 
     // 设置标题样式
@@ -897,49 +895,18 @@ class SimpleMd2Docx {
     }
 
     const headingTextStyle = this.getTextStyle(styleKey);
-    const headingTokens = hasNumber
-      ? this.stripLeadingNumberFromTokens(token.tokens)
-      : token.tokens;
     const textRuns =
-      headingTokens && headingTokens.length > 0
-        ? await this.parseTokens(headingTokens, headingTextStyle)
-        : [new TextRun({
-            text: hasNumber ? token.text.replace(/^\d+\.\s*/, "") : token.text,
-            ...headingTextStyle,
-          })];
+      token.tokens && token.tokens.length > 0
+        ? await this.parseTokens(token.tokens, headingTextStyle)
+        : this.createTextRunsWithBreaks(token.text, headingTextStyle);
 
-    if (level === 1) {
-      // 一级标题永远不用编号
-      return [
-        new Paragraph({
-          heading: headingLevel,
-          ...this.getParagraphStyle(styleKey),
-          children: textRuns,
-        }),
-      ];
-    } else if (hasNumber) {
-      // 二级及以下标题，有序号前缀时加自动编号
-      return [
-        new Paragraph({
-          numbering: {
-            reference: "my-heading-style",
-            level: level - 2, // Markdown的##对应Word的level:0
-          },
-          heading: headingLevel,
-          ...this.getParagraphStyle(styleKey),
-          children: textRuns,
-        }),
-      ];
-    } else {
-      // 二级及以下标题，无序号前缀时只用样式
-      return [
-        new Paragraph({
-          heading: headingLevel,
-          ...this.getParagraphStyle(styleKey),
-          children: textRuns,
-        }),
-      ];
-    }
+    return [
+      new Paragraph({
+        heading: headingLevel,
+        ...this.getParagraphStyle(styleKey),
+        children: textRuns,
+      }),
+    ];
   }
 
   /**
@@ -954,39 +921,13 @@ class SimpleMd2Docx {
     if (token.tokens && token.tokens.length > 0) {
       textRuns = await this.parseTokens(token.tokens, this.getTextStyle("body"));
     } else if (token.text) {
-      textRuns = [new TextRun({ text: token.text, ...this.getTextStyle("body") })];
+      textRuns = this.createTextRunsWithBreaks(token.text, this.getTextStyle("body"));
     }
 
     return new Paragraph({
       ...this.getParagraphStyle("body"),
       children: textRuns,
     });
-  }
-
-  /**
-   * Remove a leading manual number from heading inline tokens.
-   */
-  stripLeadingNumberFromTokens(tokens) {
-    if (!tokens || tokens.length === 0) {
-      return tokens;
-    }
-
-    const cloned = tokens.map((token) => ({ ...token }));
-    const first = cloned[0];
-
-    if (first.text) {
-      first.text = first.text.replace(/^\d+\.\s*/, "");
-    }
-
-    if (first.raw) {
-      first.raw = first.raw.replace(/^\d+\.\s*/, "");
-    }
-
-    if (first.tokens) {
-      first.tokens = this.stripLeadingNumberFromTokens(first.tokens);
-    }
-
-    return cloned;
   }
 
   async parseInlineRunsFromMarked(token, style = {}) {
@@ -1468,6 +1409,23 @@ class SimpleMd2Docx {
     });
   }
 
+  createTextRunsWithBreaks(text = "", style = {}) {
+    const lines = String(text).split(/\r?\n/);
+    const runs = [];
+
+    lines.forEach((line, index) => {
+      if (index > 0) {
+        runs.push(new TextRun({ break: 1 }));
+      }
+
+      if (line.length > 0) {
+        runs.push(new TextRun({ text: line, ...style }));
+      }
+    });
+
+    return runs.length > 0 ? runs : [new TextRun({ text: "", ...style })];
+  }
+
   /**
    * 解析tokens为docx元素
    * @param {Array} tokens - marked解析后的tokens
@@ -1484,7 +1442,13 @@ class SimpleMd2Docx {
             const children = await parseChildren(token.tokens, style);
             return children.flat();
           }
-          return [new TextRun({ text: token.text, ...style })];
+          return self.createTextRunsWithBreaks(token.text, style);
+        },
+      },
+
+      br: {
+        async process() {
+          return [new TextRun({ break: 1 })];
         },
       },
 
