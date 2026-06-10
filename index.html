@@ -69,7 +69,7 @@
       const sidebarHint = document.getElementById('sidebar-donate-hint');
       const qr = document.getElementById('donate-modal-qr');
       const hint = document.getElementById('donate-method-hint');
-      document.body.dataset.donateMethod = method;
+      document.body.dataset.activeDonateMethod = method;
       if (sidebarQr) {
         sidebarQr.src = item.src;
         sidebarQr.alt = item.alt;
@@ -88,7 +88,7 @@
       });
     }
     document.getElementById('donate-entry')?.addEventListener('click', () => {
-      setDonateMethod(document.body.dataset.donateMethod || 'wechat');
+      setDonateMethod(document.body.dataset.activeDonateMethod || 'wechat');
       _qrModal?.classList.add('active');
     });
     document.querySelectorAll('.sidebar-donate-tab').forEach(btn => {
