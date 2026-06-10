@@ -916,13 +916,32 @@ class SimpleMd2Docx {
    */
   async createParagraphFromMarked(token) {
     console.log("创建段落:", token);
-    let textRuns = [];
+    const bodyTextStyle = this.getTextStyle("body");
+    const sourceTokens = token.tokens && token.tokens.length > 0
+      ? token.tokens
+      : [{ type: "text", text: token.text || "" }];
+    const tokenLines = this.splitInlineTokensIntoLines(sourceTokens);
 
-    if (token.tokens && token.tokens.length > 0) {
-      textRuns = await this.parseTokens(token.tokens, this.getTextStyle("body"));
-    } else if (token.text) {
-      textRuns = this.createTextRunsWithBreaks(token.text, this.getTextStyle("body"));
+    if (tokenLines.length > 1) {
+      const paragraphs = [];
+
+      for (const lineTokens of tokenLines) {
+        const children = lineTokens.length > 0
+          ? await this.parseTokens(lineTokens, bodyTextStyle)
+          : [];
+
+        paragraphs.push(new Paragraph({
+          ...this.getParagraphStyle("body", { alignment: AlignmentType.LEFT }),
+          children,
+        }));
+      }
+
+      return paragraphs;
     }
+
+    const textRuns = tokenLines[0] && tokenLines[0].length > 0
+      ? await this.parseTokens(tokenLines[0], bodyTextStyle)
+      : [];
 
     return new Paragraph({
       ...this.getParagraphStyle("body"),
@@ -1424,6 +1443,45 @@ class SimpleMd2Docx {
     });
 
     return runs.length > 0 ? runs : [new TextRun({ text: "", ...style })];
+  }
+
+  splitInlineTokensIntoLines(tokens = []) {
+    const lines = [[]];
+
+    const pushToken = (token) => {
+      if (!token) {
+        return;
+      }
+
+      if (token.type === "br") {
+        lines.push([]);
+        return;
+      }
+
+      if (typeof token.text === "string" && /\r?\n/.test(token.text) && !token.tokens) {
+        const parts = token.text.split(/\r?\n/);
+        parts.forEach((part, index) => {
+          if (index > 0) {
+            lines.push([]);
+          }
+
+          if (part.length > 0) {
+            lines[lines.length - 1].push({ ...token, text: part, raw: part });
+          }
+        });
+        return;
+      }
+
+      lines[lines.length - 1].push(token);
+    };
+
+    tokens.forEach(pushToken);
+
+    while (lines.length > 1 && lines[lines.length - 1].length === 0) {
+      lines.pop();
+    }
+
+    return lines;
   }
 
   /**
