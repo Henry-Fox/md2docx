@@ -2,6 +2,18 @@
 
 [English](#english) | [中文](#中文) | [Français](#français) | [Español](#español) | [Русский](#русский) | [العربية](#العربية)
 
+## Project Status / 项目状态
+
+| Item / 项目 | Status / 状态 |
+| --- | --- |
+| Current version / 当前版本 | v1.1.1 |
+| Last updated / 最近更新 | 2026-06-10 |
+| Online demo / 在线使用 | [henry-fox.github.io/md2docx](https://henry-fox.github.io/md2docx/) |
+| GitHub | [Henry-Fox/md2docx](https://github.com/Henry-Fox/md2docx) |
+| Gitee | [meng-hengli66/md2-docx](https://gitee.com/meng-hengli66/md2-docx) |
+| Static page branch / 静态页分支 | `gh-pages` |
+| Latest change / 最近变更 | Fixed DOCX export heading numbering and Markdown line break handling. |
+
 ## Support / 支持作者
 
 If this tool helps you, you can support the project through WeChat, Alipay, or PayPal.
