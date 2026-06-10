@@ -18,7 +18,7 @@
   --primary-fixed:      #dce1ff;
 
   --font-serif:  "Noto Serif", "SimSun", serif;
-  --font-sans:   "Hanken Grotesk", "PingFang SC", "Microsoft YaHei", sans-serif;
+  --font-sans:   "Hanken Grotesk", "Noto Naskh Arabic", "PingFang SC", "Microsoft YaHei", sans-serif;
   --font-mono:   "JetBrains Mono", "Consolas", monospace;
 
   --radius-sm:  0.125rem;
@@ -68,6 +68,22 @@ a { text-decoration: none; color: inherit; }
   display: flex;
   align-items: center;
   gap: 8px;
+}
+.app-version {
+  height: 32px;
+  min-width: 72px;
+  padding: 0 12px;
+  border: 1px solid rgba(0,35,111,.22);
+  border-radius: var(--radius);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary);
+  background: var(--surface-low);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0;
+  white-space: nowrap;
 }
 .header-link-btn {
   height: 32px;
@@ -445,6 +461,7 @@ a { text-decoration: none; color: inherit; }
   outline: none;
   background: var(--surface-white);
   color: var(--on-surface);
+  unicode-bidi: plaintext;
 }
 #markdown-input:focus-within { border-left: 2px solid var(--primary); }
 
@@ -602,6 +619,50 @@ a { text-decoration: none; color: inherit; }
 #preview-container hr { border: none; border-top: 1px solid var(--outline-var); margin: 1.5em 0; }
 #preview-container img { max-width: 100%; border-radius: var(--radius); }
 #preview-container a { color: var(--primary); text-decoration: underline; }
+
+html[dir="rtl"] body {
+  font-family: "Noto Naskh Arabic", var(--font-sans);
+}
+html[dir="rtl"] .app-sidebar {
+  border-right: 0;
+  border-left: 1px solid var(--outline-var);
+}
+html[dir="rtl"] .editor-pane {
+  border-right: 0;
+  border-left: 1px solid var(--outline-var);
+}
+html[dir="rtl"] .sidebar-nav-item.active {
+  border-left: 0;
+  border-right: 3px solid var(--primary);
+  padding-left: 14px;
+  padding-right: 11px;
+}
+html[dir="rtl"] #markdown-input:focus-within {
+  border-left: 0;
+  border-right: 2px solid var(--primary);
+}
+html[dir="rtl"] .template-select {
+  padding: 0 10px 0 28px;
+}
+html[dir="rtl"] .select-arrow {
+  right: auto;
+  left: 6px;
+}
+html[dir="rtl"] #preview-container th,
+html[dir="rtl"] #preview-container td {
+  text-align: right;
+}
+html[dir="rtl"] #preview-container blockquote {
+  border-left: 0;
+  border-right: 3px solid var(--primary);
+  padding-left: 0;
+  padding-right: 1em;
+}
+html[dir="rtl"] #preview-container ul,
+html[dir="rtl"] #preview-container ol {
+  padding-left: 0;
+  padding-right: 1.8em;
+}
 
 /* ── Drag Area ──────────────────────────────────────────────────── */
 .drag-area {

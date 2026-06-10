@@ -1,306 +1,312 @@
-// 语言资源
 const resources = {
   en: {
-    title: "Markdown to Word Converter",
-    markdownContent: "Markdown Content",
-    preview: "Preview",
+    title: "DocDraft - Markdown to Word DOCX",
+    editor: "Editor",
+    templates: "Templates",
+    export: "Export",
+    markdownInput: "Markdown Input",
     clear: "Clear",
-    convertToDocx: "Convert to DOCX",
-    dragMessage: "Drag and drop Markdown file here",
-    previewPlaceholder: "Converted preview will appear here",
-    footer: "© 2024 Markdown to Word Tool - Based on docx.js & marked.js",
     selectFile: "Select File",
     noFile: "No file selected",
     fileInputPlaceholder: "Paste or input Markdown text here...",
-    pleaseInputOrUpload: "Please input or upload Markdown content",
-    converting: "Converting document, please wait...",
-    convertSuccess: "Document generated successfully",
-    convertFail: "Failed to convert document: {{msg}}",
-    downloadSuccess: "Document saved as {{fileName}}",
-    downloadFail: "Download failed: {{msg}}",
-    fileTypeError: "Please select a Markdown file!",
-    processingImages: "Processing {{count}} images...",
-    processImageFail: "Failed to process images: {{msg}}",
+    dragMessage: "Drop a Markdown file here",
+    manageTemplates: "Manage Templates",
+    prompt: "Prompt",
+    convertToDocx: "Convert to DOCX",
+    previewPlaceholder: "Converted preview will appear here",
+    donateBlessing: "Support the author. Wishing you good luck.",
+    donateTabsLabel: "Choose a support method",
+    donateTitle: "Support the author",
+    donateZoomTitle: "Click to enlarge QR code",
+    wechat: "WeChat",
+    alipay: "Alipay",
+    paypal: "PayPal",
+    wechatHint: "Scan with WeChat to support",
+    alipayHint: "Scan with Alipay to support",
+    paypalHint: "Scan with PayPal to support",
+    versionTitle: "Current version",
     emptyInput: "Please input Markdown content",
     convertingSimple: "Converting...",
     convertSimpleSuccess: "Conversion successful!",
-    convertSimpleFail: "Conversion failed: {{msg}}"
+    convertSimpleFail: "Conversion failed: {{msg}}",
+    fileTypeError: "Please select a Markdown file!",
   },
   zh: {
-    title: "Markdown 转 Word 工具 - 在线导出 DOCX | DocDraft",
-    markdownContent: "Markdown内容",
-    preview: "预览",
+    title: "DocDraft - Markdown 转 Word DOCX",
+    editor: "编辑器",
+    templates: "模板",
+    export: "导出",
+    markdownInput: "Markdown 输入",
     clear: "清空",
-    convertToDocx: "转换为DOCX",
-    dragMessage: "拖放Markdown文件到此处",
-    previewPlaceholder: "转换后的预览将显示在这里",
-    footer: "© 2024 Markdown转Word工具 - 基于docx.js & marked.js",
     selectFile: "选择文件",
     noFile: "未选择文件",
-    fileInputPlaceholder: "在此处粘贴或输入Markdown文本...",
-    pleaseInputOrUpload: "请先输入或上传Markdown内容",
-    converting: "正在转换文档，请稍候...",
-    convertSuccess: "文档已成功生成",
-    convertFail: "转换文档失败: {{msg}}",
-    downloadSuccess: "文档已保存为 {{fileName}}",
-    downloadFail: "下载失败: {{msg}}",
-    fileTypeError: "请选择Markdown文件！",
-    processingImages: "正在处理{{count}}张图片...",
-    processImageFail: "处理图片失败: {{msg}}",
-    emptyInput: "请输入Markdown内容",
+    fileInputPlaceholder: "在此处粘贴或输入 Markdown 文本...",
+    dragMessage: "拖放 Markdown 文件到此处",
+    manageTemplates: "管理模板",
+    prompt: "提示词",
+    convertToDocx: "转换为 DOCX",
+    previewPlaceholder: "转换后的预览将显示在这里",
+    donateBlessing: "支持作者，祝你好运",
+    donateTabsLabel: "选择打赏方式",
+    donateTitle: "支持作者",
+    donateZoomTitle: "点击放大二维码",
+    wechat: "微信",
+    alipay: "支付宝",
+    paypal: "PayPal",
+    wechatHint: "微信扫码支持",
+    alipayHint: "支付宝扫码支持",
+    paypalHint: "PayPal 扫码支持",
+    versionTitle: "当前版本",
+    emptyInput: "请输入 Markdown 内容",
     convertingSimple: "正在转换...",
     convertSimpleSuccess: "转换成功！",
-    convertSimpleFail: "转换失败: {{msg}}"
-  },
-  es: {
-    welcome: "Bienvenido a Md2Docx",
-    about: "Acerca de",
-    contact: "Contacto",
-    login: "Iniciar sesión",
-    convert: "Convertir",
-    upload: "Subir archivo",
-    download: "Descargar",
-    settings: "Configuración",
-    help: "Ayuda",
-    title: "Convertidor de Markdown a Word",
-    markdownContent: "Contenido Markdown",
-    preview: "Vista previa",
-    clear: "Limpiar",
-    convertToDocx: "Convertir a DOCX",
-    dragMessage: "Arrastra y suelta el archivo Markdown aquí",
-    previewPlaceholder: "La vista previa convertida aparecerá aquí",
-    footer: "© 2024 Herramienta Markdown a Word - Basado en docx.js & marked.js",
-    selectFile: "Seleccionar archivo",
-    noFile: "Ningún archivo seleccionado",
-    fileInputPlaceholder: "Pega o introduce el texto Markdown aquí...",
-    pleaseInputOrUpload: "Por favor, introduce o sube contenido Markdown",
-    converting: "Convirtiendo documento, por favor espera...",
-    convertSuccess: "Documento generado con éxito",
-    convertFail: "Error al convertir el documento: {{msg}}",
-    downloadSuccess: "Documento guardado como {{fileName}}",
-    downloadFail: "Error al descargar: {{msg}}",
-    fileTypeError: "¡Por favor selecciona un archivo Markdown!",
-    processingImages: "Procesando {{count}} imágenes...",
-    processImageFail: "Error al procesar imágenes: {{msg}}",
-    emptyInput: "Por favor, introduce contenido Markdown",
-    convertingSimple: "Convirtiendo...",
-    convertSimpleSuccess: "¡Conversión exitosa!",
-    convertSimpleFail: "Error de conversión: {{msg}}"
+    convertSimpleFail: "转换失败: {{msg}}",
+    fileTypeError: "请选择 Markdown 文件！",
   },
   fr: {
-    welcome: "Bienvenue sur Md2Docx",
-    about: "À propos",
-    contact: "Contact",
-    login: "Connexion",
-    convert: "Convertir",
-    upload: "Télécharger un fichier",
-    download: "Télécharger",
-    settings: "Paramètres",
-    help: "Aide",
-    title: "Convertisseur Markdown vers Word",
-    markdownContent: "Contenu Markdown",
-    preview: "Aperçu",
+    title: "DocDraft - Markdown vers Word DOCX",
+    editor: "Editeur",
+    templates: "Modeles",
+    export: "Exporter",
+    markdownInput: "Entree Markdown",
     clear: "Effacer",
+    selectFile: "Choisir un fichier",
+    noFile: "Aucun fichier selectionne",
+    fileInputPlaceholder: "Collez ou saisissez du Markdown ici...",
+    dragMessage: "Deposez un fichier Markdown ici",
+    manageTemplates: "Gerer les modeles",
+    prompt: "Prompt",
     convertToDocx: "Convertir en DOCX",
-    dragMessage: "Glissez-déposez le fichier Markdown ici",
-    previewPlaceholder: "L'aperçu converti s'affichera ici",
-    footer: "© 2024 Outil Markdown vers Word - Basé sur docx.js & marked.js",
-    selectFile: "Sélectionner un fichier",
-    noFile: "Aucun fichier sélectionné",
-    fileInputPlaceholder: "Collez ou saisissez le texte Markdown ici...",
-    pleaseInputOrUpload: "Veuillez saisir ou télécharger du contenu Markdown",
-    converting: "Conversion du document, veuillez patienter...",
-    convertSuccess: "Document généré avec succès",
-    convertFail: "Échec de la conversion du document : {{msg}}",
-    downloadSuccess: "Document enregistré sous {{fileName}}",
-    downloadFail: "Échec du téléchargement : {{msg}}",
-    fileTypeError: "Veuillez sélectionner un fichier Markdown !",
-    processingImages: "Traitement de {{count}} images...",
-    processImageFail: "Échec du traitement des images : {{msg}}",
+    previewPlaceholder: "L'apercu converti s'affichera ici",
+    donateBlessing: "Soutenez l'auteur. Bonne chance a vous.",
+    donateTabsLabel: "Choisir une methode de soutien",
+    donateTitle: "Soutenir l'auteur",
+    donateZoomTitle: "Cliquer pour agrandir le QR code",
+    wechat: "WeChat",
+    alipay: "Alipay",
+    paypal: "PayPal",
+    wechatHint: "Scanner avec WeChat pour soutenir",
+    alipayHint: "Scanner avec Alipay pour soutenir",
+    paypalHint: "Scanner avec PayPal pour soutenir",
+    versionTitle: "Version actuelle",
     emptyInput: "Veuillez saisir du contenu Markdown",
     convertingSimple: "Conversion...",
-    convertSimpleSuccess: "Conversion réussie !",
-    convertSimpleFail: "Échec de la conversion : {{msg}}"
+    convertSimpleSuccess: "Conversion reussie !",
+    convertSimpleFail: "Echec de la conversion : {{msg}}",
+    fileTypeError: "Veuillez choisir un fichier Markdown !",
+  },
+  es: {
+    title: "DocDraft - Markdown a Word DOCX",
+    editor: "Editor",
+    templates: "Plantillas",
+    export: "Exportar",
+    markdownInput: "Entrada Markdown",
+    clear: "Limpiar",
+    selectFile: "Seleccionar archivo",
+    noFile: "Ningun archivo seleccionado",
+    fileInputPlaceholder: "Pega o escribe Markdown aqui...",
+    dragMessage: "Suelta un archivo Markdown aqui",
+    manageTemplates: "Gestionar plantillas",
+    prompt: "Prompt",
+    convertToDocx: "Convertir a DOCX",
+    previewPlaceholder: "La vista previa convertida aparecera aqui",
+    donateBlessing: "Apoya al autor. Te deseamos buena suerte.",
+    donateTabsLabel: "Elige un metodo de apoyo",
+    donateTitle: "Apoyar al autor",
+    donateZoomTitle: "Haz clic para ampliar el codigo QR",
+    wechat: "WeChat",
+    alipay: "Alipay",
+    paypal: "PayPal",
+    wechatHint: "Escanea con WeChat para apoyar",
+    alipayHint: "Escanea con Alipay para apoyar",
+    paypalHint: "Escanea con PayPal para apoyar",
+    versionTitle: "Version actual",
+    emptyInput: "Introduce contenido Markdown",
+    convertingSimple: "Convirtiendo...",
+    convertSimpleSuccess: "Conversion correcta.",
+    convertSimpleFail: "Error de conversion: {{msg}}",
+    fileTypeError: "Selecciona un archivo Markdown.",
   },
   ru: {
-    welcome: "Добро пожаловать в Md2Docx",
-    about: "О нас",
-    contact: "Контакты",
-    login: "Вход",
-    convert: "Конвертировать",
-    upload: "Загрузить файл",
-    download: "Скачать",
-    settings: "Настройки",
-    help: "Помощь",
-    title: "Конвертер Markdown в Word",
-    markdownContent: "Содержимое Markdown",
-    preview: "Предпросмотр",
+    title: "DocDraft - Markdown в Word DOCX",
+    editor: "Редактор",
+    templates: "Шаблоны",
+    export: "Экспорт",
+    markdownInput: "Ввод Markdown",
     clear: "Очистить",
-    convertToDocx: "Преобразовать в DOCX",
-    dragMessage: "Перетащите файл Markdown сюда",
-    previewPlaceholder: "Преобразованный предпросмотр появится здесь",
-    footer: "© 2024 Инструмент Markdown в Word - на основе docx.js & marked.js",
     selectFile: "Выбрать файл",
     noFile: "Файл не выбран",
-    fileInputPlaceholder: "Вставьте или введите текст Markdown здесь...",
-    pleaseInputOrUpload: "Пожалуйста, введите или загрузите содержимое Markdown",
-    converting: "Преобразование документа, пожалуйста, подождите...",
-    convertSuccess: "Документ успешно создан",
-    convertFail: "Не удалось преобразовать документ: {{msg}}",
-    downloadSuccess: "Документ сохранён как {{fileName}}",
-    downloadFail: "Ошибка загрузки: {{msg}}",
-    fileTypeError: "Пожалуйста, выберите файл Markdown!",
-    processingImages: "Обработка {{count}} изображений...",
-    processImageFail: "Ошибка обработки изображений: {{msg}}",
-    emptyInput: "Пожалуйста, введите содержимое Markdown",
-    convertingSimple: "Преобразование...",
-    convertSimpleSuccess: "Преобразование успешно!",
-    convertSimpleFail: "Ошибка преобразования: {{msg}}"
+    fileInputPlaceholder: "Вставьте или введите Markdown здесь...",
+    dragMessage: "Перетащите Markdown-файл сюда",
+    manageTemplates: "Управление шаблонами",
+    prompt: "Промпт",
+    convertToDocx: "Конвертировать в DOCX",
+    previewPlaceholder: "Предпросмотр появится здесь",
+    donateBlessing: "Поддержите автора. Желаем удачи.",
+    donateTabsLabel: "Выберите способ поддержки",
+    donateTitle: "Поддержать автора",
+    donateZoomTitle: "Нажмите, чтобы увеличить QR-код",
+    wechat: "WeChat",
+    alipay: "Alipay",
+    paypal: "PayPal",
+    wechatHint: "Сканируйте через WeChat",
+    alipayHint: "Сканируйте через Alipay",
+    paypalHint: "Сканируйте через PayPal",
+    versionTitle: "Текущая версия",
+    emptyInput: "Введите Markdown",
+    convertingSimple: "Конвертация...",
+    convertSimpleSuccess: "Готово.",
+    convertSimpleFail: "Ошибка конвертации: {{msg}}",
+    fileTypeError: "Выберите Markdown-файл.",
   },
   ar: {
-    welcome: "مرحبًا بك في Md2Docx",
-    about: "حول",
-    contact: "اتصل بنا",
-    login: "تسجيل الدخول",
-    convert: "تحويل",
-    upload: "رفع ملف",
-    download: "تحميل",
-    settings: "الإعدادات",
-    help: "المساعدة",
-    title: "محول Markdown إلى Word",
-    markdownContent: "محتوى Markdown",
-    preview: "المعاينة",
+    title: "DocDraft - تحويل Markdown إلى Word DOCX",
+    editor: "المحرر",
+    templates: "القوالب",
+    export: "تصدير",
+    markdownInput: "إدخال Markdown",
     clear: "مسح",
-    convertToDocx: "تحويل إلى DOCX",
-    dragMessage: "اسحب ملف Markdown وأفلته هنا",
-    previewPlaceholder: "سيظهر المعاينة المحولة هنا",
-    footer: "© 2024 أداة تحويل Markdown إلى Word - مبني على docx.js & marked.js",
-    selectFile: "اختر ملفًا",
+    selectFile: "اختيار ملف",
     noFile: "لم يتم اختيار ملف",
-    fileInputPlaceholder: "الصق أو أدخل نص Markdown هنا...",
-    pleaseInputOrUpload: "يرجى إدخال أو رفع محتوى Markdown",
-    converting: "جاري تحويل المستند، يرجى الانتظار...",
-    convertSuccess: "تم إنشاء المستند بنجاح",
-    convertFail: "فشل في تحويل المستند: {{msg}}",
-    downloadSuccess: "تم حفظ المستند باسم {{fileName}}",
-    downloadFail: "فشل في التحميل: {{msg}}",
-    fileTypeError: "يرجى اختيار ملف Markdown!",
-    processingImages: "جاري معالجة {{count}} صورة...",
-    processImageFail: "فشل في معالجة الصور: {{msg}}",
+    fileInputPlaceholder: "الصق أو اكتب نص Markdown هنا...",
+    dragMessage: "أفلت ملف Markdown هنا",
+    manageTemplates: "إدارة القوالب",
+    prompt: "صياغة الطلب",
+    convertToDocx: "تحويل إلى DOCX",
+    previewPlaceholder: "ستظهر المعاينة بعد التحويل هنا",
+    donateBlessing: "ادعم المطور، ونتمنى لك التوفيق.",
+    donateTabsLabel: "اختر طريقة الدعم",
+    donateTitle: "دعم المطور",
+    donateZoomTitle: "انقر لتكبير رمز QR",
+    wechat: "WeChat",
+    alipay: "Alipay",
+    paypal: "PayPal",
+    wechatHint: "امسح عبر WeChat للدعم",
+    alipayHint: "امسح عبر Alipay للدعم",
+    paypalHint: "امسح عبر PayPal للدعم",
+    versionTitle: "الإصدار الحالي",
     emptyInput: "يرجى إدخال محتوى Markdown",
-    convertingSimple: "جاري التحويل...",
-    convertSimpleSuccess: "تم التحويل بنجاح!",
-    convertSimpleFail: "فشل في التحويل: {{msg}}"
-  }
+    convertingSimple: "جار التحويل...",
+    convertSimpleSuccess: "تم التحويل بنجاح.",
+    convertSimpleFail: "فشل التحويل: {{msg}}",
+    fileTypeError: "يرجى اختيار ملف Markdown.",
+  },
 };
 
-// 当前语言
-let currentLang = localStorage.getItem('language') || 'zh';
+let currentLang = localStorage.getItem("language") || "zh";
 
-// 翻译函数
-function t(key) {
-  return resources[currentLang][key] || resources['en'][key] || key;
+function getResource(lang = currentLang) {
+  return resources[lang] || resources.en;
 }
 
-// 支持变量替换的翻译函数
+function t(key) {
+  return getResource()[key] || resources.en[key] || key;
+}
+
 function tWithVars(key, vars = {}) {
   let str = t(key);
-  Object.keys(vars).forEach(k => {
-    str = str.replace(new RegExp(`{{${k}}}`, 'g'), vars[k]);
+  Object.keys(vars).forEach((k) => {
+    str = str.replace(new RegExp(`{{${k}}}`, "g"), vars[k]);
   });
   return str;
 }
 
-// 切换语言
-function changeLanguage(lang) {
-  currentLang = lang;
-  localStorage.setItem('language', lang);
-  updateContent();
-  // 同步select的显示
-  const languageSelect = document.getElementById('language-select');
-  if (languageSelect) languageSelect.value = lang;
-  // RTL支持：阿拉伯语时设置为rtl，否则为ltr
-  if (lang === 'ar') {
-    document.documentElement.dir = 'rtl';
-  } else {
-    document.documentElement.dir = 'ltr';
-  }
-}
-
-// 安全地更新元素文本
-function safeUpdateElement(selector, text) {
+function setText(selector, text) {
   const element = document.querySelector(selector);
-  if (element) {
-    element.textContent = text;
-  }
+  if (element) element.textContent = text;
 }
 
-// 安全地更新元素属性
-function safeUpdateAttribute(selector, attribute, value) {
+function setAttr(selector, attr, value) {
   const element = document.querySelector(selector);
-  if (element) {
-    element.setAttribute(attribute, value);
-  }
+  if (element) element.setAttribute(attr, value);
 }
 
-// 更新页面内容
+function setControlText(selector, text) {
+  const element = document.querySelector(selector);
+  if (!element) return;
+
+  const icon = element.querySelector(".material-symbols-outlined");
+  element.textContent = "";
+  if (icon) element.appendChild(icon);
+  element.appendChild(document.createTextNode(text));
+}
+
+function updateDonationText() {
+  const r = getResource();
+  setText("#donate-text", r.donateBlessing);
+  setText("#modal-text", r.donateBlessing);
+  setText(".donate-modal-title", r.donateTitle);
+  setText('[data-donate-method="wechat"]', r.wechat);
+  document.querySelectorAll('[data-donate-method="wechat"]').forEach((el) => { el.textContent = r.wechat; });
+  document.querySelectorAll('[data-donate-method="alipay"]').forEach((el) => { el.textContent = r.alipay; });
+  document.querySelectorAll('[data-donate-method="paypal"]').forEach((el) => { el.textContent = r.paypal; });
+  setAttr(".sidebar-donate-tabs", "aria-label", r.donateTabsLabel);
+  setAttr(".donate-tabs", "aria-label", r.donateTabsLabel);
+  setAttr("#donate-entry", "title", r.donateZoomTitle);
+
+  const method = document.body.dataset.donateMethod || "wechat";
+  const hintMap = {
+    wechat: r.wechatHint,
+    alipay: r.alipayHint,
+    paypal: r.paypalHint,
+  };
+  setText("#sidebar-donate-hint", hintMap[method]);
+  setText("#donate-method-hint", hintMap[method]);
+}
+
 function updateContent() {
-  try {
-    // 更新标题
-    document.title = t('title');
-    safeUpdateElement('.topbar-title h1', t('title'));
+  const r = getResource();
+  const isArabic = currentLang === "ar";
 
-    // 更新Markdown内容区域
-    safeUpdateElement('.markdown-input-section h2', t('markdownContent'));
-    safeUpdateElement('#clear-btn', t('clear'));
+  document.documentElement.lang = isArabic ? "ar" : currentLang;
+  document.documentElement.dir = isArabic ? "rtl" : "ltr";
+  document.body.classList.toggle("is-rtl", isArabic);
+  document.title = r.title;
 
-    const dragMessage = document.querySelector('.drag-message div:last-child');
-    if (dragMessage) {
-      dragMessage.textContent = t('dragMessage');
-    }
+  setText(".sidebar-nav-item.active span:last-child", r.editor);
+  setText("#sidebar-templates-link span:last-child", r.templates);
+  setText("#sidebar-export-link span:last-child", r.export);
+  setText(".pane-title", r.markdownInput);
+  setControlText("#custom-file-btn", r.selectFile);
+  setText("#manage-templates-btn", r.manageTemplates);
+  setText("#show-prompt-btn", r.prompt);
+  setControlText("#direct-convert-btn", r.convertToDocx);
+  setText(".preview-placeholder", r.previewPlaceholder);
 
-    // 更新自定义文件按钮和文件名显示
-    safeUpdateElement('#custom-file-btn', t('selectFile'));
-    // 只在未选择文件时显示"未选择文件"
-    const fileInputEl = document.getElementById('file-input');
-    if (fileInputEl && !fileInputEl.files[0]) {
-      safeUpdateElement('#file-name-label', t('noFile'));
-    }
+  setAttr("#clear-btn", "title", r.clear);
+  setAttr("#markdown-input", "placeholder", r.fileInputPlaceholder);
+  setAttr("#app-version", "title", r.versionTitle);
 
-    // 更新文本区域占位符
-    const textarea = document.querySelector('#markdown-input');
-    if (textarea) {
-      textarea.placeholder = t('fileInputPlaceholder');
-    }
+  const dragMessage = document.querySelector(".drag-message div:last-child");
+  if (dragMessage) dragMessage.textContent = r.dragMessage;
 
-    // 更新预览区域
-    safeUpdateElement('.preview-section h2', t('preview'));
-    safeUpdateElement('#direct-convert-btn', t('convertToDocx'));
-    safeUpdateElement('.preview-placeholder', t('previewPlaceholder'));
-
-    // 更新页脚
-    safeUpdateElement('footer p', t('footer'));
-
-    // 更新语言切换按钮状态
-    document.querySelectorAll('.language-btn').forEach(btn => {
-      if (btn) {
-        btn.classList.toggle('active', btn.dataset.lang === currentLang);
-      }
-    });
-  } catch (error) {
-    console.error('Error updating content:', error);
+  const fileInput = document.getElementById("file-input");
+  if (fileInput && !fileInput.files[0]) {
+    setText("#file-name-label", r.noFile);
   }
+
+  updateDonationText();
 }
 
-// 初始化语言切换下拉菜单
+function changeLanguage(lang) {
+  currentLang = resources[lang] ? lang : "en";
+  localStorage.setItem("language", currentLang);
+  updateContent();
+  const languageSelect = document.getElementById("language-select");
+  if (languageSelect) languageSelect.value = currentLang;
+}
+
 function initLanguageSwitcher() {
-  const languageSelect = document.getElementById('language-select');
+  const languageSelect = document.getElementById("language-select");
   if (!languageSelect) return;
   languageSelect.value = currentLang;
-  languageSelect.onchange = function() {
-    changeLanguage(languageSelect.value);
-  };
+  languageSelect.onchange = () => changeLanguage(languageSelect.value);
+  changeLanguage(currentLang);
 }
 
-// 导出函数
+window.docDraftI18n = {
+  t,
+  updateDonationText,
+};
+
 export { t, tWithVars, changeLanguage, initLanguageSwitcher, updateContent };

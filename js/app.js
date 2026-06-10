@@ -3,6 +3,7 @@ import SimpleMd2Docx from './simpleMd2Docx.js';
 import { initLanguageSwitcher, updateContent, t, tWithVars } from '../src/js/i18n.js';
 import { templateManager } from './templateManager.js';
 import { parseDocxStyles } from './docxParser.js';
+import packageInfo from '../package.json';
 
 class App {
   constructor() {
@@ -12,6 +13,7 @@ class App {
     this.initEventListeners();
     this.initPreview();
     this.initTemplateUI();
+    this.renderVersion();
     this.loadDefaultExample();
   }
 
@@ -23,6 +25,13 @@ class App {
     this.clearBtn         = document.getElementById('clear-btn');
     this.directConvertBtn = document.getElementById('direct-convert-btn');
     this.previewContainer = document.getElementById('preview-container');
+  }
+
+  renderVersion() {
+    const versionEl = document.getElementById('app-version');
+    if (versionEl) {
+      versionEl.textContent = `v${packageInfo.version}`;
+    }
   }
 
   initEventListeners() {

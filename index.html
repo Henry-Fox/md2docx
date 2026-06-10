@@ -20,7 +20,7 @@
   <meta name="theme-color" content="#00236F">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@600;700&family=Hanken+Grotesk:wght@400;600;700&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@600;700&family=Noto+Naskh+Arabic:wght@400;600;700&family=Hanken+Grotesk:wght@400;600;700&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0">
   <link rel="stylesheet" href="./css/style.css">
   <link rel="icon" href="./favicon.ico" sizes="any">
@@ -98,6 +98,7 @@
       <span class="brand-name">DocDraft</span>
     </div>
     <div class="app-header-actions">
+      <span class="app-version" id="app-version" title="当前版本"></span>
       <a class="header-link-btn" href="https://github.com/Henry-Fox/md2docx" target="_blank" rel="noopener noreferrer">
         <span class="material-symbols-outlined">code</span>
         GitHub
@@ -521,25 +522,6 @@
   </div>
 
   <script>
-    // i18n
-    const i18n = {
-      zh: { 'donate.blessing': '支持作者，祝你好运' },
-      en: { 'donate.blessing': 'May good luck be with those who support us' },
-      fr: { 'donate.blessing': 'Que la chance soit avec ceux qui nous soutiennent' },
-      es: { 'donate.blessing': 'Que la buena suerte esté con quienes nos apoyan' },
-      ru: { 'donate.blessing': 'Пусть удача сопутствует тем, кто нас поддерживает' },
-      ar: { 'donate.blessing': 'نتمنى الحظ السعيد لمن يدعمنا' }
-    };
-    function updateText() {
-      const lang = document.getElementById('language-select').value;
-      document.querySelectorAll('[data-i18n]').forEach(el => {
-        const key = el.getAttribute('data-i18n');
-        if (i18n[lang]?.[key]) el.textContent = i18n[lang][key];
-      });
-    }
-    document.getElementById('language-select').addEventListener('change', updateText);
-    updateText();
-
     // QR modal
     const _qrModal = document.getElementById('qr-modal');
     const donateMethods = {
@@ -549,6 +531,7 @@
     };
     function setDonateMethod(method) {
       const item = donateMethods[method] || donateMethods.wechat;
+      const translatedHint = window.docDraftI18n?.t(`${method}Hint`) || item.hint;
       const sidebarQr = document.getElementById('sidebar-donate-qr');
       const sidebarHint = document.getElementById('sidebar-donate-hint');
       const qr = document.getElementById('donate-modal-qr');
@@ -558,12 +541,12 @@
         sidebarQr.src = item.src;
         sidebarQr.alt = item.alt;
       }
-      if (sidebarHint) sidebarHint.textContent = item.hint;
+      if (sidebarHint) sidebarHint.textContent = translatedHint;
       if (qr) {
         qr.src = item.src;
         qr.alt = item.alt;
       }
-      if (hint) hint.textContent = item.hint;
+      if (hint) hint.textContent = translatedHint;
       document.querySelectorAll('.donate-tab').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.donateMethod === method);
       });
