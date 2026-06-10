@@ -554,9 +554,9 @@
         btn.classList.toggle('active', btn.dataset.donateMethod === method);
       });
     }
-    document.getElementById('donate-entry').addEventListener('click', () => {
+    document.getElementById('donate-entry')?.addEventListener('click', () => {
       setDonateMethod(document.body.dataset.donateMethod || 'wechat');
-      _qrModal.classList.add('active');
+      _qrModal?.classList.add('active');
     });
     document.querySelectorAll('.sidebar-donate-tab').forEach(btn => {
       btn.addEventListener('click', () => setDonateMethod(btn.dataset.donateMethod));
@@ -565,29 +565,30 @@
       btn.addEventListener('click', () => setDonateMethod(btn.dataset.donateMethod));
     });
     setDonateMethod('wechat');
-    document.getElementById('modal-close').addEventListener('click', () => _qrModal.classList.remove('active'));
-    _qrModal.addEventListener('click', e => { if (e.target === _qrModal) _qrModal.classList.remove('active'); });
+    document.getElementById('modal-close')?.addEventListener('click', () => _qrModal?.classList.remove('active'));
+    _qrModal?.addEventListener('click', e => { if (e.target === _qrModal) _qrModal.classList.remove('active'); });
     document.addEventListener('keydown', e => {
-      if (e.key === 'Escape' && _qrModal.classList.contains('active')) _qrModal.classList.remove('active');
+      if (e.key === 'Escape' && _qrModal?.classList.contains('active')) _qrModal.classList.remove('active');
     });
 
     // Sidebar shortcuts
-    document.getElementById('sidebar-templates-link').addEventListener('click', e => {
+    document.getElementById('sidebar-templates-link')?.addEventListener('click', e => {
       e.preventDefault();
-      document.getElementById('manage-templates-btn').click();
+      document.getElementById('manage-templates-btn')?.click();
     });
-    document.getElementById('sidebar-export-link').addEventListener('click', e => {
+    document.getElementById('sidebar-export-link')?.addEventListener('click', e => {
       e.preventDefault();
-      document.getElementById('direct-convert-btn').click();
+      document.getElementById('direct-convert-btn')?.click();
     });
 
     // Orientation toggle
-    document.getElementById('orientation-toggle').addEventListener('click', e => {
+    document.getElementById('orientation-toggle')?.addEventListener('click', e => {
       const btn = e.target.closest('.orient-btn');
       if (!btn) return;
       document.querySelectorAll('#orientation-toggle .orient-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
-      document.getElementById('tpl-page-orientation').value = btn.dataset.value;
+      const orientationInput = document.getElementById('tpl-page-orientation');
+      if (orientationInput) orientationInput.value = btn.dataset.value;
       updatePaperPreview();
     });
 
@@ -603,13 +604,13 @@
       if (sz)    sz.textContent   = sizes[size] || '';
       if (thumb) thumb.classList.toggle('landscape', orient === 'landscape');
     }
-    document.getElementById('tpl-page-size').addEventListener('change', updatePaperPreview);
+    document.getElementById('tpl-page-size')?.addEventListener('change', updatePaperPreview);
 
     // LLM shortcut buttons
-    document.getElementById('open-chatgpt-btn').addEventListener('click', () => {
+    document.getElementById('open-chatgpt-btn')?.addEventListener('click', () => {
       window.open('https://chatgpt.com', '_blank');
     });
-    document.getElementById('open-claude-btn').addEventListener('click', () => {
+    document.getElementById('open-claude-btn')?.addEventListener('click', () => {
       window.open('https://claude.ai', '_blank');
     });
   </script>

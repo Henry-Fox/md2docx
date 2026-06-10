@@ -7,9 +7,9 @@ import packageInfo from '../package.json';
 
 class App {
   constructor() {
+    this.initElements();
     initLanguageSwitcher();
     updateContent();
-    this.initElements();
     this.initEventListeners();
     this.initPreview();
     this.initTemplateUI();
@@ -36,25 +36,29 @@ class App {
 
   initEventListeners() {
     const customFileBtn = document.getElementById('custom-file-btn');
-    if (customFileBtn) customFileBtn.addEventListener('click', () => this.fileInput.click());
+    if (customFileBtn && this.fileInput) {
+      customFileBtn.addEventListener('click', () => this.fileInput.click());
+    }
 
-    this.fileInput.addEventListener('change', (e) => this.handleFileSelect(e));
+    this.fileInput?.addEventListener('change', (e) => this.handleFileSelect(e));
 
-    this.dragArea.addEventListener('dragover', (e) => {
-      e.preventDefault();
-      this.dragArea.classList.add('active');
-    });
-    this.dragArea.addEventListener('dragleave', () => this.dragArea.classList.remove('active'));
-    this.dragArea.addEventListener('drop', (e) => {
-      e.preventDefault();
-      this.dragArea.classList.remove('active');
-      const file = e.dataTransfer.files[0];
-      if (file) this.readFile(file);
-    });
+    if (this.dragArea) {
+      this.dragArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        this.dragArea.classList.add('active');
+      });
+      this.dragArea.addEventListener('dragleave', () => this.dragArea.classList.remove('active'));
+      this.dragArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        this.dragArea.classList.remove('active');
+        const file = e.dataTransfer.files[0];
+        if (file) this.readFile(file);
+      });
+    }
 
-    this.clearBtn.addEventListener('click', () => this.clearMarkdown());
-    this.directConvertBtn.addEventListener('click', () => this.directConvertToDocx());
-    this.markdownInput.addEventListener('input', () => this.updatePreview());
+    this.clearBtn?.addEventListener('click', () => this.clearMarkdown());
+    this.directConvertBtn?.addEventListener('click', () => this.directConvertToDocx());
+    this.markdownInput?.addEventListener('input', () => this.updatePreview());
 
     // Toolbar formatting buttons
     document.querySelectorAll('.toolbar-btn[data-md-action]').forEach(btn => {
@@ -235,7 +239,7 @@ class App {
 
     // Config import
     document.getElementById('import-config-btn')?.addEventListener('click', () => {
-      document.getElementById('config-file-input').click();
+      document.getElementById('config-file-input')?.click();
     });
     document.getElementById('config-file-input')?.addEventListener('change', (e) => {
       const file = e.target.files[0];
@@ -257,7 +261,7 @@ class App {
 
     // Import format from DOCX
     document.getElementById('import-docx-btn')?.addEventListener('click', () => {
-      document.getElementById('docx-file-input').click();
+      document.getElementById('docx-file-input')?.click();
     });
     document.getElementById('docx-file-input')?.addEventListener('change', async (e) => {
       const file = e.target.files[0];
