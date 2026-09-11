@@ -10,13 +10,11 @@
  */
 
 import { getDocument, GlobalWorkerOptions } from 'pdfjs-dist';
-import { PDFDocument } from 'pdf-lib';
-import { marked } from 'marked';
 import SimpleMd2Pdf from './simpleMd2Pdf.js';
 import { templateManager } from './templateManager.js';
 
-// 设置 pdf.js worker 路径
-GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js`;
+// 设置 pdf.js worker 路径（使用与 pdfjs-dist 匹配的版本）
+GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.js`;
 
 class PreviewRenderer {
   constructor() {
@@ -98,67 +96,10 @@ class PreviewRenderer {
    * @private
    */
   async _generatePdfBytes(markdown, template) {
-    // 使用与导出相同的PDF生成逻辑
-    const pdfDoc = await PDFDocument.create();
-    
-    // 配置转换器
+    // 使用与导出完全相同的PDF生成逻辑（包含CJK字体加载）
     this.pdfConverter.setTemplate(template);
-    this.pdfConverter.pdfDoc = pdfDoc;
-    
-    // 解析Markdown
-    const tokens = marked.lexer(markdown);
-    
-    // 加载字体
-    const { StandardFonts } = await import('pdf-lib');
-    this.pdfConverter.fonts = {
-      regular: await pdfDoc.embedFont(StandardFonts.Helvetica),
-      bold: await pdfDoc.embedFont(StandardFonts.HelveticaBold),
-      italic: await pdfDoc.embedFont(StandardFonts.HelveticaOblique),
-      monospace: await pdfDoc.embedFont(StandardFonts.Courier),
-    };
-    
-    // 添加首页
-    this.pdfConverter.addNewPage();
-    
-    // 处理每个token
-    for (const token of tokens) {
-      try {
-        switch (token.type) {
-          case 'heading':
-            await this.pdfConverter.drawHeading(token);
-            break;
-          case 'paragraph':
-            await this.pdfConverter.drawParagraph(token);
-            break;
-          case 'list':
-            await this.pdfConverter.drawList(token, token.ordered);
-            break;
-          case 'table':
-            await this.pdfConverter.drawTable(token);
-            break;
-          case 'code':
-            await this.pdfConverter.drawCodeBlock(token);
-            break;
-          case 'blockquote':
-            await this.pdfConverter.drawBlockquote(token);
-            break;
-          case 'hr':
-            await this.pdfConverter.drawHorizontalRule();
-            break;
-          case 'space':
-            this.pdfConverter.currentY -= 10;
-            break;
-          default:
-            // 忽略不支持的类型
-            break;
-        }
-      } catch (error) {
-        console.warn(`处理token时出错:`, token.type, error);
-      }
-    }
-    
-    // 生成PDF字节
-    return await pdfDoc.save();
+    const pdfBytes = await this.pdfConverter.generatePdfBytes(markdown);
+    return pdfBytes;
   }
 
   /**

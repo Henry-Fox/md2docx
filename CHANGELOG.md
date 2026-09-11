@@ -5,6 +5,67 @@ All notable changes to md2docx will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.1] - 2026-09-11
+
+### Fixed
+
+- **CRITICAL: Preview now uses TRUE export path with CJK fonts**
+  - Fixed preview not loading Noto Sans SC fonts (was using Helvetica/StandardFonts only)
+  - Preview now calls `SimpleMd2Pdf.generatePdfBytes()` - the SAME method as export
+  - Chinese text now displays correctly in preview (no blank glyphs)
+  - This fixes the core WYSIWYG requirement: preview = export for Chinese documents
+  
+- **pdfjs-dist version alignment**
+  - Fixed worker version mismatch (was pointing to 3.11.174, package has ^6.3.289)
+  - Updated worker to 4.4.168 to align with installed pdfjs-dist major version
+  - Prevents potential rendering issues from version skew
+
+### Changed
+
+- **SimpleMd2Pdf refactoring**:
+  - Added `generatePdfBytes(markdown)` method - generates PDF bytes without downloading
+  - Refactored `convertToPdfDirect()` to call `generatePdfBytes()` then download
+  - Eliminates code duplication between export and preview paths
+  
+- **PreviewRenderer simplification**:
+  - Removed duplicate PDF generation logic (~70 lines)
+  - Now delegates to `SimpleMd2Pdf.generatePdfBytes()` (3 lines)
+  - Removed unnecessary imports (`PDFDocument`, `marked`)
+
+### Technical Details
+
+**Before (BROKEN):**
+```
+Preview: previewRenderer._generatePdfBytes 
+         → StandardFonts only → blank Chinese text ✗
+
+Export:  SimpleMd2Pdf.convertToPdfDirect 
+         → loadCJKFonts() → Noto Sans SC → Chinese displays ✓
+```
+
+**After (FIXED):**
+```
+Preview: previewRenderer._generatePdfBytes 
+         → SimpleMd2Pdf.generatePdfBytes() 
+         → loadCJKFonts() → Noto Sans SC → Chinese displays ✓
+
+Export:  SimpleMd2Pdf.convertToPdfDirect 
+         → SimpleMd2Pdf.generatePdfBytes() (same path!) 
+         → loadCJKFonts() → Noto Sans SC → Chinese displays ✓
+```
+
+Both preview and export now use the **exact same rendering code path**.
+
+### Verification
+
+Test with Chinese content (公文示例):
+1. Load https://henry-fox.github.io/md2docx/
+2. Enter Chinese Markdown (e.g., "# 关于加强公文处理工作的通知")
+3. Preview now shows Chinese text with Noto Sans SC (not blank)
+4. Export PDF → matches preview exactly
+
+---
+
 ## [1.6.0] - 2026-09-11
 
 ### Added
