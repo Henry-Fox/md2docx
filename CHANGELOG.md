@@ -5,6 +5,56 @@ All notable changes to md2docx will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] - 2026-09-11
+
+### Added
+
+- **Chinese Font Support for PDF**: Full Chinese (Simplified & Traditional) glyph rendering in PDF exports
+  - Integrated Noto Sans SC via Google Fonts CDN (OFL-1.1 licensed)
+  - Dynamic font loading with in-memory caching for performance
+  - Automatic fallback to standard fonts if CDN fails
+  - Supports 仿宋/宋体/黑体/楷体-like templates with readable Chinese output
+
+- **Product Experience Redesign**:
+  - Unified branding to "DocDraft" across UI, metadata, and SEO
+  - Empty state with quick-start examples (公文/论文/周报)
+  - Template modal detail panel: shows page/body/font summary when template selected
+  - Preview accuracy disclaimer below template selector
+  - Collapsible donation panel (default collapsed, toggle to expand)
+  - Improved sidebar IA: removed fake navigation, "管理模板" direct button
+
+- **Mobile Responsive Improvements**:
+  - Export buttons remain usable on narrow screens (~390px)
+  - Template selector and export controls stack vertically on mobile
+  - Header links show icon-only on small screens
+
+### Changed
+
+- Branding: "MD Studio" → "DocDraft" in sidebar, page titles, and schema
+- Export buttons: Word button remains primary, PDF button outlined for better hierarchy
+- Sidebar navigation: removed editor/export pseudo-links that silently triggered actions
+- Donation panel: moved to collapsible footer section to reduce first-run distraction
+
+### Technical Details
+
+**Chinese Font Implementation**:
+- Font source: Noto Sans SC Regular & Bold from Google Fonts CDN
+- License: SIL Open Font License 1.1 (OFL-1.1) – safe for redistribution
+- Loading strategy: Runtime fetch with ArrayBuffer caching
+- Size impact: ~2-4 MB network transfer per font weight (not bundled, loaded on-demand)
+- Fallback: Standard PDF fonts (Helvetica) if CDN unavailable
+
+**Dependencies**:
+- Added: `@pdf-lib/fontkit@^1.1.1` for custom font embedding
+
+### Known Limitations
+
+- PDF fonts load from CDN (requires internet connection for first use)
+- Font cache is session-scoped (not persisted across page reloads)
+- Bold font is true bold; italic uses regular (Noto Sans SC has no italic variant)
+
+---
+
 ## [1.3.0] - 2026-09-11
 
 ### Added

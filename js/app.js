@@ -61,7 +61,10 @@ class App {
     this.clearBtn?.addEventListener('click', () => this.clearMarkdown());
     this.directConvertBtn?.addEventListener('click', () => this.directConvertToDocx());
     this.exportPdfBtn?.addEventListener('click', () => this.directConvertToPdf());
-    this.markdownInput?.addEventListener('input', () => this.updatePreview());
+    this.markdownInput?.addEventListener('input', () => {
+      this.updatePreview();
+      this.toggleEmptyState();
+    });
 
     // Toolbar formatting buttons
     document.querySelectorAll('.toolbar-btn[data-md-action]').forEach(btn => {
@@ -72,6 +75,16 @@ class App {
     document.getElementById('show-prompt-btn')?.addEventListener('click', () => {
       const tpl = templateManager.getActive();
       this._showPromptModal(tpl.name, this._generateLLMPrompt(tpl));
+    });
+
+    // Empty state example buttons
+    document.querySelectorAll('[data-example]').forEach(btn => {
+      btn.addEventListener('click', () => this.loadExample(btn.dataset.example));
+    });
+
+    // Donate panel toggle
+    document.getElementById('sidebar-donate-toggle')?.addEventListener('click', () => {
+      document.getElementById('sidebar-donate-panel')?.classList.toggle('collapsed');
     });
   }
 
@@ -123,12 +136,157 @@ class App {
     this.markdownInput.value = '';
     if (this.fileNameLabel) this.fileNameLabel.textContent = '未选择文件';
     this.updatePreview();
+    this.toggleEmptyState();
   }
 
   loadDefaultExample() {
     if (this.markdownInput) {
       this.markdownInput.value = '';
       this.updatePreview();
+      this.toggleEmptyState();
+    }
+  }
+
+  toggleEmptyState() {
+    const emptyState = document.getElementById('editor-empty-state');
+    if (!emptyState) return;
+    const isEmpty = !this.markdownInput?.value.trim();
+    emptyState.style.display = isEmpty ? 'flex' : 'none';
+  }
+
+  loadExample(exampleType) {
+    const examples = {
+      'official-doc': `# 关于印发《XX管理办法》的通知
+
+各有关单位：
+
+为进一步规范XX工作，根据相关法律法规，结合实际情况，现将《XX管理办法》印发给你们，请认真贯彻执行。
+
+## 一、总则
+
+### （一）目的和依据
+
+为规范XX管理工作，根据《XX法》等法律法规，制定本办法。
+
+### （二）适用范围
+
+本办法适用于本市范围内的XX管理工作。
+
+## 二、主要内容
+
+1. 明确管理职责
+2. 规范工作流程
+3. 强化监督检查
+
+特此通知。
+
+XX单位  
+2026年9月11日`,
+      'thesis': `# 基于深度学习的图像识别技术研究
+
+## 摘要
+
+本文研究了基于深度学习的图像识别技术，提出了一种改进的卷积神经网络模型。实验结果表明，该方法在标准数据集上取得了良好的识别效果。
+
+**关键词：** 深度学习；图像识别；卷积神经网络
+
+## 1 引言
+
+随着人工智能技术的快速发展，图像识别已成为计算机视觉领域的重要研究方向。本文针对传统方法的局限性，提出了一种基于深度学习的改进方案。
+
+## 2 相关工作
+
+### 2.1 传统图像识别方法
+
+传统方法主要包括特征提取和分类器设计两个步骤，存在特征表达能力有限的问题。
+
+### 2.2 深度学习方法
+
+深度学习通过多层神经网络自动学习特征表示，在图像识别任务上取得了突破性进展。
+
+## 3 研究方法
+
+本文提出的方法包括以下关键技术：
+
+1. 数据预处理和增强
+2. 网络结构设计
+3. 训练策略优化
+
+## 4 实验结果
+
+### 4.1 数据集
+
+使用CIFAR-10和ImageNet两个标准数据集进行实验验证。
+
+### 4.2 性能评估
+
+| 方法 | 准确率 | 召回率 | F1值 |
+|------|--------|--------|------|
+| 传统方法 | 85.2% | 82.1% | 83.6% |
+| 本文方法 | 92.5% | 91.3% | 91.9% |
+
+## 5 结论
+
+本文提出的方法在图像识别任务上取得了优异的性能，具有良好的应用前景。
+
+## 参考文献
+
+[1] LeCun Y, Bengio Y, Hinton G. Deep learning[J]. nature, 2015.
+[2] He K, Zhang X, Ren S, et al. Deep residual learning[C]//CVPR, 2016.`,
+      'weekly': `# 技术部周报（2026年第37周）
+
+**报告人：** 张三  
+**报告时间：** 2026年9月11日
+
+## 本周工作总结
+
+### 1. 项目开发
+
+- 完成了用户管理模块的后端接口开发
+- 实现了权限控制功能，通过了单元测试
+- 修复了数据导出功能的3个bug
+
+### 2. 技术优化
+
+- 优化了数据库查询性能，响应时间降低30%
+- 重构了文件上传模块，提升了代码可维护性
+- 完成了API文档的更新
+
+### 3. 团队协作
+
+- 参加了产品需求评审会议
+- 协助新同事解决技术问题
+- 完成了代码review工作
+
+## 下周工作计划
+
+### 1. 功能开发
+
+- [ ] 完成消息通知模块开发
+- [ ] 实现数据统计报表功能
+- [ ] 进行性能测试和优化
+
+### 2. 技术学习
+
+- [ ] 学习Kubernetes容器编排
+- [ ] 研究微服务架构最佳实践
+- [ ] 参加公司技术分享会
+
+## 遇到的问题
+
+1. **第三方API不稳定：** 外部支付接口偶尔超时，已联系供应商排查
+2. **测试环境资源不足：** 需要申请增加服务器配置
+
+## 备注
+
+下周三下午参加外部技术交流活动，可能需要请假半天。`
+    };
+
+    const content = examples[exampleType];
+    if (content && this.markdownInput) {
+      this.markdownInput.value = content;
+      this.updatePreview();
+      this.toggleEmptyState();
     }
   }
 
@@ -332,6 +490,7 @@ class App {
     if (!modal) return;
     this._renderTemplateList();
     this._hideTemplateEditor();
+    this._showEmptyTemplateDetail();
     modal.classList.add('active');
   }
 
@@ -339,6 +498,90 @@ class App {
     const modal = document.getElementById('template-modal');
     if (modal) modal.classList.remove('active');
     this._renderTemplateSelector();
+  }
+
+  _showEmptyTemplateDetail() {
+    const editor = document.getElementById('template-editor');
+    if (!editor) return;
+    
+    editor.style.display = 'flex';
+    editor.innerHTML = `
+      <div class="tpl-empty-detail">
+        <span class="material-symbols-outlined">description</span>
+        <div style="font-size: 16px; font-weight: 600; margin-bottom: 8px;">选择一个模板</div>
+        <div style="font-size: 14px;">点击左侧列表中的模板查看详情</div>
+      </div>`;
+  }
+
+  _showTemplateDetail(id) {
+    const tpl = templateManager.get(id);
+    const editor = document.getElementById('template-editor');
+    if (!editor) return;
+
+    const alignLabel = (a) => ({ justified: '两端对齐', left: '左对齐', center: '居中', right: '右对齐' })[a] || a;
+    
+    editor.style.display = 'flex';
+    editor.innerHTML = `
+      <div class="tpl-detail-panel">
+        <div class="tpl-detail-header">
+          <div class="tpl-detail-title">${tpl.name}</div>
+          <div class="tpl-detail-desc">${tpl.description || '无描述'}</div>
+        </div>
+
+        <div class="tpl-detail-section">
+          <div class="tpl-detail-section-title">页面设置</div>
+          <div class="tpl-detail-row">
+            <div class="tpl-detail-label">纸张大小</div>
+            <div class="tpl-detail-value">${tpl.page.size} (${tpl.page.orientation === 'landscape' ? '横向' : '纵向'})</div>
+          </div>
+          <div class="tpl-detail-row">
+            <div class="tpl-detail-label">页边距</div>
+            <div class="tpl-detail-value">上${tpl.page.marginTop}mm · 下${tpl.page.marginBottom}mm · 左${tpl.page.marginLeft}mm · 右${tpl.page.marginRight}mm</div>
+          </div>
+        </div>
+
+        <div class="tpl-detail-section">
+          <div class="tpl-detail-section-title">正文格式</div>
+          <div class="tpl-detail-row">
+            <div class="tpl-detail-label">字体</div>
+            <div class="tpl-detail-value">${tpl.body.font}</div>
+          </div>
+          <div class="tpl-detail-row">
+            <div class="tpl-detail-label">字号</div>
+            <div class="tpl-detail-value">${tpl.body.fontSize}pt</div>
+          </div>
+          <div class="tpl-detail-row">
+            <div class="tpl-detail-label">行距</div>
+            <div class="tpl-detail-value">${tpl.body.lineSpacing}pt（固定值）</div>
+          </div>
+          <div class="tpl-detail-row">
+            <div class="tpl-detail-label">对齐方式</div>
+            <div class="tpl-detail-value">${alignLabel(tpl.body.alignment)}</div>
+          </div>
+        </div>
+
+        <div class="tpl-detail-section">
+          <div class="tpl-detail-section-title">标题格式</div>
+          <div class="tpl-detail-row">
+            <div class="tpl-detail-label">文档标题</div>
+            <div class="tpl-detail-value">${tpl.title.font} · ${tpl.title.fontSize}pt${tpl.title.bold ? ' · 加粗' : ''}</div>
+          </div>
+          <div class="tpl-detail-row">
+            <div class="tpl-detail-label">一级标题</div>
+            <div class="tpl-detail-value">${tpl.h1.font} · ${tpl.h1.fontSize}pt${tpl.h1.bold ? ' · 加粗' : ''}</div>
+          </div>
+          <div class="tpl-detail-row">
+            <div class="tpl-detail-label">二级标题</div>
+            <div class="tpl-detail-value">${tpl.h2.font} · ${tpl.h2.fontSize}pt${tpl.h2.bold ? ' · 加粗' : ''}</div>
+          </div>
+        </div>
+
+        <div class="tpl-detail-actions">
+          <button class="btn btn-primary" onclick="document.querySelector('[data-id=\\"${id}\\"].tpl-use-btn').click()">使用此模板</button>
+          <button class="btn btn-outline" onclick="document.querySelector('[data-id=\\"${id}\\"].tpl-copy-btn').click()">复制模板</button>
+          ${!tpl.readonly ? `<button class="btn btn-outline" onclick="document.querySelector('[data-id=\\"${id}\\"].tpl-edit-btn').click()">编辑模板</button>` : ''}
+        </div>
+      </div>`;
   }
 
   _renderTemplateList() {
@@ -366,6 +609,7 @@ class App {
         <div class="tpl-item-actions">
           <button class="btn btn-xs tpl-use-btn"  data-id="${tpl.id}">使用</button>
           <button class="btn btn-xs tpl-copy-btn" data-id="${tpl.id}">复制</button>
+          <button class="btn btn-xs tpl-view-btn" data-id="${tpl.id}">查看</button>
           ${!tpl.readonly ? `<button class="btn btn-xs tpl-edit-btn" data-id="${tpl.id}">编辑</button>` : ''}
           ${!tpl.readonly ? `<button class="btn btn-xs btn-danger tpl-del-btn" data-id="${tpl.id}">删除</button>` : ''}
         </div>`;
@@ -387,6 +631,9 @@ class App {
         this._renderTemplateList();
         this._openTemplateEditor(cloned.id);
       }));
+      container.querySelectorAll('.tpl-view-btn').forEach(btn => btn.addEventListener('click', e => {
+        this._showTemplateDetail(e.currentTarget.dataset.id);
+      }));
       container.querySelectorAll('.tpl-edit-btn').forEach(btn => btn.addEventListener('click', e => {
         this._openTemplateEditor(e.currentTarget.dataset.id);
       }));
@@ -394,7 +641,7 @@ class App {
         if (confirm('确定要删除这个模板吗？')) {
           templateManager.delete(e.currentTarget.dataset.id);
           this._renderTemplateList();
-          this._hideTemplateEditor();
+          this._showEmptyTemplateDetail();
         }
       }));
     };

@@ -1,4 +1,5 @@
 import { PDFDocument, StandardFonts, rgb, degrees } from "pdf-lib";
+import fontkit from "@pdf-lib/fontkit";
 import { saveAs } from "file-saver";
 import { marked } from "marked";
 import { templateManager } from "./templateManager.js";
@@ -7,9 +8,10 @@ import { templateManager } from "./templateManager.js";
  * SimpleMd2Pdf - 模板驱动的Markdown到PDF转换器
  * 
  * 中文字体策略说明:
- * - 由于pdf-lib对中文字体支持需要额外的字体文件(体积大),当前版本使用标准字体
- * - 标准字体(Helvetica/Times-Roman)对中文字符有基本支持,但样式有限
- * - 未来版本可以支持自定义字体嵌入(需要用户提供字体文件)
+ * - 使用 Noto Sans SC (Google 开源字体，OFL-1.1 许可证)
+ * - 通过 CDN 动态加载，避免打包体积过大
+ * - 字体加载后缓存在内存中，提高后续导出速度
+ * - 完整支持简体中文、繁体中文及常用标点符号
  * 
  * 支持的Markdown元素:
  * - 标题(H1-H6)
@@ -31,6 +33,7 @@ class SimpleMd2Pdf {
     this.currentY = 0;
     this.fonts = {};
     this.pageMargin = { top: 72, bottom: 72, left: 72, right: 72 }; // 默认1英寸边距
+    this.fontCache = {}; // 字体缓存
   }
 
   setTemplate(template) {
@@ -458,6 +461,59 @@ class SimpleMd2Pdf {
   }
 
   /**
+   * 加载中文字体
+   */
+  async loadCJKFonts() {
+    try {
+      // 使用 Google Fonts CDN 加载 Noto Sans SC
+      const fontUrls = {
+        regular: 'https://fonts.gstatic.com/s/notosanssc/v36/k3kXo84MPvpLmixcA63oeALhL4iJ-Q7m8w.ttf',
+        bold: 'https://fonts.gstatic.com/s/notosanssc/v36/k3kQo84MPvpLmixcA63oeALZKPKgGO4Bw-QPSA.ttf',
+      };
+
+      console.log("正在加载中文字体...");
+
+      // 加载常规字体
+      if (!this.fontCache.regular) {
+        const regularResp = await fetch(fontUrls.regular);
+        if (!regularResp.ok) throw new Error('字体加载失败');
+        this.fontCache.regular = await regularResp.arrayBuffer();
+      }
+
+      // 加载粗体字体
+      if (!this.fontCache.bold) {
+        const boldResp = await fetch(fontUrls.bold);
+        if (!boldResp.ok) throw new Error('粗体字体加载失败');
+        this.fontCache.bold = await boldResp.arrayBuffer();
+      }
+
+      // 注册 fontkit
+      this.pdfDoc.registerFontkit(fontkit);
+
+      // 嵌入字体
+      const regular = await this.pdfDoc.embedFont(this.fontCache.regular);
+      const bold = await this.pdfDoc.embedFont(this.fontCache.bold);
+
+      console.log("中文字体加载完成");
+
+      return {
+        regular,
+        bold,
+        italic: regular, // 使用常规字体代替斜体
+        monospace: await this.pdfDoc.embedFont(StandardFonts.Courier), // 代码使用等宽字体
+      };
+    } catch (error) {
+      console.warn("中文字体加载失败，回退到标准字体:", error);
+      return {
+        regular: await this.pdfDoc.embedFont(StandardFonts.Helvetica),
+        bold: await this.pdfDoc.embedFont(StandardFonts.HelveticaBold),
+        italic: await this.pdfDoc.embedFont(StandardFonts.HelveticaOblique),
+        monospace: await this.pdfDoc.embedFont(StandardFonts.Courier),
+      };
+    }
+  }
+
+  /**
    * 主转换方法: Markdown → PDF
    */
   async convertToPdfDirect(markdown) {
@@ -470,13 +526,8 @@ class SimpleMd2Pdf {
     // 2. 创建PDF文档
     this.pdfDoc = await PDFDocument.create();
     
-    // 3. 加载字体
-    this.fonts = {
-      regular: await this.pdfDoc.embedFont(StandardFonts.Helvetica),
-      bold: await this.pdfDoc.embedFont(StandardFonts.HelveticaBold),
-      italic: await this.pdfDoc.embedFont(StandardFonts.HelveticaOblique),
-      monospace: await this.pdfDoc.embedFont(StandardFonts.Courier),
-    };
+    // 3. 加载字体（包含中文字体）
+    this.fonts = await this.loadCJKFonts();
 
     // 4. 获取样式配置
     const styles = this.getStyles();
