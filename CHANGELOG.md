@@ -5,6 +5,79 @@ All notable changes to md2docx will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.3] - 2026-09-11
+
+### Fixed
+
+**CRITICAL: CJK text wrapping (core typesetting bug)**
+
+#### Problem
+- **Before**: `text.split(' ')` for line wrapping
+- **Impact**: Chinese/Japanese/Korean paragraphs NEVER wrap (no spaces!)
+- **User complaint**: "排版有问题" — long paragraphs overflow page width
+
+#### Root Cause
+```javascript
+// OLD (broken for CJK):
+const words = text.split(' ');  // Chinese has almost no spaces!
+for (const word of words) { ... }
+```
+
+Chinese 公文/论文 typically has no spaces between characters. Space-based word wrapping fails completely.
+
+#### Fix: CJK-aware character wrapping
+```javascript
+// NEW (CJK-aware):
+const isCJKText = (cjkChars / text.length) > 0.3;  // Detect CJK text
+
+if (isCJKText) {
+  // Wrap character-by-character
+  for (let i = 0; i < text.length; i++) {
+    const char = text[i];
+    const width = this.getTextWidth(testLine, font, fontSize);
+    if (width > maxWidth) { /* wrap */ }
+  }
+} else {
+  // Latin: wrap by words (preserve existing behavior)
+}
+```
+
+**CJK detection**: Checks if >30% of characters are CJK ideographs (U+4E00-U+9FFF), Hiragana, Katakana, or Hangul.
+
+**Wrapping**: Measures width for each candidate line using `font.widthOfTextAtSize()`, respects `firstLineIndent` for first line.
+
+#### Also Fixed
+- **Canvas stretch/blur**: Removed CSS `width: 100%` from `.pdf-page-canvas`
+  - Problem: CSS rule overrode JS-set HiDPI inline styles
+  - Result: Canvas re-stretched after DPR render → blurry again
+  - Fix: Only keep `display: block; height: auto`
+
+### Technical
+
+**Modified files**:
+- `js/simpleMd2Pdf.js`: 
+  - `isCJK()` helper function
+  - Dual wrapping modes (CJK character-based vs Latin word-based)
+  - Width measurement per line
+- `css/style.css`: Removed `width: 100%` from canvas
+
+### Verification
+
+Test with 公文示例:
+```markdown
+各位领导：
+
+为进一步提高公文处理质量，现将有关事项通知如下。请各部门认真贯彻执行，确保公文格式符合国家标准GB/T 9704-2012的相关要求。各单位应严格按照规范格式编写正式公文，注意标题、正文、落款的格式规范。
+```
+
+Expected:
+- ✅ Multi-line paragraphs wrap cleanly at page width
+- ✅ 首行缩进 2 characters (first line only)
+- ✅ 行距 28pt (template value)
+- ✅ Sharp on HiDPI displays
+
+---
+
 ## [1.6.2] - 2026-09-11
 
 ### Fixed
