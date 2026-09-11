@@ -5,6 +5,90 @@ All notable changes to md2docx will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.0] - 2026-09-11
+
+### Added - Product Quality & User Experience Improvements
+
+**Based on [Product Research](./docs/PRODUCT_RESEARCH.md), focusing on last-mile document production workflow.**
+
+- **System Font Detection & Warnings**:
+  - Automatically detects if required Chinese fonts (仿宋/黑体/楷体 etc.) are installed
+  - Shows warning toast when fonts are missing from current system
+  - Platform-specific guidance (Windows/macOS/Linux) for font installation
+  - Prevents user confusion about unexpected font substitution in exported documents
+
+- **Word Template Import Feedback**:
+  - After importing .docx template, shows detailed extraction summary:
+    - Page settings (size, orientation, margins)
+    - Body format (font, size, line spacing, indentation)
+    - Heading formats (H1-H2 with styles)
+  - Highlights potential issues (e.g., missing headers/footers)
+  - Helps users understand what was successfully extracted vs. needs manual configuration
+
+- **Enhanced Preview Disclaimer**:
+  - Strengthened preview accuracy disclaimer with prominent yellow banner
+  - Clarifies that preview is approximate, actual export strictly follows template
+  - Suggests verifying final result in Word/PDF reader if precision is critical
+
+- **Optimized AI Workflow**:
+  - Auto-copy LLM prompt to clipboard when modal opens
+  - Toast confirmation: "Prompt copied, paste into AI tool"
+  - Direct "Open ChatGPT" and "Open Claude" buttons in prompt modal
+  - Reduces friction in AI-assisted document generation workflow
+
+- **Document Structure Checking**:
+  - Pre-export validation for common Markdown issues:
+    - Empty document
+    - Missing H1 (document title)
+    - Heading level jumps (e.g., H1 → H3, skipping H2)
+    - Heading hierarchy problems (H3 before first H1)
+    - Multiple H1 headings (suggests using one main title)
+  - Non-blocking warnings: user can choose "Continue Export" or "Return to Edit"
+  - Helps catch structural errors before generating final document
+
+- **Product Research Documentation**:
+  - Added comprehensive `docs/PRODUCT_RESEARCH.md`:
+    - Product positioning: last-mile Markdown → formal document converter
+    - User pain points analysis (P0/P1 prioritized)
+    - Competitor map (Pandoc, Typora, Dillinger, specialized Chinese tools)
+    - Roadmap (P0/P1/P2 features)
+    - Explicit non-goals (server conversion, accounts, full editor mode)
+  - Linked in main README under Roadmap section
+
+### Changed
+
+- Preview hint banner styling: more prominent with warning-level color (yellow background)
+- Toast notifications: now support multi-line text for longer messages
+- Template selector: triggers font detection when template is changed
+
+### Technical Details
+
+**New Modules**:
+- `js/fontDetector.js`: Browser-based font availability detection using Canvas & Font Loading API
+- `js/documentChecker.js`: Markdown structure validation using marked.js lexer
+
+**Detection Strategy**:
+1. Font API (primary): `document.fonts.check()`
+2. Canvas fallback: measure text width with target vs. fallback font
+3. Checks main font + common aliases (e.g., "黑体" → "SimHei", "Heiti SC", etc.)
+
+### User Experience Wins
+
+1. **Transparency**: Users now understand why exported fonts might differ (platform limitations)
+2. **Confidence**: Template import feedback shows exactly what was extracted
+3. **Efficiency**: AI workflow optimized from 4 steps to 1 click + paste
+4. **Quality**: Document structure checks catch common errors before export
+5. **Clarity**: Preview disclaimer sets correct expectations vs. final output
+
+### Known Limitations
+
+- Font detection is best-effort; some edge cases may report false positives/negatives
+- Document structure checks are heuristic-based, not exhaustive
+- Headers/footers and page numbers not yet supported (planned for future release)
+- Image embedding reliability improvements deferred to P2
+
+---
+
 ## [1.4.0] - 2026-09-11
 
 ### Added

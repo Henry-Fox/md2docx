@@ -4,6 +4,8 @@ import { exportManager } from './exportManager.js';
 import { initLanguageSwitcher, updateContent, t, tWithVars } from '../src/js/i18n.js';
 import { templateManager } from './templateManager.js';
 import { parseDocxStyles } from './docxParser.js';
+import { checkTemplateFonts, formatMissingFontsWarning, detectOS } from './fontDetector.js';
+import { checkDocumentStructure, formatCheckResult } from './documentChecker.js';
 import packageInfo from '../package.json';
 
 class App {
@@ -75,6 +77,14 @@ class App {
     document.getElementById('show-prompt-btn')?.addEventListener('click', () => {
       const tpl = templateManager.getActive();
       this._showPromptModal(tpl.name, this._generateLLMPrompt(tpl));
+    });
+
+    // ChatGPT and Claude buttons
+    document.getElementById('open-chatgpt-btn')?.addEventListener('click', () => {
+      window.open('https://chat.openai.com/', '_blank');
+    });
+    document.getElementById('open-claude-btn')?.addEventListener('click', () => {
+      window.open('https://claude.ai/', '_blank');
     });
 
     // Empty state example buttons
@@ -315,6 +325,14 @@ XX单位
       this.showMessage(t('emptyInput'), 'warning');
       return;
     }
+    
+    // 文档结构检查
+    const checkResult = checkDocumentStructure(markdown);
+    if (!checkResult.valid || checkResult.warnings.length > 0) {
+      const shouldContinue = await this._showDocumentCheckDialog(checkResult);
+      if (!shouldContinue) return;
+    }
+    
     try {
       this.showMessage(t('convertingSimple'), 'info');
       await exportManager.exportDocx(markdown);
@@ -331,6 +349,14 @@ XX单位
       this.showMessage(t('emptyInput'), 'warning');
       return;
     }
+    
+    // 文档结构检查
+    const checkResult = checkDocumentStructure(markdown);
+    if (!checkResult.valid || checkResult.warnings.length > 0) {
+      const shouldContinue = await this._showDocumentCheckDialog(checkResult);
+      if (!shouldContinue) return;
+    }
+    
     try {
       this.showMessage(t('exportingPdf'), 'info');
       await exportManager.exportPdf(markdown);
@@ -339,6 +365,36 @@ XX单位
       console.error('PDF导出失败:', error);
       this.showMessage(tWithVars('exportPdfFail', { msg: error.message }), 'error');
     }
+  }
+
+  _showDocumentCheckDialog(checkResult) {
+    return new Promise((resolve) => {
+      const { errors, warnings } = checkResult;
+      
+      let message = '';
+      if (errors.length > 0) {
+        message = '❌ 文档存在以下问题:\n\n';
+        errors.forEach((err, i) => {
+          message += `${i + 1}. ${err.message}\n   ${err.description}\n\n`;
+        });
+        message += '建议修改后再导出。';
+        alert(message);
+        resolve(false);
+        return;
+      }
+      
+      if (warnings.length > 0) {
+        message = '⚠️ 文档结构建议:\n\n';
+        warnings.forEach((warn, i) => {
+          message += `${i + 1}. ${warn.message}\n   ${warn.description}\n\n`;
+        });
+        message += '是否仍然继续导出?';
+        resolve(confirm(message));
+        return;
+      }
+      
+      resolve(true);
+    });
   }
 
   showMessage(message, type = 'info') {
@@ -381,7 +437,10 @@ XX单位
       if (tpl.id === active.id) opt.selected = true;
       sel.appendChild(opt);
     });
-    sel.onchange = () => templateManager.setActive(sel.value);
+    sel.onchange = () => {
+      templateManager.setActive(sel.value);
+      this._checkTemplateFonts();
+    };
   }
 
   _bindTemplateModalEvents() {
@@ -449,7 +508,8 @@ XX单位
         this._renderTemplateList();
         this._renderTemplateSelector();
         this._openTemplateEditor(tpl.id);
-        this._showToast('✓ 格式提取成功，请确认后保存模板');
+        this._showTemplateImportSummary(tpl);
+        await this._checkTemplateFonts();
       } catch (err) {
         this._showToast(`✗ 提取失败: ${err.message}`, true);
         console.error('DOCX import error:', err);
@@ -625,6 +685,7 @@ XX单位
         this._renderTemplateList();
         this._renderTemplateSelector();
         this._closeTemplateModal();
+        this._checkTemplateFonts();
       }));
       container.querySelectorAll('.tpl-copy-btn').forEach(btn => btn.addEventListener('click', e => {
         const cloned = templateManager.clone(e.currentTarget.dataset.id);
@@ -825,17 +886,81 @@ ${hLine('######', '五级标题', h5)}
     const meta = document.getElementById('prompt-meta-line');
     if (meta) meta.textContent = `为模板「${templateName}」生成，共 ${prompt.length} 字`;
     modal.classList.add('active');
-    const hint = document.getElementById('prompt-copy-hint');
-    if (hint) hint.textContent = '';
+    
+    // 自动复制到剪贴板
+    navigator.clipboard.writeText(prompt).then(() => {
+      const hint = document.getElementById('prompt-copy-hint');
+      if (hint) {
+        hint.textContent = '✓ 提示词已自动复制';
+        hint.style.color = '#4ade80';
+      }
+      this._showToast('✓ 提示词已复制到剪贴板，可直接粘贴到 AI 工具使用', false, 3000);
+    }).catch(() => {
+      const hint = document.getElementById('prompt-copy-hint');
+      if (hint) hint.textContent = '';
+    });
   }
 
-  _showToast(message, isError = false) {
+  _showTemplateImportSummary(tpl) {
+    const alignLabel = (a) => ({ justified: '两端对齐', left: '左对齐', center: '居中', right: '右对齐' })[a] || a;
+    
+    const summary = `📄 模板提取成功
+
+📏 页面设置
+• 纸张:${tpl.page.size} ${tpl.page.orientation === 'portrait' ? '纵向' : '横向'}
+• 边距:上${tpl.page.marginTop}mm 下${tpl.page.marginBottom}mm 左${tpl.page.marginLeft}mm 右${tpl.page.marginRight}mm
+
+✏️ 正文格式
+• 字体:${tpl.body.font} ${tpl.body.fontSize}pt
+• 行距:${tpl.body.lineSpacing}pt
+• 首行缩进:${tpl.body.firstLineIndent}字 · ${alignLabel(tpl.body.alignment)}
+
+📑 标题格式
+• 主标题:${tpl.title.font} ${tpl.title.fontSize}pt ${tpl.title.bold ? '加粗' : ''} ${alignLabel(tpl.title.alignment)}
+• H1:${tpl.h1.font} ${tpl.h1.fontSize}pt ${tpl.h1.bold ? '加粗' : ''} ${alignLabel(tpl.h1.alignment)}
+• H2:${tpl.h2.font} ${tpl.h2.fontSize}pt ${tpl.h2.bold ? '加粗' : ''} ${alignLabel(tpl.h2.alignment)}
+
+⚠️ 注意:页眉页脚需手动配置(当前版本不支持自动提取)`;
+    
+    this._showToast(summary, false, 6000);
+  }
+
+  async _checkTemplateFonts() {
+    const tpl = templateManager.getActive();
+    if (!tpl) return;
+    
+    try {
+      const { missing } = await checkTemplateFonts(tpl);
+      
+      if (missing.length > 0) {
+        const os = detectOS();
+        const fontList = missing.map(f => `"${f}"`).join('、');
+        
+        let message = `⚠️ 字体检测:当前系统未安装 ${fontList}\n`;
+        
+        if (os === 'Windows') {
+          message += `导出的 Word 文档可能使用替代字体`;
+        } else if (os === 'macOS') {
+          message += `macOS 用户可使用等效字体(如"黑体-简"/"楷体-简")`;
+        } else {
+          message += `建议安装对应字体或在导出后手动调整`;
+        }
+        
+        // 使用更长的显示时间以便用户阅读
+        this._showToast(message, false, 4500);
+      }
+    } catch (err) {
+      console.warn('字体检测失败:', err);
+    }
+  }
+
+  _showToast(message, isError = false, duration = 2400) {
     const toast = document.createElement('div');
     toast.className = 'app-toast';
     toast.textContent = message;
     if (isError) toast.style.background = '#ba1a1a';
     document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 2400);
+    setTimeout(() => toast.remove(), duration);
   }
 }
 

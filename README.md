@@ -414,9 +414,10 @@ npm start
 
 ## Roadmap / 路线图
 
-查看项目规划和开发路线图：📋 [优化规划文档](./docs/OPTIMIZATION_PLAN.md)
+查看项目规划和开发路线图：
 
-包含 PDF 导出方案、功能优化优先级、工程改造等详细规划。
+- 📋 [优化规划文档](./docs/OPTIMIZATION_PLAN.md) — PDF 导出方案、功能优化优先级、工程改造等详细规划
+- 📄 [产品研究文档](./docs/PRODUCT_RESEARCH.md) — 产品定位、用户痛点、竞品分析、功能优先级 / Product positioning, pain points, competitor analysis, and feature priorities
 
 ## 许可证
 
