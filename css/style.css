@@ -1413,31 +1413,34 @@ select.tpl-input { appearance: none; background-image: url("data:image/svg+xml,%
   height: 100%;
   overflow-y: auto;
   overflow-x: hidden;
-  background: #f3f4f6;  /* 柔和的浅色背景，提供页面边缘对比，不刺眼 */
-  padding: 16px;        /* 适度间距，不占过大空白 */
+  background: var(--surface);  /* 应用表面背景 */
+  padding: 12px;               /* 极小边距，仅防阴影被裁剪 */
 }
 
 .pdf-pages-container {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 24px;
-  padding-bottom: 24px;
+  gap: 16px;                   /* 多页间距 */
+  padding-bottom: 16px;
 }
 
 .pdf-page-container {
   position: relative;
   background: white;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 8px 24px rgba(0,0,0,0.06);  /* 清晰可见的纸张阴影 */
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 2px 8px rgba(0,0,0,0.06);  /* 柔和阴影定义边缘 */
   border-radius: 2px;
   overflow: hidden;
-  max-width: 100%;
+  width: 100%;                 /* 填满可用宽度 */
+  max-width: 210mm;            /* A4 宽度上限 */
+  aspect-ratio: 210 / 297;     /* A4 纸张比例 (宽/高) */
 }
 
 .pdf-page-canvas {
   display: block;
-  /* 不设置 width，让 JS 的内联样式控制 HiDPI 尺寸 */
-  height: auto;
+  width: 100% !important;      /* Canvas 填充整个 A4 框架 */
+  height: 100% !important;
+  object-fit: contain;         /* 保持内容比例 */
 }
 
 .pdf-page-number {
