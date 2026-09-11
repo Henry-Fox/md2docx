@@ -5,6 +5,22 @@ All notable changes to md2docx will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.7] - 2026-09-11
+
+### Fixed
+- **CRITICAL: Text overlap in bibliography/list sections**
+  - **Symptom**: Characters stacked/jumbled (illegible), e.g. `[2] Zhang K, Ren S` in 参考文献
+  - **Root causes**:
+    1. `drawList`: missing `lineSpacing` param → items too close (overlap risk)
+    2. No spacing between list items → consecutive lines could share baseline
+    3. Font subsetting: CJK TTF may have incomplete Latin glyph metrics → zero advance width
+  - **Fixes**:
+    - `drawList`: pass `lineSpacing: bodyStyle.lineSpacing || fontSize * 1.8` (was missing)
+    - Add `fontSize * 0.3` gap between list items (prevent tight stacking)
+    - Font embedding: `subset: false` to preserve full glyph tables for Latin chars
+    - Debug warning for suspiciously narrow text widths
+  - **Result**: Bibliography/reference lines fully readable, no stacked glyphs, proper line spacing
+
 ## [1.6.6] - 2026-09-11
 
 ### Fixed

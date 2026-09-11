@@ -236,6 +236,11 @@ class SimpleMd2Pdf {
         color,
       });
 
+      // 调试：检测异常宽度（可能表明字体问题）
+      if (process.env.NODE_ENV !== 'production' && textWidth < lineObj.text.length * fontSize * 0.1) {
+        console.warn(`⚠️ Suspicious text width: "${lineObj.text.substring(0, 20)}..." width=${textWidth}, expected >${lineObj.text.length * fontSize * 0.1}`);
+      }
+
       this.currentY -= actualLineSpacing;
     }
   }
@@ -322,11 +327,16 @@ class SimpleMd2Pdf {
         fontSize: bodyStyle.fontSize,
         color: this.parseColor(bodyStyle.color),
         indent: 20,
+        lineSpacing: bodyStyle.lineSpacing || bodyStyle.fontSize * 1.8,  // 确保足够的行距
       });
 
+      // 列表项之间添加额外间距（防止紧贴）
+      this.currentY -= bodyStyle.fontSize * 0.3;
+      
       index++;
     }
 
+    // 列表后额外间距
     this.currentY -= bodyStyle.fontSize * 0.5;
   }
 
@@ -540,6 +550,7 @@ class SimpleMd2Pdf {
   async loadCJKFonts() {
     try {
       // 使用 Google Fonts CDN 加载 Noto Sans SC (v40)
+      // 注意：这是 CJK 子集，拉丁字符覆盖可能不完整
       const fontUrls = {
         regular: 'https://fonts.gstatic.com/s/notosanssc/v40/k3kCo84MPvpLmixcA63oeAL7Iqp5IZJF9bmaG9_FnYw.ttf',
         bold: 'https://fonts.gstatic.com/s/notosanssc/v40/k3kCo84MPvpLmixcA63oeAL7Iqp5IZJF9bmaGzjCnYw.ttf',
@@ -565,8 +576,8 @@ class SimpleMd2Pdf {
       this.pdfDoc.registerFontkit(fontkit);
 
       // 嵌入字体
-      const regular = await this.pdfDoc.embedFont(this.fontCache.regular);
-      const bold = await this.pdfDoc.embedFont(this.fontCache.bold);
+      const regular = await this.pdfDoc.embedFont(this.fontCache.regular, { subset: false });
+      const bold = await this.pdfDoc.embedFont(this.fontCache.bold, { subset: false });
 
       console.log("中文字体加载完成");
 
