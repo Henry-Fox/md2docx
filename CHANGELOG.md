@@ -5,6 +5,19 @@ All notable changes to md2docx will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.8] - 2026-09-11
+
+### Fixed
+- **CRITICAL: Table cell overflow & blockquote height mismatch (severe text overlap)**
+  - **Symptom**: Multiple strings painted on same baseline (Chinese labels + paths + hashes stacked)
+  - **Root causes**:
+    1. **`drawTable`**: Direct `page.drawText()` with NO wrapping → long cell text overflowed into adjacent cells
+    2. **`drawBlockquote`**: Used old `wrapText` (space-split) for height calc, but `drawText` (CJK-wrap) for render → height too small → overlapped next content
+  - **Fixes**:
+    - `drawTable`: New `wrapCellText` helper with char-by-char width measurement; dynamic row height based on max lines across cells
+    - `drawBlockquote`: Render text first, measure actual `currentY` delta, then draw bar at correct height
+  - **Result**: Tables wrap long cells cleanly; blockquotes match actual text height; no overlapping baselines
+
 ## [1.6.7] - 2026-09-11
 
 ### Fixed

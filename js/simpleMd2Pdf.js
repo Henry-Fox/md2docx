@@ -347,7 +347,6 @@ class SimpleMd2Pdf {
     const styles = this.getStyles();
     const bodyStyle = styles.body;
     const cellPadding = 5;
-    const rowHeight = bodyStyle.fontSize * 2;
     const pageWidth = this.getPageWidth();
     
     // 计算列宽
@@ -355,34 +354,77 @@ class SimpleMd2Pdf {
     if (numCols === 0) return;
     
     const colWidth = (pageWidth - cellPadding * 2 * numCols) / numCols;
+    const maxTextWidth = colWidth - cellPadding;  // 文本可用宽度
+
+    // 辅助函数：换行并计算行数
+    const wrapCellText = (text, font, fontSize) => {
+      const lines = [];
+      let currentLine = '';
+      
+      // 简化版本：逐字符测量（支持 CJK）
+      for (let i = 0; i < text.length; i++) {
+        const char = text[i];
+        const testLine = currentLine + char;
+        const width = this.getTextWidth(testLine, font, fontSize);
+        
+        if (width > maxTextWidth && currentLine) {
+          lines.push(currentLine);
+          currentLine = char;
+        } else {
+          currentLine = testLine;
+        }
+      }
+      if (currentLine) lines.push(currentLine);
+      return lines.length > 0 ? lines : [''];
+    };
 
     // 绘制表头
     if (token.header) {
       let x = styles.pageMargin.left;
+      let maxLines = 1;
       
-      for (const cell of token.header) {
+      // 第一遍：计算所有单元格的行数，找到最大值
+      const headerCells = token.header.map(cell => {
         const text = this.extractPlainText(cell.text);
+        const lines = wrapCellText(text, this.fonts.bold, bodyStyle.fontSize);
+        maxLines = Math.max(maxLines, lines.length);
+        return { text, lines };
+      });
+      
+      const rowHeight = maxLines * bodyStyle.fontSize * 1.5 + cellPadding * 2;
+      
+      if (this.needsNewPage(rowHeight)) {
+        this.addNewPage();
+      }
+      
+      // 第二遍：绘制
+      for (let i = 0; i < headerCells.length; i++) {
+        const { lines } = headerCells[i];
         
         // 绘制单元格边框
         this.currentPage.drawRectangle({
           x,
           y: this.currentY - rowHeight,
-          width: colWidth + cellPadding * 2,
+          width: colWidth,
           height: rowHeight,
           borderColor: rgb(0, 0, 0),
           borderWidth: 1,
         });
 
-        // 绘制单元格文本
-        this.currentPage.drawText(text, {
-          x: x + cellPadding,
-          y: this.currentY - rowHeight / 2 - bodyStyle.fontSize / 2,
-          size: bodyStyle.fontSize,
-          font: this.fonts.bold,
-          color: rgb(0, 0, 0),
-        });
+        // 绘制多行文本
+        let textY = this.currentY - cellPadding - bodyStyle.fontSize;
+        for (const line of lines) {
+          this.currentPage.drawText(line, {
+            x: x + cellPadding / 2,
+            y: textY,
+            size: bodyStyle.fontSize,
+            font: this.fonts.bold,
+            color: rgb(0, 0, 0),
+          });
+          textY -= bodyStyle.fontSize * 1.5;
+        }
 
-        x += colWidth + cellPadding * 2;
+        x += colWidth;
       }
 
       this.currentY -= rowHeight;
@@ -391,35 +433,51 @@ class SimpleMd2Pdf {
     // 绘制表格行
     if (token.rows) {
       for (const row of token.rows) {
+        let x = styles.pageMargin.left;
+        let maxLines = 1;
+        
+        // 第一遍：计算行高
+        const rowCells = row.map(cell => {
+          const text = this.extractPlainText(cell.text);
+          const lines = wrapCellText(text, this.fonts.regular, bodyStyle.fontSize);
+          maxLines = Math.max(maxLines, lines.length);
+          return { text, lines };
+        });
+        
+        const rowHeight = maxLines * bodyStyle.fontSize * 1.5 + cellPadding * 2;
+        
         if (this.needsNewPage(rowHeight)) {
           this.addNewPage();
         }
 
-        let x = styles.pageMargin.left;
-
-        for (const cell of row) {
-          const text = this.extractPlainText(cell.text);
-
+        // 第二遍：绘制
+        for (let i = 0; i < rowCells.length; i++) {
+          const { lines } = rowCells[i];
+          
           // 绘制单元格边框
           this.currentPage.drawRectangle({
             x,
             y: this.currentY - rowHeight,
-            width: colWidth + cellPadding * 2,
+            width: colWidth,
             height: rowHeight,
             borderColor: rgb(0, 0, 0),
             borderWidth: 1,
           });
 
-          // 绘制单元格文本
-          this.currentPage.drawText(text, {
-            x: x + cellPadding,
-            y: this.currentY - rowHeight / 2 - bodyStyle.fontSize / 2,
-            size: bodyStyle.fontSize,
-            font: this.fonts.regular,
-            color: rgb(0, 0, 0),
-          });
+          // 绘制多行文本
+          let textY = this.currentY - cellPadding - bodyStyle.fontSize;
+          for (const line of lines) {
+            this.currentPage.drawText(line, {
+              x: x + cellPadding / 2,
+              y: textY,
+              size: bodyStyle.fontSize,
+              font: this.fonts.regular,
+              color: rgb(0, 0, 0),
+            });
+            textY -= bodyStyle.fontSize * 1.5;
+          }
 
-          x += colWidth + cellPadding * 2;
+          x += colWidth;
         }
 
         this.currentY -= rowHeight;
@@ -480,26 +538,32 @@ class SimpleMd2Pdf {
     const bodyStyle = styles.body;
     const text = this.extractPlainText(token.text);
 
-    // 绘制左侧竖线
-    const barWidth = 4;
-    const barColor = rgb(0.7, 0.7, 0.7);
-    const textLines = this.wrapText(text, this.fonts.italic, bodyStyle.fontSize, this.getPageWidth() - 30);
-    const blockHeight = textLines.length * bodyStyle.fontSize * 1.5;
-
-    this.currentPage.drawRectangle({
-      x: styles.pageMargin.left,
-      y: this.currentY - blockHeight,
-      width: barWidth,
-      height: blockHeight,
-      color: barColor,
-    });
-
-    // 绘制引用文本
+    // 保存当前 Y 位置
+    const startY = this.currentY;
+    
+    // 绘制引用文本（使用正确的 CJK 换行）
     await this.drawText(text, {
       fontSize: bodyStyle.fontSize,
       italic: true,
       color: rgb(0.3, 0.3, 0.3),
       indent: 20,
+      lineSpacing: bodyStyle.lineSpacing || bodyStyle.fontSize * 1.5,
+    });
+    
+    // 计算实际绘制的高度
+    const endY = this.currentY;
+    const actualHeight = startY - endY;
+    
+    // 绘制左侧竖线（覆盖实际文本高度）
+    const barWidth = 4;
+    const barColor = rgb(0.7, 0.7, 0.7);
+    
+    this.currentPage.drawRectangle({
+      x: styles.pageMargin.left,
+      y: endY,
+      width: barWidth,
+      height: actualHeight,
+      color: barColor,
     });
 
     this.currentY -= bodyStyle.fontSize * 0.5;
