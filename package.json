@@ -46,6 +46,7 @@
     "marked-extended-tables": "^2.0.1",
     "marked-gfm-heading-id": "^4.1.1",
     "marked-mangle": "^1.1.10",
+    "pdf-lib": "^1.17.1",
     "react-i18next": "^15.5.2"
   }
 }
