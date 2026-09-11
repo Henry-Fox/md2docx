@@ -3,20 +3,20 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Markdown 转 Word 工具 - 在线导出 DOCX | DocDraft</title>
-  <meta name="description" content="DocDraft 是一个在线 Markdown 转 Word 工具，支持 DOCX 导出、实时预览、模板管理、从 Word 文档导入格式，并可用于公文、论文和通用文档排版。">
-  <meta name="keywords" content="Markdown转Word, Markdown转DOCX, Markdown导出Word, 在线DOCX转换, Word模板导入, 公文格式, Markdown排版工具">
+  <title>Markdown 转 Word / PDF 工具 - 在线导出 DOCX & PDF | DocDraft</title>
+  <meta name="description" content="DocDraft 是一个在线 Markdown 转 Word 和 PDF 工具，支持 DOCX 和 PDF 导出、实时预览、模板管理、从 Word 文档导入格式，并可用于公文、论文和通用文档排版。">
+  <meta name="keywords" content="Markdown转Word, Markdown转DOCX, Markdown转PDF, Markdown导出Word, Markdown导出PDF, 在线DOCX转换, 在线PDF转换, Word模板导入, 公文格式, Markdown排版工具">
   <meta name="author" content="Henry Fox">
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="https://henry-fox.github.io/md2docx/">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://henry-fox.github.io/md2docx/">
-  <meta property="og:title" content="DocDraft - Markdown 转 Word / DOCX 在线工具">
-  <meta property="og:description" content="在线将 Markdown 转换为 Word DOCX，支持模板、格式导入、实时预览和离线静态部署。">
+  <meta property="og:title" content="DocDraft - Markdown 转 Word / PDF 在线工具">
+  <meta property="og:description" content="在线将 Markdown 转换为 Word DOCX 和 PDF，支持模板、格式导入、实时预览和离线静态部署。">
   <meta property="og:image" content="https://henry-fox.github.io/md2docx/icon.png">
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="DocDraft - Markdown 转 Word / DOCX 在线工具">
-  <meta name="twitter:description" content="在线将 Markdown 转换为 Word DOCX，支持模板、格式导入和实时预览。">
+  <meta name="twitter:title" content="DocDraft - Markdown 转 Word / PDF 在线工具">
+  <meta name="twitter:description" content="在线将 Markdown 转换为 Word DOCX 和 PDF，支持模板、格式导入和实时预览。">
   <meta name="theme-color" content="#00236F">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -36,7 +36,7 @@
     "operatingSystem": "Web",
     "url": "https://henry-fox.github.io/md2docx/",
     "codeRepository": "https://github.com/Henry-Fox/md2docx",
-    "description": "DocDraft is a browser-based Markdown to Word DOCX converter with real-time preview, template management, and Word format import.",
+    "description": "DocDraft is a browser-based Markdown to Word DOCX and PDF converter with real-time preview, template management, and Word format import.",
     "inLanguage": ["zh-CN", "en", "fr", "es", "ru", "ar"],
     "offers": {
       "@type": "Offer",
@@ -45,6 +45,7 @@
     },
     "featureList": [
       "Markdown to DOCX conversion",
+      "Markdown to PDF conversion",
       "Real-time Markdown preview",
       "Template management",
       "Import formatting from Word documents",
@@ -128,24 +129,16 @@
           <span class="material-symbols-outlined">edit_note</span>
         </div>
         <div>
-          <div class="sidebar-brand-title">MD Studio</div>
-          <div class="sidebar-brand-sub">Markdown Workspace</div>
+          <div class="sidebar-brand-title">DocDraft</div>
+          <div class="sidebar-brand-sub">Markdown to Word & PDF</div>
         </div>
       </div>
 
       <nav class="sidebar-nav">
-        <a class="sidebar-nav-item active" href="#">
-          <span class="material-symbols-outlined">edit_note</span>
-          <span>编辑器</span>
-        </a>
-        <a class="sidebar-nav-item" href="#" id="sidebar-templates-link">
+        <button class="sidebar-nav-item sidebar-nav-btn" id="sidebar-templates-link">
           <span class="material-symbols-outlined">description</span>
-          <span>模板</span>
-        </a>
-        <a class="sidebar-nav-item" href="#" id="sidebar-export-link">
-          <span class="material-symbols-outlined">file_download</span>
-          <span>导出</span>
-        </a>
+          <span>管理模板</span>
+        </button>
       </nav>
 
       <div class="sidebar-file-btn">
@@ -156,20 +149,23 @@
         <input type="file" id="file-input" accept=".md, .txt" style="display:none;">
       </div>
 
-      <div class="sidebar-donate-panel">
-        <div class="sidebar-donate-head">
+      <div class="sidebar-donate-panel collapsed" id="sidebar-donate-panel">
+        <button class="sidebar-donate-toggle" id="sidebar-donate-toggle">
           <span class="material-symbols-outlined">favorite</span>
-          <span id="donate-text" data-i18n="donate.blessing">支持作者，祝你好运</span>
-        </div>
-        <div class="sidebar-donate-tabs" role="tablist" aria-label="选择打赏方式">
-          <button type="button" class="sidebar-donate-tab active" data-donate-method="wechat">微信</button>
-          <button type="button" class="sidebar-donate-tab" data-donate-method="alipay">支付宝</button>
-          <button type="button" class="sidebar-donate-tab" data-donate-method="paypal">PayPal</button>
-        </div>
-        <button type="button" class="sidebar-donate-qr-btn" id="donate-entry" title="点击放大二维码">
-          <img src="./img/donate-wechat.jpg" alt="微信收款码" class="sidebar-donate-qr" id="sidebar-donate-qr">
+          <span>支持作者</span>
+          <span class="material-symbols-outlined donate-toggle-icon">expand_more</span>
         </button>
-        <div class="sidebar-donate-hint" id="sidebar-donate-hint">微信扫码支持</div>
+        <div class="sidebar-donate-content" id="sidebar-donate-content">
+          <div class="sidebar-donate-tabs" role="tablist" aria-label="选择打赏方式">
+            <button type="button" class="sidebar-donate-tab active" data-donate-method="wechat">微信</button>
+            <button type="button" class="sidebar-donate-tab" data-donate-method="alipay">支付宝</button>
+            <button type="button" class="sidebar-donate-tab" data-donate-method="paypal">PayPal</button>
+          </div>
+          <button type="button" class="sidebar-donate-qr-btn" id="donate-entry" title="点击放大二维码">
+            <img src="./img/donate-wechat.jpg" alt="微信收款码" class="sidebar-donate-qr" id="sidebar-donate-qr">
+          </button>
+          <div class="sidebar-donate-hint" id="sidebar-donate-hint">微信扫码支持</div>
+        </div>
       </div>
     </aside>
 
@@ -205,6 +201,18 @@
               <div>拖放 Markdown 文件到此处</div>
             </div>
           </div>
+          <div class="empty-state" id="editor-empty-state" style="display:none;">
+            <div class="empty-state-content">
+              <span class="material-symbols-outlined empty-state-icon">description</span>
+              <div class="empty-state-title">快速开始</div>
+              <div class="empty-state-subtitle">选择一个示例开始编辑</div>
+              <div class="empty-state-actions">
+                <button class="btn btn-outline btn-sm" data-example="official-doc">试试公文示例</button>
+                <button class="btn btn-outline btn-sm" data-example="thesis">试试论文示例</button>
+                <button class="btn btn-outline btn-sm" data-example="weekly">试试周报示例</button>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -221,12 +229,22 @@
               <button id="show-prompt-btn" class="btn btn-outline btn-sm">提示词</button>
             </div>
           </div>
-          <button id="direct-convert-btn" class="btn btn-primary btn-export">
-            <span class="material-symbols-outlined">download</span>
-            导出 DOCX
-          </button>
+          <div class="export-buttons-group">
+            <button id="direct-convert-btn" class="btn btn-primary btn-export">
+              <span class="material-symbols-outlined">description</span>
+              <span data-i18n="exportWord">导出 Word</span>
+            </button>
+            <button id="export-pdf-btn" class="btn btn-outline btn-export">
+              <span class="material-symbols-outlined">picture_as_pdf</span>
+              <span data-i18n="exportPdf">导出 PDF</span>
+            </button>
+          </div>
         </div>
         <div class="preview-canvas">
+          <div class="preview-hint">
+            <span class="material-symbols-outlined">info</span>
+            <strong>预览仅供参考:</strong>浏览器预览与实际导出效果存在差异。导出的 Word/PDF 文档将<strong>严格遵循</strong>所选模板的页面大小、边距、字体、字号、行距等全部格式设置。如需确认最终效果,请导出后用 Word/PDF 阅读器查看。
+          </div>
           <div class="preview-paper">
             <div id="preview-container">
               <div class="preview-placeholder">转换后的预览将显示在这里</div>
@@ -240,19 +258,19 @@
 
   <section class="seo-content" aria-labelledby="seo-title">
     <div class="seo-content-inner">
-      <h1 id="seo-title">Markdown 转 Word DOCX 在线工具</h1>
-      <p>DocDraft 可以在浏览器中将 Markdown 文档转换为 Word DOCX 文件，适合公文、论文、技术文档、周报和通用办公文档排版。</p>
+      <h1 id="seo-title">Markdown 转 Word / PDF 在线工具</h1>
+      <p>DocDraft 可以在浏览器中将 Markdown 文档转换为 Word DOCX 和 PDF 文件，适合公文、论文、技术文档、周报和通用办公文档排版。</p>
       <h2>核心能力</h2>
       <ul>
-        <li>支持 Markdown 实时预览，并导出为 DOCX。</li>
+        <li>支持 Markdown 实时预览，并导出为 DOCX 和 PDF。</li>
         <li>支持模板管理，可配置页面、正文、标题、字号、字体和行距。</li>
         <li>支持从 Word 文档导入格式，快速生成可复用模板。</li>
         <li>纯前端运行，构建后可以作为静态 HTML 独立部署。</li>
       </ul>
       <h2>常见问题</h2>
       <details>
-        <summary>Markdown 怎么转成 Word？</summary>
-        <p>将 Markdown 内容粘贴到编辑器，选择合适模板，然后点击导出 DOCX。</p>
+        <summary>Markdown 怎么转成 Word 或 PDF？</summary>
+        <p>将 Markdown 内容粘贴到编辑器，选择合适模板，然后点击导出 Word 或导出 PDF 按钮。</p>
       </details>
       <details>
         <summary>是否支持公文或论文格式？</summary>

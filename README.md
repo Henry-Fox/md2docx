@@ -6,13 +6,13 @@
 
 | Item / 项目 | Status / 状态 |
 | --- | --- |
-| Current version / 当前版本 | v1.1.2 |
-| Last updated / 最近更新 | 2026-06-10 |
+| Current version / 当前版本 | v1.3.0 |
+| Last updated / 最近更新 | 2026-09-11 |
 | Online demo / 在线使用 | [henry-fox.github.io/md2docx](https://henry-fox.github.io/md2docx/) |
 | GitHub | [Henry-Fox/md2docx](https://github.com/Henry-Fox/md2docx) |
 | Gitee | [meng-hengli66/md2-docx](https://gitee.com/meng-hengli66/md2-docx) |
 | Static page branch / 静态页分支 | `gh-pages` |
-| Latest change / 最近变更 | Added visible app version badge and improved Arabic UI/RTL support. |
+| Latest change / 最近变更 | **Major Update**: Added PDF export feature with template-driven generation. Both Word (DOCX) and PDF exports now available! |
 
 ## Support / 支持作者
 
@@ -26,12 +26,15 @@ If this tool helps you, you can support the project through WeChat, Alipay, or P
 
 ## English
 
-A simple and efficient web-based tool for converting Markdown files to Word documents (DOCX format).
+A simple and efficient web-based tool for converting Markdown files to Word documents (DOCX) and PDF format.
 
 ### Features
+- **NEW**: PDF Export with template-driven generation
+- Export to Word (DOCX) or PDF format
 - Drag and drop support
 - Real-time preview
-- Multiple language support
+- Template system with 5 built-in professional templates
+- Multiple language support (6 languages)
 - Pure frontend implementation
 - No server required
 - Support for various Markdown elements:
@@ -78,6 +81,8 @@ npm start
 ### Technologies
 - marked.js (Markdown parsing)
 - docx.js (Word document generation)
+- pdf-lib (PDF document generation)
+- vitest (Testing framework)
 - Pure HTML/CSS/JavaScript
 
 ### Support the Project
@@ -91,12 +96,15 @@ Thank you for your support! Your generosity helps make this project better for e
 
 ## 中文
 
-一个简单高效的基于网页的 Markdown 转 Word 文档（DOCX 格式）工具。
+一个简单高效的基于网页的 Markdown 转 Word 文档（DOCX）和 PDF 工具。
 
 ### 功能特点
+- **新功能**: PDF 导出,支持模板驱动的专业排版
+- 支持导出为 Word (DOCX) 或 PDF 格式
 - 支持拖放文件
 - 实时预览
-- 多语言支持
+- 模板系统,内置5套专业模板
+- 多语言支持(6种语言)
 - 纯前端实现
 - 无需服务器
 - 支持多种 Markdown 元素：
@@ -403,6 +411,13 @@ npm start
 ![رمز QR للتبرع](./img/donate-qr.png)
 
 شكراً لدعمك! سخاؤك يساعد في جعل هذا المشروع أفضل للجميع. 🙏
+
+## Roadmap / 路线图
+
+查看项目规划和开发路线图：
+
+- 📋 [优化规划文档](./docs/OPTIMIZATION_PLAN.md) — PDF 导出方案、功能优化优先级、工程改造等详细规划
+- 📄 [产品研究文档](./docs/PRODUCT_RESEARCH.md) — 产品定位、用户痛点、竞品分析、功能优先级 / Product positioning, pain points, competitor analysis, and feature priorities
 
 ## 许可证
 
