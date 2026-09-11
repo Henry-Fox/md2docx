@@ -514,19 +514,20 @@ class SimpleMd2Pdf {
   }
 
   /**
-   * 主转换方法: Markdown → PDF
+   * 生成PDF字节数组（用于预览等场景，不触发下载）
+   * @param {string} markdown - Markdown文本
+   * @returns {Promise<Uint8Array>} PDF字节数组
    */
-  async convertToPdfDirect(markdown) {
-    console.log("开始转换Markdown到PDF");
+  async generatePdfBytes(markdown) {
+    console.log("开始生成PDF字节（预览模式）");
 
     // 1. 解析Markdown
     const tokens = marked.lexer(markdown);
-    console.log("解析到的tokens:", tokens);
 
     // 2. 创建PDF文档
     this.pdfDoc = await PDFDocument.create();
     
-    // 3. 加载字体（包含中文字体）
+    // 3. 加载字体（包含中文字体 Noto Sans SC）
     this.fonts = await this.loadCJKFonts();
 
     // 4. 获取样式配置
@@ -572,10 +573,26 @@ class SimpleMd2Pdf {
       }
     }
 
-    // 7. 生成PDF字节
+    // 7. 生成并返回PDF字节
     const pdfBytes = await this.pdfDoc.save();
+    console.log("PDF字节生成完成");
+    
+    return pdfBytes;
+  }
 
-    // 8. 保存文件
+  /**
+   * 主转换方法: Markdown → PDF（下载文件）
+   */
+  async convertToPdfDirect(markdown) {
+    console.log("开始转换Markdown到PDF");
+
+    // 生成PDF字节
+    const pdfBytes = await this.generatePdfBytes(markdown);
+
+    // 解析token用于获取文件名
+    const tokens = marked.lexer(markdown);
+    
+    // 保存文件
     const filename = this.getOutputFilename(tokens);
     const blob = new Blob([pdfBytes], { type: "application/pdf" });
     saveAs(blob, filename);
