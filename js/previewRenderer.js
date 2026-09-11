@@ -9,12 +9,12 @@
  * - 模板更改时刷新预览
  */
 
-import { getDocument, GlobalWorkerOptions } from 'pdfjs-dist';
+// 使用 pdfjs-dist/webpack.mjs 零配置入口（自动设置 worker，确保版本匹配）
+import * as pdfjsLib from 'pdfjs-dist/webpack.mjs';
+const { getDocument } = pdfjsLib;
+
 import SimpleMd2Pdf from './simpleMd2Pdf.js';
 import { templateManager } from './templateManager.js';
-
-// 设置 pdf.js worker 路径（使用与 pdfjs-dist 匹配的版本）
-GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.js`;
 
 class PreviewRenderer {
   constructor() {
