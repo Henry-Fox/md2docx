@@ -465,13 +465,10 @@ XX单位
     });
     sel.onchange = () => {
       templateManager.setActive(sel.value);
-<<<<<<< HEAD
       this._checkTemplateFonts();
-=======
       // 模板切换时清除预览缓存并刷新预览
       previewRenderer.clearCache();
       this.updatePreview();
->>>>>>> cursor/true-wysiwyg-preview-940f
     };
   }
 
