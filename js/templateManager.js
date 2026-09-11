@@ -229,6 +229,71 @@ class TemplateManager {
     };
   }
 
+  // ── Convert template to PDF styles (for pdf-lib) ─────────────────────────
+
+  toPdfStyles(template) {
+    const { page, body, title, h1, h2, h3, h4, h5 } = template;
+    const ps = PAGE_SIZES[page.size] || PAGE_SIZES.A4;
+    const portrait = page.orientation !== 'landscape';
+    
+    // Convert twips to points for PDF
+    const twipsToPoints = (twips) => twips / 20;
+    const mmToPoints = (mm) => mm * 2.83465;
+    
+    return {
+      pageOrientation: page.orientation || 'portrait',
+      pageWidth: portrait ? twipsToPoints(ps.width) : twipsToPoints(ps.height),
+      pageHeight: portrait ? twipsToPoints(ps.height) : twipsToPoints(ps.width),
+      pageMargin: {
+        top: mmToPoints(page.marginTop),
+        bottom: mmToPoints(page.marginBottom),
+        left: mmToPoints(page.marginLeft),
+        right: mmToPoints(page.marginRight),
+      },
+      body: {
+        font: this._mapPdfFont(body.font),
+        fontSize: body.fontSize,
+        lineSpacing: body.lineSpacing,
+        firstLineIndent: body.firstLineIndent * body.fontSize * 0.5, // 字符转换为points
+        alignment: body.alignment,
+        color: body.color || '000000',
+      },
+      title: _pdfHStyle(title),
+      h1: _pdfHStyle(h1),
+      h2: _pdfHStyle(h2),
+      h3: _pdfHStyle(h3),
+      h4: _pdfHStyle(h4),
+      h5: _pdfHStyle(h5),
+      code: {
+        font: 'Courier',
+        fontSize: body.fontSize - 1,
+        color: '000000',
+      },
+    };
+  }
+
+  /**
+   * 将中文字体映射到PDF标准字体
+   * 注意: pdf-lib标准字体对中文支持有限
+   * 未来可扩展为支持自定义字体嵌入
+   */
+  _mapPdfFont(fontName) {
+    const fontMap = {
+      '仿宋_GB2312': 'Helvetica',
+      '仿宋': 'Helvetica',
+      '宋体': 'Times-Roman',
+      '黑体': 'Helvetica-Bold',
+      '楷体_GB2312': 'Times-Roman',
+      '楷体': 'Times-Roman',
+      '微软雅黑': 'Helvetica',
+      '方正小标宋_GBK': 'Helvetica-Bold',
+      'Arial': 'Helvetica',
+      'Times New Roman': 'Times-Roman',
+      'Courier New': 'Courier',
+    };
+    return fontMap[fontName] || 'Helvetica';
+  }
+
   _load() {
     try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
     catch { return []; }
@@ -239,6 +304,16 @@ function _hStyle(h) {
   return {
     font:      h.font,
     fontSize:  ptToHalfPoints(h.fontSize),
+    bold:      h.bold,
+    alignment: h.alignment,
+    color:     h.color || '000000',
+  };
+}
+
+function _pdfHStyle(h) {
+  return {
+    font:      h.font, // 将由_mapPdfFont转换
+    fontSize:  h.fontSize,
     bold:      h.bold,
     alignment: h.alignment,
     color:     h.color || '000000',

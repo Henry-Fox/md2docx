@@ -1,5 +1,6 @@
 import { marked } from 'marked';
 import SimpleMd2Docx from './simpleMd2Docx.js';
+import { exportManager } from './exportManager.js';
 import { initLanguageSwitcher, updateContent, t, tWithVars } from '../src/js/i18n.js';
 import { templateManager } from './templateManager.js';
 import { parseDocxStyles } from './docxParser.js';
@@ -24,6 +25,7 @@ class App {
     this.dragArea         = document.querySelector('.drag-area');
     this.clearBtn         = document.getElementById('clear-btn');
     this.directConvertBtn = document.getElementById('direct-convert-btn');
+    this.exportPdfBtn     = document.getElementById('export-pdf-btn');
     this.previewContainer = document.getElementById('preview-container');
   }
 
@@ -58,6 +60,7 @@ class App {
 
     this.clearBtn?.addEventListener('click', () => this.clearMarkdown());
     this.directConvertBtn?.addEventListener('click', () => this.directConvertToDocx());
+    this.exportPdfBtn?.addEventListener('click', () => this.directConvertToPdf());
     this.markdownInput?.addEventListener('input', () => this.updatePreview());
 
     // Toolbar formatting buttons
@@ -156,13 +159,27 @@ class App {
     }
     try {
       this.showMessage(t('convertingSimple'), 'info');
-      const simpleMd2Docx = new SimpleMd2Docx();
-      simpleMd2Docx.setTemplate(templateManager.getActive());
-      await simpleMd2Docx.convertToDocxDirect(markdown);
+      await exportManager.exportDocx(markdown);
       this.showMessage(t('convertSimpleSuccess'), 'success');
     } catch (error) {
       console.error('转换失败:', error);
       this.showMessage(tWithVars('convertSimpleFail', { msg: error.message }), 'error');
+    }
+  }
+
+  async directConvertToPdf() {
+    const markdown = this.markdownInput.value;
+    if (!markdown.trim()) {
+      this.showMessage(t('emptyInput'), 'warning');
+      return;
+    }
+    try {
+      this.showMessage(t('exportingPdf'), 'info');
+      await exportManager.exportPdf(markdown);
+      this.showMessage(t('exportPdfSuccess'), 'success');
+    } catch (error) {
+      console.error('PDF导出失败:', error);
+      this.showMessage(tWithVars('exportPdfFail', { msg: error.message }), 'error');
     }
   }
 

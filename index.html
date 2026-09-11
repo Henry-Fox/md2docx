@@ -221,10 +221,16 @@
               <button id="show-prompt-btn" class="btn btn-outline btn-sm">提示词</button>
             </div>
           </div>
-          <button id="direct-convert-btn" class="btn btn-primary btn-export">
-            <span class="material-symbols-outlined">download</span>
-            导出 DOCX
-          </button>
+          <div class="export-buttons-group">
+            <button id="direct-convert-btn" class="btn btn-primary btn-export">
+              <span class="material-symbols-outlined">description</span>
+              <span data-i18n="exportWord">导出 Word</span>
+            </button>
+            <button id="export-pdf-btn" class="btn btn-secondary btn-export">
+              <span class="material-symbols-outlined">picture_as_pdf</span>
+              <span data-i18n="exportPdf">导出 PDF</span>
+            </button>
+          </div>
         </div>
         <div class="preview-canvas">
           <div class="preview-paper">

@@ -29,5 +29,10 @@
   "convertingSimple": "正在转换...",
   "convertSimpleSuccess": "转换成功！",
   "convertSimpleFail": "转换失败: {{msg}}",
+  "exportWord": "导出 Word",
+  "exportPdf": "导出 PDF",
+  "exportingPdf": "正在生成 PDF...",
+  "exportPdfSuccess": "PDF 生成成功！",
+  "exportPdfFail": "PDF 生成失败: {{msg}}",
   "defaultMarkdown": "# Markdown测试文档\n\n## 1. 基础文本格式\n\n这是普通段落文本。\n\n**这是加粗文本**\n*这是斜体文本*\n***这是加粗斜体文本***"
 }
