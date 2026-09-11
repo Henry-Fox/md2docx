@@ -465,10 +465,10 @@ class SimpleMd2Pdf {
    */
   async loadCJKFonts() {
     try {
-      // 使用 Google Fonts CDN 加载 Noto Sans SC
+      // 使用 Google Fonts CDN 加载 Noto Sans SC (v40)
       const fontUrls = {
-        regular: 'https://fonts.gstatic.com/s/notosanssc/v36/k3kXo84MPvpLmixcA63oeALhL4iJ-Q7m8w.ttf',
-        bold: 'https://fonts.gstatic.com/s/notosanssc/v36/k3kQo84MPvpLmixcA63oeALZKPKgGO4Bw-QPSA.ttf',
+        regular: 'https://fonts.gstatic.com/s/notosanssc/v40/k3kCo84MPvpLmixcA63oeAL7Iqp5IZJF9bmaG9_FnYw.ttf',
+        bold: 'https://fonts.gstatic.com/s/notosanssc/v40/k3kCo84MPvpLmixcA63oeAL7Iqp5IZJF9bmaGzjCnYw.ttf',
       };
 
       console.log("正在加载中文字体...");
