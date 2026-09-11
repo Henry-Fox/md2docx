@@ -1437,7 +1437,7 @@ select.tpl-input { appearance: none; background-image: url("data:image/svg+xml,%
 
 .pdf-page-canvas {
   display: block;
-  width: 100%;
+  /* 不设置 width，让 JS 的内联样式控制 HiDPI 尺寸 */
   height: auto;
 }
 

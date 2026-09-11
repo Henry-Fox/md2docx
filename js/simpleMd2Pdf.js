@@ -149,26 +149,61 @@ class SimpleMd2Pdf {
     const maxWidthFirstLine = this.getPageWidth() - indent - firstLineIndent;
     const maxWidthOtherLines = this.getPageWidth() - indent;
     
-    // 分行处理（首行单独处理）
+    // CJK-aware 文本换行：逐字符测量宽度
+    // 中文/日文/韩文几乎无空格，需要按字符换行；拉丁文保留单词换行
     const lines = [];
     if (text.trim()) {
-      // 简单分行：首行考虑首行缩进，其余行不考虑
-      const words = text.split(' ');
       let currentLine = '';
       let currentMaxWidth = maxWidthFirstLine;
       let isFirstLine = true;
       
-      for (const word of words) {
-        const testLine = currentLine ? `${currentLine} ${word}` : word;
-        const width = this.getTextWidth(testLine, actualFont, fontSize);
-        
-        if (width > currentMaxWidth && currentLine) {
-          lines.push({ text: currentLine, isFirst: isFirstLine });
-          currentLine = word;
-          isFirstLine = false;
-          currentMaxWidth = maxWidthOtherLines;
-        } else {
-          currentLine = testLine;
+      // 检测是否为 CJK 字符
+      const isCJK = (char) => {
+        const code = char.charCodeAt(0);
+        return (code >= 0x4E00 && code <= 0x9FFF) ||   // CJK Unified Ideographs
+               (code >= 0x3400 && code <= 0x4DBF) ||   // CJK Extension A
+               (code >= 0x20000 && code <= 0x2A6DF) || // CJK Extension B
+               (code >= 0x3040 && code <= 0x309F) ||   // Hiragana
+               (code >= 0x30A0 && code <= 0x30FF) ||   // Katakana
+               (code >= 0xAC00 && code <= 0xD7AF);     // Hangul
+      };
+      
+      // 检测文本是否主要为 CJK（>30% CJK 字符）
+      const cjkChars = text.split('').filter(isCJK).length;
+      const isCJKText = (cjkChars / text.length) > 0.3;
+      
+      if (isCJKText) {
+        // CJK 模式：逐字符换行
+        for (let i = 0; i < text.length; i++) {
+          const char = text[i];
+          const testLine = currentLine + char;
+          const width = this.getTextWidth(testLine, actualFont, fontSize);
+          
+          if (width > currentMaxWidth && currentLine) {
+            // 当前行已满，推入并开始新行
+            lines.push({ text: currentLine, isFirst: isFirstLine });
+            currentLine = char;
+            isFirstLine = false;
+            currentMaxWidth = maxWidthOtherLines;
+          } else {
+            currentLine = testLine;
+          }
+        }
+      } else {
+        // 拉丁文模式：按单词换行
+        const words = text.split(' ');
+        for (const word of words) {
+          const testLine = currentLine ? `${currentLine} ${word}` : word;
+          const width = this.getTextWidth(testLine, actualFont, fontSize);
+          
+          if (width > currentMaxWidth && currentLine) {
+            lines.push({ text: currentLine, isFirst: isFirstLine });
+            currentLine = word;
+            isFirstLine = false;
+            currentMaxWidth = maxWidthOtherLines;
+          } else {
+            currentLine = testLine;
+          }
         }
       }
       
