@@ -1,7 +1,7 @@
 {
   "name": "md2docx",
-  "version": "1.5.0",
-  "description": "A browser-based Markdown to Word DOCX and PDF converter with templates, preview, and Word format import.",
+  "version": "1.6.0",
+  "description": "A browser-based Markdown to Word DOCX and PDF converter with true WYSIWYG preview, templates, and Word format import.",
   "main": "index.js",
   "private": true,
   "keywords": [
@@ -25,7 +25,7 @@
     "start": "webpack serve --open --config webpack.config.dev.js",
     "build": "webpack --config webpack.config.prod.js",
     "prepare-release": "node scripts/prepare-release.js",
-    "release": "npm run prepare-release && cd release && zip -r ../md2docx-v1.4.0.zip ."
+    "release": "npm run prepare-release && cd release && zip -r ../md2docx-v1.6.0.zip ."
   },
   "devDependencies": {
     "@vitest/ui": "^5.0.0",
@@ -39,7 +39,6 @@
     "webpack-merge": "^5.10.0"
   },
   "dependencies": {
-    "@pdf-lib/fontkit": "^1.1.1",
     "docx": "^9.5.0",
     "file-saver": "^2.0.5",
     "i18next": "^25.2.1",
@@ -48,6 +47,7 @@
     "marked-gfm-heading-id": "^4.1.1",
     "marked-mangle": "^1.1.10",
     "pdf-lib": "^1.17.1",
+    "pdfjs-dist": "^6.3.289",
     "react-i18next": "^15.5.2"
   }
 }

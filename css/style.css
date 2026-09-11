@@ -1407,6 +1407,162 @@ select.tpl-input { appearance: none; background-image: url("data:image/svg+xml,%
   text-align: center;
 }
 
+/* ── WYSIWYG Preview ────────────────────────────────────────────── */
+.preview-container-wysiwyg {
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: #e5e5e5;
+  padding: 20px;
+}
+
+.pdf-pages-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding-bottom: 20px;
+}
+
+.pdf-page-container {
+  position: relative;
+  background: white;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  border-radius: 4px;
+  overflow: hidden;
+  max-width: 100%;
+}
+
+.pdf-page-canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.pdf-page-number {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  background: rgba(0,0,0,0.7);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  pointer-events: none;
+}
+
+/* 预览状态 */
+.preview-empty-state,
+.preview-loading-state,
+.preview-error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 40px;
+  text-align: center;
+}
+
+.preview-empty-state {
+  color: var(--on-surface-dim);
+}
+
+.preview-empty-icon {
+  font-size: 64px;
+  color: var(--outline);
+  margin-bottom: 16px;
+}
+
+.preview-empty-text {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--on-surface);
+}
+
+.preview-empty-hint {
+  font-size: 13px;
+  color: var(--on-surface-dim);
+}
+
+/* 加载状态 */
+.preview-loading-spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid var(--outline-var);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: preview-spin 0.8s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes preview-spin {
+  to { transform: rotate(360deg); }
+}
+
+.preview-loading-text {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--on-surface);
+}
+
+.preview-loading-hint {
+  font-size: 13px;
+  color: var(--on-surface-dim);
+}
+
+/* 错误状态 */
+.preview-error-icon {
+  font-size: 64px;
+  color: var(--error);
+  margin-bottom: 16px;
+}
+
+.preview-error-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--error);
+  margin-bottom: 12px;
+}
+
+.preview-error-message {
+  font-size: 14px;
+  color: var(--on-surface);
+  margin-bottom: 16px;
+  padding: 12px 16px;
+  background: var(--surface-mid);
+  border-radius: var(--radius);
+  max-width: 500px;
+  word-break: break-word;
+}
+
+.preview-error-hint {
+  max-width: 500px;
+  text-align: left;
+  padding: 16px;
+  background: var(--surface-low);
+  border-radius: var(--radius);
+  border-left: 4px solid var(--primary);
+}
+
+.preview-error-hint strong {
+  display: block;
+  color: var(--primary);
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.preview-error-hint p {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--on-surface-dim);
+  margin: 0;
+}
+
 /* ── Utilities ──────────────────────────────────────────────────── */
 .hidden, [hidden] { display: none !important; }
 .visually-hidden {
