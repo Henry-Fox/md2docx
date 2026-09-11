@@ -1413,7 +1413,7 @@ select.tpl-input { appearance: none; background-image: url("data:image/svg+xml,%
   height: 100%;
   overflow-y: auto;
   overflow-x: hidden;
-  background: #f8f9fa;  /* 柔和的浅灰背景，不刺眼 */
+  background: white;
   padding: 24px;
 }
 
@@ -1428,11 +1428,10 @@ select.tpl-input { appearance: none; background-image: url("data:image/svg+xml,%
 .pdf-page-container {
   position: relative;
   background: white;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);  /* 纸张阴影效果 */
+  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
   border-radius: 2px;
   overflow: hidden;
   max-width: 100%;
-  border: 1px solid rgba(0,0,0,0.06);  /* 轻微边框定义边缘 */
 }
 
 .pdf-page-canvas {
