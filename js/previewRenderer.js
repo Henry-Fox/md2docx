@@ -9,12 +9,17 @@
  * - 模板更改时刷新预览
  */
 
-// 使用 pdfjs-dist/webpack.mjs 零配置入口（自动设置 worker，确保版本匹配）
-import * as pdfjsLib from 'pdfjs-dist/webpack.mjs';
-const { getDocument } = pdfjsLib;
-
+import { getDocument, GlobalWorkerOptions } from 'pdfjs-dist';
 import SimpleMd2Pdf from './simpleMd2Pdf.js';
 import { templateManager } from './templateManager.js';
+
+// 设置 pdf.js worker（使用 Worker 构造函数从同一包加载，确保版本匹配）
+if (typeof window !== 'undefined' && 'Worker' in window) {
+  GlobalWorkerOptions.workerPort = new Worker(
+    new URL('pdfjs-dist/build/pdf.worker.min.mjs', import.meta.url),
+    { type: 'module' }
+  );
+}
 
 class PreviewRenderer {
   constructor() {
