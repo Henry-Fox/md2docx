@@ -132,22 +132,60 @@ class SimpleMd2Pdf {
       italic = false,
       align = "left",
       indent = 0,
+      firstLineIndent = 0,  // 首行缩进（只应用于第一行）
+      lineSpacing = null,   // 行距（points），null 则使用 fontSize * 1.5
     } = options;
 
     const styles = this.getStyles();
-    const maxWidth = this.getPageWidth() - indent;
+    const bodyStyle = styles.body || {};
+    
+    // 使用模板的行距，如果未指定则回退到 fontSize * 1.5
+    const actualLineSpacing = lineSpacing !== null ? lineSpacing : 
+                             (bodyStyle.lineSpacing || fontSize * 1.5);
+    
     const actualFont = bold ? this.fonts.bold : italic ? this.fonts.italic : font;
     
-    const lines = this.wrapText(text, actualFont, fontSize, maxWidth);
-    const lineHeight = fontSize * 1.5;
+    // 计算最大宽度（考虑首行缩进）
+    const maxWidthFirstLine = this.getPageWidth() - indent - firstLineIndent;
+    const maxWidthOtherLines = this.getPageWidth() - indent;
+    
+    // 分行处理（首行单独处理）
+    const lines = [];
+    if (text.trim()) {
+      // 简单分行：首行考虑首行缩进，其余行不考虑
+      const words = text.split(' ');
+      let currentLine = '';
+      let currentMaxWidth = maxWidthFirstLine;
+      let isFirstLine = true;
+      
+      for (const word of words) {
+        const testLine = currentLine ? `${currentLine} ${word}` : word;
+        const width = this.getTextWidth(testLine, actualFont, fontSize);
+        
+        if (width > currentMaxWidth && currentLine) {
+          lines.push({ text: currentLine, isFirst: isFirstLine });
+          currentLine = word;
+          isFirstLine = false;
+          currentMaxWidth = maxWidthOtherLines;
+        } else {
+          currentLine = testLine;
+        }
+      }
+      
+      if (currentLine) {
+        lines.push({ text: currentLine, isFirst: isFirstLine });
+      }
+    }
 
-    for (const line of lines) {
-      if (this.needsNewPage(lineHeight)) {
+    for (const lineObj of lines) {
+      if (this.needsNewPage(actualLineSpacing)) {
         this.addNewPage();
       }
 
-      let x = styles.pageMargin.left + indent;
-      const textWidth = this.getTextWidth(line, actualFont, fontSize);
+      // 首行应用首行缩进，其他行只应用常规缩进
+      const currentIndent = lineObj.isFirst ? (indent + firstLineIndent) : indent;
+      let x = styles.pageMargin.left + currentIndent;
+      const textWidth = this.getTextWidth(lineObj.text, actualFont, fontSize);
 
       if (align === "center") {
         x = styles.pageMargin.left + (this.getPageWidth() - textWidth) / 2;
@@ -155,7 +193,7 @@ class SimpleMd2Pdf {
         x = styles.pageMargin.left + this.getPageWidth() - textWidth;
       }
 
-      this.currentPage.drawText(line, {
+      this.currentPage.drawText(lineObj.text, {
         x,
         y: this.currentY,
         size: fontSize,
@@ -163,7 +201,7 @@ class SimpleMd2Pdf {
         color,
       });
 
-      this.currentY -= lineHeight;
+      this.currentY -= actualLineSpacing;
     }
   }
 
@@ -217,7 +255,8 @@ class SimpleMd2Pdf {
       fontSize: bodyStyle.fontSize,
       color: this.parseColor(bodyStyle.color),
       align: bodyStyle.alignment,
-      indent: bodyStyle.firstLineIndent,
+      firstLineIndent: bodyStyle.firstLineIndent,  // 首行缩进
+      lineSpacing: bodyStyle.lineSpacing,           // 使用模板行距
     });
 
     // 段落后增加间距

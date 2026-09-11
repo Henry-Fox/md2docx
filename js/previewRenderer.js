@@ -138,19 +138,26 @@ class PreviewRenderer {
       canvas.className = 'pdf-page-canvas';
       const context = canvas.getContext('2d');
       
-      // 设置渲染比例（根据容器宽度）
+      // 设置渲染比例（根据容器宽度，支持 HiDPI）
       const viewport = page.getViewport({ scale: 1.0 });
       const containerWidth = container.clientWidth - 40; // 减去padding
       const scale = containerWidth / viewport.width;
       const scaledViewport = page.getViewport({ scale });
       
-      canvas.width = scaledViewport.width;
-      canvas.height = scaledViewport.height;
+      // HiDPI 渲染：canvas 缓冲区使用物理像素，CSS 尺寸使用逻辑像素
+      const devicePixelRatio = window.devicePixelRatio || 1;
+      const outputScale = scale * devicePixelRatio;
       
-      // 渲染页面
+      canvas.width = Math.floor(scaledViewport.width * devicePixelRatio);
+      canvas.height = Math.floor(scaledViewport.height * devicePixelRatio);
+      canvas.style.width = Math.floor(scaledViewport.width) + 'px';
+      canvas.style.height = Math.floor(scaledViewport.height) + 'px';
+      
+      // 渲染页面（使用高分辨率 viewport）
+      const renderViewport = page.getViewport({ scale: outputScale });
       await page.render({
         canvasContext: context,
-        viewport: scaledViewport,
+        viewport: renderViewport,
       }).promise;
       
       // 添加到容器
@@ -175,7 +182,7 @@ class PreviewRenderer {
       <div class="preview-empty-state">
         <span class="material-symbols-outlined preview-empty-icon">description</span>
         <div class="preview-empty-text">在左侧输入 Markdown 内容</div>
-        <div class="preview-empty-hint">预览将显示与导出文档完全一致的效果</div>
+        <div class="preview-empty-hint">预览使用真实的PDF渲染引擎，所见即所得</div>
       </div>
     `;
     container.className = 'preview-container';
