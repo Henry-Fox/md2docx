@@ -31,5 +31,10 @@
   "emptyInput": "Por favor, introduce contenido Markdown",
   "convertingSimple": "Convirtiendo...",
   "convertSimpleSuccess": "¡Conversión exitosa!",
-  "convertSimpleFail": "Error de conversión: {{msg}}"
+  "convertSimpleFail": "Error de conversión: {{msg}}",
+  "exportWord": "Exportar Word",
+  "exportPdf": "Exportar PDF",
+  "exportingPdf": "Generando PDF...",
+  "exportPdfSuccess": "¡PDF generado con éxito!",
+  "exportPdfFail": "Error al generar PDF: {{msg}}"
 }

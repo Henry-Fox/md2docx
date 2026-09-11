@@ -29,5 +29,10 @@
   "convertingSimple": "Converting...",
   "convertSimpleSuccess": "Conversion successful!",
   "convertSimpleFail": "Conversion failed: {{msg}}",
+  "exportWord": "Export Word",
+  "exportPdf": "Export PDF",
+  "exportingPdf": "Generating PDF...",
+  "exportPdfSuccess": "PDF generated successfully!",
+  "exportPdfFail": "PDF generation failed: {{msg}}",
   "defaultMarkdown": "# Markdown Test Document\n\n## 1. Basic Text Format\n\nThis is a normal paragraph.\n\n**This is bold text**\n*This is italic text*\n***This is bold italic text***"
 }

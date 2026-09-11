@@ -31,5 +31,10 @@
   "emptyInput": "يرجى إدخال محتوى Markdown",
   "convertingSimple": "جاري التحويل...",
   "convertSimpleSuccess": "تم التحويل بنجاح!",
-  "convertSimpleFail": "فشل في التحويل: {{msg}}"
+  "convertSimpleFail": "فشل في التحويل: {{msg}}",
+  "exportWord": "تصدير Word",
+  "exportPdf": "تصدير PDF",
+  "exportingPdf": "جارٍ إنشاء PDF...",
+  "exportPdfSuccess": "تم إنشاء PDF بنجاح!",
+  "exportPdfFail": "فشل إنشاء PDF: {{msg}}"
 }

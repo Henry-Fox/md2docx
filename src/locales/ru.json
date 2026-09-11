@@ -31,5 +31,10 @@
   "emptyInput": "Пожалуйста, введите содержимое Markdown",
   "convertingSimple": "Преобразование...",
   "convertSimpleSuccess": "Преобразование успешно!",
-  "convertSimpleFail": "Ошибка преобразования: {{msg}}"
+  "convertSimpleFail": "Ошибка преобразования: {{msg}}",
+  "exportWord": "Экспорт Word",
+  "exportPdf": "Экспорт PDF",
+  "exportingPdf": "Создание PDF...",
+  "exportPdfSuccess": "PDF успешно создан!",
+  "exportPdfFail": "Ошибка создания PDF: {{msg}}"
 }

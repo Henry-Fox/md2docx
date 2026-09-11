@@ -525,6 +525,13 @@ a { text-decoration: none; color: inherit; }
   flex-shrink: 0;
 }
 .btn-export .material-symbols-outlined { font-size: 17px; }
+.export-buttons-group {
+  display: flex;
+  gap: 8px;
+}
+.export-buttons-group .btn-export {
+  min-width: 140px;
+}
 
 .preview-canvas {
   flex: 1;
@@ -706,6 +713,13 @@ html[dir="rtl"] #preview-container ol {
 }
 .btn-primary:hover { background: var(--primary-container); }
 .btn-primary:active { transform: scale(0.98); }
+.btn-secondary {
+  background: var(--surface-container-high);
+  color: var(--on-surface);
+  border: 1px solid var(--outline-var);
+}
+.btn-secondary:hover { background: var(--surface-container-highest); }
+.btn-secondary:active { transform: scale(0.98); }
 .btn-outline {
   background: var(--surface-white);
   color: var(--on-surface-dim);
