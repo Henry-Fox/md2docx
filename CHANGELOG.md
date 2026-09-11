@@ -5,6 +5,71 @@ All notable changes to md2docx will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.2] - 2026-09-11
+
+### Fixed
+
+**CRITICAL quality fixes for TRUE WYSIWYG preview:**
+
+#### A. HiDPI / Retina sharpness (high priority)
+- **Problem**: Preview blurry on HiDPI/Retina displays
+- **Cause**: Canvas rendered at CSS pixels only (`canvas.width = viewport.width`)
+- **Fix**: Render at `scale * devicePixelRatio`
+  - Canvas buffer: physical pixels (DPR-scaled)
+  - CSS size: logical pixels
+  - Classic pdf.js HiDPI pattern
+- **Result**: Sharp preview on all displays (2x, 3x DPR)
+
+#### B. 首行缩进 BUG (Chinese typography)
+- **Problem**: ALL lines indented, not just first line
+- **Cause**: `drawText()` applied `indent` param to every line
+- **Fix**: 
+  - Added `firstLineIndent` param (only first line)
+  - Separate `indent` (all lines) vs `firstLineIndent` (first line only)
+- **Impact**: Formal 公文/论文 templates now correct
+
+#### C. 行距 BUG (line spacing)
+- **Problem**: Hardcoded `fontSize * 1.5`, ignored template `lineSpacing`
+- **Cause**: `drawText()` didn't read template `lineSpacing` field
+- **Fix**: Use `bodyStyle.lineSpacing` from template (e.g. 28pt for 公文)
+- **Impact**: Exact spacing for formal documents
+
+#### D. Preview chrome / gray frame
+- **Problem**: Harsh gray background (#e5e5e5) looked ugly
+- **Fix**: 
+  - Softer background (#f8f9fa)
+  - Paper-like shadow (cleaner, not thick gray frame)
+  - Updated hint text ("真实的PDF渲染引擎，所见即所得")
+
+### Technical Details
+
+**Modified files**:
+1. `js/simpleMd2Pdf.js`:
+   - `drawText()`: Added `firstLineIndent` & `lineSpacing` params
+   - Line wrapping: First line uses `maxWidth - firstLineIndent`, others use `maxWidth`
+   - `drawParagraph()`: Pass `firstLineIndent` & `lineSpacing` from template
+
+2. `js/previewRenderer.js`:
+   - Canvas rendering: `canvas.width = scaledViewport.width * devicePixelRatio`
+   - Render viewport: `page.getViewport({ scale: scale * devicePixelRatio })`
+   - CSS size: `canvas.style.width/height` (logical pixels)
+
+3. `css/style.css`:
+   - `.preview-container-wysiwyg`: background #f8f9fa (softer)
+   - `.pdf-page-container`: refined shadow & border
+
+**Shared pipeline impact**: Both preview AND export benefit from typography fixes (B & C).
+
+### Verification
+
+Test with Chinese formal template (公文示例):
+1. 首行缩进 2 字符 ✓ (only first line)
+2. 行距 28pt ✓ (template value, not 1.5x)
+3. Sharp on Retina ✓ (devicePixelRatio)
+4. Clean paper look ✓ (soft background)
+
+---
+
 ## [1.6.1] - 2026-09-11
 
 ### Fixed
