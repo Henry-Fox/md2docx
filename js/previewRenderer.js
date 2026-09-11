@@ -129,31 +129,43 @@ class PreviewRenderer {
     for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
       const page = await pdf.getPage(pageNum);
       
-      // 创建页面容器
+      // 创建页面容器（A4 比例框架）
       const pageContainer = document.createElement('div');
       pageContainer.className = 'pdf-page-container';
+      pagesContainer.appendChild(pageContainer);
+      
+      // 等待容器布局完成以获取实际尺寸
+      await new Promise(resolve => requestAnimationFrame(resolve));
       
       // 创建canvas
       const canvas = document.createElement('canvas');
       canvas.className = 'pdf-page-canvas';
       const context = canvas.getContext('2d');
       
-      // 设置渲染比例（根据容器宽度，支持 HiDPI）
+      // 根据 A4 容器的实际尺寸计算渲染比例
+      const containerWidth = pageContainer.clientWidth;
+      const containerHeight = pageContainer.clientHeight;
       const viewport = page.getViewport({ scale: 1.0 });
-      const containerWidth = container.clientWidth - 40; // 减去padding
-      const scale = containerWidth / viewport.width;
+      
+      // 计算缩放比例以填充 A4 框架（保持PDF原始比例）
+      const scaleX = containerWidth / viewport.width;
+      const scaleY = containerHeight / viewport.height;
+      const scale = Math.min(scaleX, scaleY); // 保持比例，适应容器
+      
       const scaledViewport = page.getViewport({ scale });
       
-      // HiDPI 渲染：canvas 缓冲区使用物理像素，CSS 尺寸使用逻辑像素
+      // HiDPI 渲染：canvas 物理像素 = CSS像素 × devicePixelRatio
       const devicePixelRatio = window.devicePixelRatio || 1;
       const outputScale = scale * devicePixelRatio;
       
       canvas.width = Math.floor(scaledViewport.width * devicePixelRatio);
       canvas.height = Math.floor(scaledViewport.height * devicePixelRatio);
-      canvas.style.width = Math.floor(scaledViewport.width) + 'px';
-      canvas.style.height = Math.floor(scaledViewport.height) + 'px';
       
-      // 渲染页面（使用高分辨率 viewport）
+      // Canvas CSS 尺寸填充容器（由 CSS 的 100% 控制，但设置回退）
+      canvas.style.width = '100%';
+      canvas.style.height = '100%';
+      
+      // 渲染页面
       const renderViewport = page.getViewport({ scale: outputScale });
       await page.render({
         canvasContext: context,
@@ -168,8 +180,6 @@ class PreviewRenderer {
       pageNumber.className = 'pdf-page-number';
       pageNumber.textContent = `第 ${pageNum} / ${pdf.numPages} 页`;
       pageContainer.appendChild(pageNumber);
-      
-      pagesContainer.appendChild(pageContainer);
     }
   }
 

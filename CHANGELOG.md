@@ -5,6 +5,19 @@ All notable changes to md2docx will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.6] - 2026-09-11
+
+### Fixed
+- **Preview UI**: A4-ratio frame architecture — page fills frame, no internal waste
+  - **User feedback**: "那你给外边改成A4不就行了么" — make outer frame A4, content fills it
+  - **Solution**:
+    - `.pdf-page-container`: `aspect-ratio: 210 / 297` (A4), `max-width: 210mm`, fills available width
+    - `.pdf-page-canvas`: `width: 100%`, `height: 100%` — fills A4 frame flush
+    - Padding: `12px` minimal (shadow clearance only)
+    - Gap between pages: `16px` (was 24px)
+  - **JS**: render scale now based on A4 frame's actual size, `Math.min(scaleX, scaleY)` to fit
+  - **Result**: Page content fills A4-shaped frame completely; soft shallow shadow on frame edge; no gray desk bands
+
 ## [1.6.5] - 2026-09-11
 
 ### Fixed
