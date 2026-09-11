@@ -4,6 +4,7 @@ import { exportManager } from './exportManager.js';
 import { initLanguageSwitcher, updateContent, t, tWithVars } from '../src/js/i18n.js';
 import { templateManager } from './templateManager.js';
 import { parseDocxStyles } from './docxParser.js';
+import { previewRenderer } from './previewRenderer.js';
 import packageInfo from '../package.json';
 
 class App {
@@ -16,6 +17,10 @@ class App {
     this.initTemplateUI();
     this.renderVersion();
     this.loadDefaultExample();
+    
+    // 防抖定时器
+    this.previewDebounceTimer = null;
+    this.previewDebounceDelay = 500; // 500ms 防抖延迟
   }
 
   initElements() {
@@ -138,16 +143,37 @@ class App {
 
   updatePreview() {
     if (!this.previewContainer) return;
-    const markdown = this.markdownInput.value;
-    if (!markdown) {
-      this.previewContainer.innerHTML = `<div class="preview-placeholder">${t('previewPlaceholder')}</div>`;
-      return;
+    
+    // 清除之前的防抖定时器
+    if (this.previewDebounceTimer) {
+      clearTimeout(this.previewDebounceTimer);
     }
+    
+    // 设置新的防抖定时器
+    this.previewDebounceTimer = setTimeout(() => {
+      this._doUpdatePreview();
+    }, this.previewDebounceDelay);
+  }
+
+  /**
+   * 实际执行预览更新（内部方法）
+   * @private
+   */
+  async _doUpdatePreview() {
+    if (!this.previewContainer || !this.markdownInput) return;
+    
+    const markdown = this.markdownInput.value;
+    
     try {
-      this.previewContainer.innerHTML = marked.parse(markdown);
+      // 使用新的预览渲染器
+      await previewRenderer.renderPreview(
+        markdown,
+        this.previewContainer,
+        templateManager.getActive()
+      );
     } catch (error) {
       console.error('更新预览时出错:', error);
-      this.previewContainer.innerHTML = '<div class="preview-error">预览生成失败</div>';
+      // 错误已在 previewRenderer 中处理
     }
   }
 
@@ -223,7 +249,12 @@ class App {
       if (tpl.id === active.id) opt.selected = true;
       sel.appendChild(opt);
     });
-    sel.onchange = () => templateManager.setActive(sel.value);
+    sel.onchange = () => {
+      templateManager.setActive(sel.value);
+      // 模板切换时清除预览缓存并刷新预览
+      previewRenderer.clearCache();
+      this.updatePreview();
+    };
   }
 
   _bindTemplateModalEvents() {
@@ -532,6 +563,12 @@ class App {
     templateManager.save(updated);
     this._renderTemplateList();
     this._showToast(`✓ 模板"${updated.name}"已保存`);
+    
+    // 如果保存的是当前激活的模板，刷新预览
+    if (templateManager.getActive().id === updated.id) {
+      previewRenderer.clearCache();
+      this.updatePreview();
+    }
   }
 
   _generateLLMPrompt(template) {

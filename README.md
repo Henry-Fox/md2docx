@@ -6,13 +6,13 @@
 
 | Item / 项目 | Status / 状态 |
 | --- | --- |
-| Current version / 当前版本 | v1.3.0 |
+| Current version / 当前版本 | v1.6.0 |
 | Last updated / 最近更新 | 2026-09-11 |
 | Online demo / 在线使用 | [henry-fox.github.io/md2docx](https://henry-fox.github.io/md2docx/) |
 | GitHub | [Henry-Fox/md2docx](https://github.com/Henry-Fox/md2docx) |
 | Gitee | [meng-hengli66/md2-docx](https://gitee.com/meng-hengli66/md2-docx) |
 | Static page branch / 静态页分支 | `gh-pages` |
-| Latest change / 最近变更 | **Major Update**: Added PDF export feature with template-driven generation. Both Word (DOCX) and PDF exports now available! |
+| Latest change / 最近变更 | **Major Update**: True WYSIWYG preview! Preview now uses the same rendering pipeline as PDF export for exact visual fidelity. |
 
 ## Support / 支持作者
 
@@ -29,10 +29,10 @@ If this tool helps you, you can support the project through WeChat, Alipay, or P
 A simple and efficient web-based tool for converting Markdown files to Word documents (DOCX) and PDF format.
 
 ### Features
-- **NEW**: PDF Export with template-driven generation
+- **NEW**: TRUE WYSIWYG Preview - See exactly what your exported document will look like
 - Export to Word (DOCX) or PDF format
+- Real-time preview with PDF rendering engine
 - Drag and drop support
-- Real-time preview
 - Template system with 5 built-in professional templates
 - Multiple language support (6 languages)
 - Pure frontend implementation
@@ -82,6 +82,7 @@ npm start
 - marked.js (Markdown parsing)
 - docx.js (Word document generation)
 - pdf-lib (PDF document generation)
+- pdfjs-dist (PDF preview rendering)
 - vitest (Testing framework)
 - Pure HTML/CSS/JavaScript
 
@@ -99,10 +100,10 @@ Thank you for your support! Your generosity helps make this project better for e
 一个简单高效的基于网页的 Markdown 转 Word 文档（DOCX）和 PDF 工具。
 
 ### 功能特点
-- **新功能**: PDF 导出,支持模板驱动的专业排版
+- **新功能**: 真正的所见即所得预览 - 预览与导出文档完全一致
 - 支持导出为 Word (DOCX) 或 PDF 格式
+- 使用 PDF 渲染引擎的实时预览
 - 支持拖放文件
-- 实时预览
 - 模板系统,内置5套专业模板
 - 多语言支持(6种语言)
 - 纯前端实现
@@ -151,6 +152,9 @@ npm start
 ### 技术栈
 - marked.js（Markdown 解析）
 - docx.js（Word 文档生成）
+- pdf-lib（PDF 文档生成）
+- pdfjs-dist（PDF 预览渲染）
+- vitest（测试框架）
 - 纯 HTML/CSS/JavaScript
 
 ### 支持项目
