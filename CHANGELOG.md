@@ -5,6 +5,14 @@ All notable changes to md2docx will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.4] - 2026-09-11
+
+### Fixed
+- **Preview UI**: Removed all gray borders and gray background desk feel
+  - `.pdf-page-container`: Removed `border: 1px solid rgba(0,0,0,0.06)`, softened `box-shadow` to `0 2px 8px rgba(0,0,0,0.03)`
+  - `.preview-container-wysiwyg`: Changed `background` from `#f8f9fa` to `white`
+  - Result: Clean white-on-white preview with no visible gray frame
+
 ## [1.6.3] - 2026-09-11
 
 ### Fixed
