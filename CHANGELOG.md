@@ -5,6 +5,17 @@ All notable changes to md2docx will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.5] - 2026-09-11
+
+### Fixed
+- **Preview UI**: Restore visible page edge with balanced design
+  - **Problem**: v1.6.4 made both desk and page white — user couldn't see page boundary
+  - **Solution**:
+    - Desk background: `#f3f4f6` (soft surface tint, not harsh gray)
+    - Padding reduced: `24px` → `16px` (less empty margin)
+    - Paper shadow enhanced: `0 1px 3px rgba(0,0,0,.08), 0 8px 24px rgba(0,0,0,.06)` (clearly visible)
+  - **Result**: Clean paper-card feel with visible edges, no 刺眼 gray frame
+
 ## [1.6.4] - 2026-09-11
 
 ### Fixed
